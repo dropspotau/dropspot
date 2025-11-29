@@ -24,11 +24,14 @@
 
         rustVersion = "1.91.1";
         rustDeps = with pkgs; [
-          rust-bin.stable.${rustVersion}.default
+          rustup
+          rust-analyzer
+          (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
         ];
 
         editorDeps = with pkgs; [
           neovim
+          rustfmt
         ];
 
         psql = (pkgs.postgresql_17.withPackages (ps: with ps; [ ]));
