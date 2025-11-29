@@ -10,7 +10,10 @@ use state::State;
 use upload::Upload;
 use uuid::Uuid;
 
-use crate::handlers::{handle_file_download, handle_file_request_download, handle_file_upload};
+use crate::handlers::{
+    handle_file_download, handle_file_request_download, handle_file_request_upload,
+    handle_file_upload,
+};
 
 fn watch_for_files(mut state: State) {
     loop {
@@ -42,17 +45,19 @@ fn main() -> Result<(), ()> {
 
     for i in 0..3 {
         // Simulate generating an upload URL
-        let upload = Upload::generate();
-        let upload_id = upload.id.clone();
-        state.add_upload(upload);
+        let upload_id = handle_file_request_upload(&mut state);
 
         // Simulate uploading a file to that URL
-        let Ok(file) = handle_file_upload(&mut state, upload_id, format!("File {i}")) else {
+        let Ok(file_id) = handle_file_upload(
+            &mut state,
+            upload_id,
+            format!("file_{i}"),
+            format!("This is file {i}").into(),
+        ) else {
             continue;
         };
 
-        first_file_id = Some(file.id.clone());
-        state.add_file(file);
+        first_file_id = Some(file_id);
     }
 
     // Simulate a download

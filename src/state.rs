@@ -35,16 +35,20 @@ impl State {
         self.uploads.iter().find(|upload| &upload.id == id)
     }
 
-    pub fn add_file(&mut self, file: File) {
-        self.files.push(file);
-    }
-
     pub fn get_files(&self) -> &[File] {
         &self.files
     }
 
     pub fn get_file_by_id(&self, id: &Uuid) -> Option<&File> {
         self.files.iter().find(|file| &file.id == id)
+    }
+
+    pub fn add_file(&mut self, file: File) {
+        self.files.push(file);
+    }
+
+    pub fn remove_files(&mut self, keys: &[Uuid]) {
+        self.files.retain(|file| !keys.contains(&file.id));
     }
 
     pub fn add_download(&mut self, download: Download) {
