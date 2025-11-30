@@ -1,3 +1,4 @@
+use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::download::Download;
@@ -8,14 +9,16 @@ pub struct State {
     uploads: Vec<Upload>,
     files: Vec<File>,
     downloads: Vec<Download>,
+    pool: PgPool,
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(pool: PgPool) -> Self {
         Self {
             uploads: vec![],
             files: vec![],
             downloads: vec![],
+            pool,
         }
     }
 

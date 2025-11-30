@@ -1,3 +1,4 @@
+mod db;
 mod download;
 mod file;
 mod handlers;
@@ -7,12 +8,14 @@ mod upload;
 use std::{thread::sleep, time::Duration};
 
 use state::State;
-use upload::Upload;
 use uuid::Uuid;
 
-use crate::handlers::{
-    handle_file_download, handle_file_request_download, handle_file_request_upload,
-    handle_file_upload,
+use crate::{
+    db::run_migrations,
+    handlers::{
+        handle_file_download, handle_file_request_download, handle_file_request_upload,
+        handle_file_upload,
+    },
 };
 
 fn watch_for_files(mut state: State) {
@@ -37,10 +40,19 @@ fn watch_for_files(mut state: State) {
     }
 }
 
-fn main() -> Result<(), ()> {
+#[async_std::main]
+async fn main() -> Result<(), ()> {
     println!("Welcome to DropSpot!");
-    let mut state = State::new();
+    let Ok(pool) = db::connect().await else {
+        return Err(());
+    };
 
+    if let Err(e) = run_migrations(&pool).await {
+        eprintln!("Failed to run migrations: {e}");
+        return Err(());
+    };
+
+    let mut state = State::new(pool);
     let mut first_file_id: Option<Uuid> = None;
 
     for i in 0..3 {
