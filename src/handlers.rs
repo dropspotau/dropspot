@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Download, File, Upload, create_download, create_file, create_upload, delete_file,
+        Download, File, Upload, create_download, create_file, create_upload, delete_files,
         get_download_by_id, get_file_by_id, get_upload_by_id,
     },
     state::State,
@@ -97,7 +97,7 @@ pub async fn handle_file_upload(
 
     if io_file.write(&contents).is_err() {
         // Don't save the file
-        if let Err(e) = delete_file(pool, &file.id).await {
+        if let Err(e) = delete_files(pool, &[file.id]).await {
             return Err(FileUploadError::FileDatabaseCreateError(e));
         };
 

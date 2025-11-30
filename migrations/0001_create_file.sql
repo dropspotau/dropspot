@@ -13,7 +13,8 @@ create table file (
     path varchar(1028) not null,
     size bigint not null,
     created_at timestamptz not null,
-    expires_at timestamptz not null
+    expires_at timestamptz not null,
+    max_downloads int not null
 );
 
 create table download (
