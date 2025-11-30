@@ -1,9 +1,7 @@
 mod db;
 mod download;
-mod file;
 mod handlers;
 mod state;
-mod upload;
 
 use std::{thread::sleep, time::Duration};
 
@@ -40,7 +38,7 @@ fn watch_for_files(mut state: State) {
     }
 }
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> Result<(), ()> {
     println!("Welcome to DropSpot!");
     let Ok(pool) = db::connect().await else {

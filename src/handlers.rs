@@ -6,12 +6,22 @@ use std::{
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::{download::Download, file::File, state::State, upload::Upload};
+use crate::{
+    db::{File, Upload, create_file, create_upload, delete_file, get_upload_by_id},
+    download::Download,
+    state::State,
+};
 
 #[derive(Error, Debug)]
 pub enum FileUploadError {
     #[error("Upload not found")]
     UploadNotFound,
+
+    #[error("Error writing file to database: {0}")]
+    FileDatabaseCreateError(sqlx::Error),
+
+    #[error("Error deleting file from database: {0}")]
+    FileDatabaseCreateError(sqlx::Error),
 
     #[error("Failed to create file")]
     FileCreateError,
@@ -41,42 +51,55 @@ pub enum FileDownloadError {
     FileReadError,
 }
 
-pub fn handle_file_request_upload(state: &mut State) -> Uuid {
-    let upload = Upload::generate();
-    let upload_id = upload.id.clone();
-    state.add_upload(upload);
-
-    upload_id
+pub async fn handle_file_request_upload(state: &mut State) -> Result<Upload, sqlx::Error> {
+    create_upload(state.get_pool()).await
 }
 
-pub fn handle_file_upload(
+pub async fn handle_file_upload(
     state: &mut State,
     upload_id: Uuid,
     file_name: String,
     contents: Vec<u8>,
-) -> Result<Uuid, FileUploadError> {
-    let Some(upload) = state.get_upload_by_id(&upload_id) else {
+) -> Result<File, FileUploadError> {
+    let pool = state.get_pool();
+
+    let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
         return Err(FileUploadError::UploadNotFound);
     };
 
     let path = PathBuf::from(&file_name);
     let size = contents.len();
-    let file = File::new(file_name, upload.id.clone(), path.clone(), size);
-    let file_id = file.id.clone();
-    let file_path = file.get_path();
-    state.add_file(file);
 
-    let Ok(mut io_file) = std::fs::File::create(file_path) else {
+    let pool = state.get_pool();
+    let file = create_file(
+        pool,
+        file_name,
+        &upload.id,
+        path.to_str().unwrap().to_owned(),
+        size as i64,
+    )
+    .await;
+
+    if let Err(e) = file {
+        return Err(FileUploadError::FileDatabaseCreateError(e));
+    }
+
+    let file = file.unwrap();
+
+    let Ok(mut io_file) = std::fs::File::create(file.get_path()) else {
         return Err(FileUploadError::FileCreateError);
     };
 
     if io_file.write(&contents).is_err() {
         // Don't save the file
-        state.remove_files(&[file_id]);
+        if let Err(e) = delete_file(pool, &file.id).await {
+            return Err(FileUploadError::FileDatabaseCreateError(e));
+        };
+
         return Err(FileUploadError::FileWriteError);
     }
 
-    Ok(file_id)
+    Ok(file)
 }
 
 pub fn handle_file_request_download(
@@ -119,7 +142,7 @@ pub fn handle_file_download(
         return Err(FileDownloadError::FileOpenError);
     };
 
-    let mut buffer = Vec::with_capacity(file.size);
+    let mut buffer = Vec::with_capacity(file.size as usize);
     if io_file.read_to_end(&mut buffer).is_err() {
         return Err(FileDownloadError::FileReadError);
     }

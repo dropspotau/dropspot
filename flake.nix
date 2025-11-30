@@ -27,6 +27,7 @@
           rustup
           rust-analyzer
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+          sqlx-cli
         ];
 
         editorDeps = with pkgs; [
