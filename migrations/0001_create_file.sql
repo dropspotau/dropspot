@@ -15,3 +15,10 @@ create table file (
     created_at timestamptz not null,
     expires_at timestamptz not null
 );
+
+create table download (
+    id uuid primary key default uuid_generate_v4(),
+    file_id uuid references file on delete cascade not null,
+    created_at timestamptz not null,
+    expires_at timestamptz not null
+);

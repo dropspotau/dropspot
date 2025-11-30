@@ -1,5 +1,4 @@
 mod db;
-mod download;
 mod handlers;
 mod state;
 
@@ -9,32 +8,47 @@ use state::State;
 use uuid::Uuid;
 
 use crate::{
-    db::run_migrations,
+    db::{get_downloads, get_files, get_uploads, run_migrations},
     handlers::{
         handle_file_download, handle_file_request_download, handle_file_request_upload,
         handle_file_upload,
     },
 };
 
-fn watch_for_files(mut state: State) {
+async fn watch_for_files(state: State) {
+    let pool = state.get_pool();
+
     loop {
         println!("Watching for files...");
         sleep(Duration::new(1, 0));
-        println!("This many uploads: {}", state.get_uploads().len());
 
-        let expired_keys = state
-            .get_uploads()
+        let uploads = get_uploads(pool).await;
+
+        let expired_keys = uploads
+            .unwrap()
             .iter()
             .filter(|upload| upload.is_expired())
             .map(|upload| upload.id)
             .collect::<Vec<_>>();
 
-        state.remove_uploads(&expired_keys);
-
         println!("Removed uploads: {expired_keys:?}");
 
-        println!("This many files: {}", state.get_files().len());
-        println!("This many downloads: {}", state.get_downloads().len());
+        let files = get_files(pool).await;
+
+        if let Err(e) = files {
+            eprintln!("Failed to get files: {e}");
+            continue;
+        };
+
+        let downloads = get_downloads(pool).await;
+
+        if let Err(e) = downloads {
+            eprintln!("Failed to get downloads: {e}");
+            continue;
+        };
+
+        println!("This many files: {}", files.unwrap().len());
+        println!("This many downloads: {}", downloads.unwrap().len());
     }
 }
 
@@ -55,34 +69,39 @@ async fn main() -> Result<(), ()> {
 
     for i in 0..3 {
         // Simulate generating an upload URL
-        let upload_id = handle_file_request_upload(&mut state);
-
-        // Simulate uploading a file to that URL
-        let Ok(file_id) = handle_file_upload(
-            &mut state,
-            upload_id,
-            format!("file_{i}"),
-            format!("This is file {i}").into(),
-        ) else {
+        let Ok(upload) = handle_file_request_upload(&mut state).await else {
             continue;
         };
 
-        first_file_id = Some(file_id);
+        // Simulate uploading a file to that URL
+        let Ok(file) = handle_file_upload(
+            &mut state,
+            &upload.id,
+            format!("file_{i}"),
+            format!("This is file {i}").into(),
+        )
+        .await
+        else {
+            continue;
+        };
+
+        first_file_id = Some(file.id.clone());
     }
 
     // Simulate a download
-    let Ok(download) = handle_file_request_download(&mut state, first_file_id.unwrap()) else {
+    let Ok(download) = handle_file_request_download(&mut state, first_file_id.unwrap()).await
+    else {
         eprintln!("Failed to download file");
         return Err(());
     };
 
-    let Ok(file_stream) = handle_file_download(&mut state, download) else {
+    let Ok(file_stream) = handle_file_download(&mut state, download.id).await else {
         eprintln!("Failed to download file");
         return Err(());
     };
 
     println!("File stream: {file_stream:?}");
 
-    watch_for_files(state);
+    watch_for_files(state).await;
     Ok(())
 }

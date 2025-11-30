@@ -1,5 +1,8 @@
 /target
-/.direnv/
+/.direnv
 
 # Test files
 /files
+
+# SQLx files
+/.sqlx

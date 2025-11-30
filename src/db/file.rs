@@ -43,6 +43,21 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
     .await
 }
 
+pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Error> {
+    sqlx::query_as!(
+        File,
+        r#"
+            select id, name, upload_id, path, size, created_at, expires_at
+            from file
+            where id = $1
+            limit 1
+        "#,
+        id
+    )
+    .fetch_one(pool)
+    .await
+}
+
 pub async fn create_file(
     pool: &PgPool,
     name: String,

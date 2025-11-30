@@ -7,8 +7,10 @@ use thiserror::Error;
 use uuid::Uuid;
 
 use crate::{
-    db::{File, Upload, create_file, create_upload, delete_file, get_upload_by_id},
-    download::Download,
+    db::{
+        Download, File, Upload, create_download, create_file, create_upload, delete_file,
+        get_download_by_id, get_file_by_id, get_upload_by_id,
+    },
     state::State,
 };
 
@@ -21,7 +23,7 @@ pub enum FileUploadError {
     FileDatabaseCreateError(sqlx::Error),
 
     #[error("Error deleting file from database: {0}")]
-    FileDatabaseCreateError(sqlx::Error),
+    FileDatabaseDeleteError(sqlx::Error),
 
     #[error("Failed to create file")]
     FileCreateError,
@@ -37,6 +39,9 @@ pub enum FileDownloadError {
 
     #[error("File has expired")]
     FileExpired,
+
+    #[error("Error creating download record: {0}")]
+    DownloadCreateError(sqlx::Error),
 
     #[error("Download URL not found")]
     DownloadNotFound,
@@ -57,7 +62,7 @@ pub async fn handle_file_request_upload(state: &mut State) -> Result<Upload, sql
 
 pub async fn handle_file_upload(
     state: &mut State,
-    upload_id: Uuid,
+    upload_id: &Uuid,
     file_name: String,
     contents: Vec<u8>,
 ) -> Result<File, FileUploadError> {
@@ -102,26 +107,32 @@ pub async fn handle_file_upload(
     Ok(file)
 }
 
-pub fn handle_file_request_download(
+pub async fn handle_file_request_download(
     state: &mut State,
     file_id: Uuid,
-) -> Result<Uuid, FileDownloadError> {
-    let Some(file) = state.get_file_by_id(&file_id) else {
+) -> Result<Download, FileDownloadError> {
+    let pool = state.get_pool();
+
+    let Ok(file) = get_file_by_id(pool, &file_id).await else {
         return Err(FileDownloadError::FileNotFound);
     };
 
-    let download = Download::generate(file.id.clone());
-    let id = download.id.clone();
-    state.add_download(download);
+    let download = create_download(pool, &file.id).await;
 
-    Ok(id)
+    if let Err(e) = download {
+        return Err(FileDownloadError::DownloadCreateError(e));
+    };
+
+    Ok(download.unwrap())
 }
 
-pub fn handle_file_download(
+pub async fn handle_file_download(
     state: &mut State,
     download_id: Uuid,
 ) -> Result<Vec<u8>, FileDownloadError> {
-    let Some(download) = state.get_download_by_id(&download_id) else {
+    let pool = state.get_pool();
+
+    let Ok(download) = get_download_by_id(pool, &download_id).await else {
         return Err(FileDownloadError::DownloadNotFound);
     };
 
@@ -129,7 +140,7 @@ pub fn handle_file_download(
         return Err(FileDownloadError::DownloadExpired);
     }
 
-    let Some(file) = state.get_file_by_id(&download.file_id) else {
+    let Ok(file) = get_file_by_id(pool, &download.file_id).await else {
         return Err(FileDownloadError::FileNotFound);
     };
 

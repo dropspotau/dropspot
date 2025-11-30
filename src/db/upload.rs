@@ -49,7 +49,7 @@ pub async fn get_upload_by_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::
         "#,
         id
     )
-    .fetch_all(pool)
+    .fetch_one(pool)
     .await
 }
 
