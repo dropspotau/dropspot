@@ -22,7 +22,6 @@
           };
         };
 
-        rustVersion = "1.91.1";
         rustDeps = with pkgs; [
           rustup
           rust-analyzer
