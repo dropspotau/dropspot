@@ -117,6 +117,10 @@ pub async fn handle_file_request_download(
         return Err(FileDownloadError::FileNotFound);
     };
 
+    if file.is_expired() {
+        return Err(FileDownloadError::FileExpired);
+    }
+
     let download = create_download(pool, &file.id).await;
 
     if let Err(e) = download {
@@ -129,7 +133,7 @@ pub async fn handle_file_request_download(
 pub async fn handle_file_download(
     state: &mut State,
     download_id: Uuid,
-) -> Result<Vec<u8>, FileDownloadError> {
+) -> Result<impl Iterator<Item = u8> + use<>, FileDownloadError> {
     let pool = state.get_pool();
 
     let Ok(download) = get_download_by_id(pool, &download_id).await else {
@@ -144,20 +148,17 @@ pub async fn handle_file_download(
         return Err(FileDownloadError::FileNotFound);
     };
 
-    if file.is_expired() {
-        return Err(FileDownloadError::FileExpired);
-    }
-
     let file_path = file.get_path();
     let Ok(mut io_file) = std::fs::File::open(file_path) else {
         return Err(FileDownloadError::FileOpenError);
     };
 
+    // TODO (alec): Don't read the whole file into memory
     let mut buffer = Vec::with_capacity(file.size as usize);
     if io_file.read_to_end(&mut buffer).is_err() {
         return Err(FileDownloadError::FileReadError);
     }
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage
-    Ok(vec![])
+    Ok(buffer.into_iter())
 }

@@ -28,6 +28,9 @@ impl File {
         let is_date_expired = Utc::now() > self.expires_at;
         let is_past_download_capacity = self.max_downloads <= self.download_count;
 
+        println!(" {is_date_expired} {}", self.expires_at);
+        println!("{} {}", self.max_downloads, self.download_count);
+
         is_date_expired || is_past_download_capacity
     }
 
@@ -49,7 +52,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               file.created_at,
               file.expires_at,
               file.max_downloads,
-              coalesce(count(download.id), 0)::int download_count
+              count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
@@ -73,11 +76,10 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               file.created_at,
               file.expires_at,
               file.max_downloads,
-              coalesce(count(download.id), 0) as download_count
+              count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
-            where file.expires_at < now()
             group by file.id
             having file.max_downloads < count(download.id)
         "#
@@ -99,11 +101,12 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               file.created_at,
               file.expires_at,
               file.max_downloads,
-              count(download.id)
+              count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
-            where file.id = $1
+            group by file.id
+            having file.id = $1
             limit 1
         "#,
         id

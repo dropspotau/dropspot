@@ -82,6 +82,7 @@ async fn main() -> Result<(), ()> {
         )
         .await
         else {
+            eprintln!("EEEEE");
             continue;
         };
 
@@ -89,18 +90,21 @@ async fn main() -> Result<(), ()> {
     }
 
     // Simulate a download
-    let Ok(download) = handle_file_request_download(&mut state, first_file_id.unwrap()).await
-    else {
-        eprintln!("Failed to download file");
-        return Err(());
+    let download = match handle_file_request_download(&mut state, first_file_id.unwrap()).await {
+        Ok(download) => download,
+        Err(e) => {
+            eprintln!("Failed to request file download: {e}");
+            return Err(());
+        }
     };
 
-    let Ok(file_stream) = handle_file_download(&mut state, download.id).await else {
-        eprintln!("Failed to download file");
-        return Err(());
+    let file_stream = match handle_file_download(&mut state, download.id).await {
+        Ok(file_stream) => file_stream,
+        Err(e) => {
+            eprintln!("Failed to download file: {e}");
+            return Err(());
+        }
     };
-
-    println!("File stream: {file_stream:?}");
 
     watch_for_files(state).await;
     Ok(())
