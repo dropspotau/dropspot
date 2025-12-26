@@ -2,8 +2,9 @@ mod db;
 mod handlers;
 mod state;
 
-use std::{thread::sleep, time::Duration};
+use std::{io::Read, thread::sleep, time::Duration};
 
+use clap::Parser;
 use state::State;
 use uuid::Uuid;
 
@@ -52,9 +53,30 @@ async fn watch_for_files(state: State) {
     }
 }
 
+#[derive(Parser)]
+#[command(name = "dropspot")]
+#[command(about = "A simple file sharing CLI")]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Parser)]
+enum Commands {
+    #[command(about = "Upload a file")]
+    Upload { file: String },
+    #[command(about = "Download a file")]
+    Download {
+        id: String,
+    },
+    #[command(about = "Watch for files")]
+    Watch {},
+}
+
 #[tokio::main]
 async fn main() -> Result<(), ()> {
-    println!("Welcome to DropSpot!");
+    let cli = Cli::parse();
+
     let Ok(pool) = db::connect().await else {
         return Err(());
     };
@@ -65,47 +87,70 @@ async fn main() -> Result<(), ()> {
     };
 
     let mut state = State::new(pool);
-    let mut first_file_id: Option<Uuid> = None;
 
-    for i in 0..3 {
-        // Simulate generating an upload URL
-        let Ok(upload) = handle_file_request_upload(&mut state).await else {
-            continue;
-        };
+    match &cli.command {
+        Commands::Upload { file } => {
+            // Simulate generating an upload URL
+            let Ok(upload) = handle_file_request_upload(&mut state).await else {
+                return Err(());
+            };
 
-        // Simulate uploading a file to that URL
-        let Ok(file) = handle_file_upload(
-            &mut state,
-            &upload.id,
-            format!("file_{i}"),
-            format!("This is file {i}").into(),
-        )
-        .await
-        else {
-            eprintln!("EEEEE");
-            continue;
-        };
+            let Ok(mut file) = std::fs::File::open(file) else {
+                eprintln!("Failed to open file");
+                return Err(());
+            };
 
-        first_file_id = Some(file.id.clone());
+            let mut buffer = Vec::new();
+            if let Err(e) = file.read_to_end(&mut buffer) {
+                eprintln!("Failed to read file: {e}");
+            }
+
+            // Simulate uploading a file to that URL
+            let Ok(file) = handle_file_upload(
+                &mut state,
+                &upload.id,
+                format!("file_{}", upload.id),
+                buffer,
+            )
+            .await
+            else {
+                eprintln!("Failed to upload file");
+                return Err(());
+            };
+
+            println!("Uploaded: {}", file.id);
+        }
+        Commands::Download { id } => {
+            let Ok(id) = Uuid::parse_str(id) else {
+                eprintln!("Invalid UUID");
+                return Err(());
+            };
+
+            // Simulate a download
+            let download = match handle_file_request_download(&mut state, id).await {
+                Ok(download) => download,
+                Err(e) => {
+                    eprintln!("Failed to request file download: {e}");
+                    return Err(());
+                }
+            };
+
+            let file_stream = match handle_file_download(&mut state, download.id).await {
+                Ok(file_stream) => file_stream,
+                Err(e) => {
+                    eprintln!("Failed to download file: {e}");
+                    return Err(());
+                }
+            };
+
+            for bytes in file_stream {
+                println!("{bytes:?}");
+            }
+        }
+        Commands::Watch {} => {
+            watch_for_files(state).await;
+        }
     }
 
-    // Simulate a download
-    let download = match handle_file_request_download(&mut state, first_file_id.unwrap()).await {
-        Ok(download) => download,
-        Err(e) => {
-            eprintln!("Failed to request file download: {e}");
-            return Err(());
-        }
-    };
-
-    let file_stream = match handle_file_download(&mut state, download.id).await {
-        Ok(file_stream) => file_stream,
-        Err(e) => {
-            eprintln!("Failed to download file: {e}");
-            return Err(());
-        }
-    };
-
-    watch_for_files(state).await;
     Ok(())
 }
