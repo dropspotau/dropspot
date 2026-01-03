@@ -1,57 +1,22 @@
 mod db;
 mod handlers;
 mod state;
+mod watch;
 
-use std::{io::Read, thread::sleep, time::Duration};
+use std::io::Read;
 
 use clap::Parser;
 use state::State;
 use uuid::Uuid;
+use watch::watch_for_files;
 
 use crate::{
-    db::{get_downloads, get_files, get_uploads, run_migrations},
+    db::run_migrations,
     handlers::{
         handle_file_download, handle_file_request_download, handle_file_request_upload,
         handle_file_upload,
     },
 };
-
-async fn watch_for_files(state: State) {
-    let pool = state.get_pool();
-
-    loop {
-        println!("Watching for files...");
-        sleep(Duration::new(1, 0));
-
-        let uploads = get_uploads(pool).await;
-
-        let expired_keys = uploads
-            .unwrap()
-            .iter()
-            .filter(|upload| upload.is_expired())
-            .map(|upload| upload.id)
-            .collect::<Vec<_>>();
-
-        println!("Removed uploads: {expired_keys:?}");
-
-        let files = get_files(pool).await;
-
-        if let Err(e) = files {
-            eprintln!("Failed to get files: {e}");
-            continue;
-        };
-
-        let downloads = get_downloads(pool).await;
-
-        if let Err(e) = downloads {
-            eprintln!("Failed to get downloads: {e}");
-            continue;
-        };
-
-        println!("This many files: {}", files.unwrap().len());
-        println!("This many downloads: {}", downloads.unwrap().len());
-    }
-}
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
@@ -66,9 +31,7 @@ enum Commands {
     #[command(about = "Upload a file")]
     Upload { file: String },
     #[command(about = "Download a file")]
-    Download {
-        id: String,
-    },
+    Download { id: String },
     #[command(about = "Watch for files")]
     Watch {},
 }
