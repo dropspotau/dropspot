@@ -12,6 +12,7 @@ use crate::{
         get_download_by_id, get_file_by_id, get_upload_by_id,
     },
     state::State,
+    validation::validate_file
 };
 
 #[derive(Error, Debug)]

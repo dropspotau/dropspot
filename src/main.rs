@@ -1,6 +1,7 @@
 mod db;
 mod handlers;
 mod state;
+mod validation;
 mod watch;
 
 use std::io::Read;
@@ -16,6 +17,7 @@ use crate::{
         handle_file_download, handle_file_request_download, handle_file_request_upload,
         handle_file_upload,
     },
+    validation::validate_file,
 };
 
 #[derive(Parser)]
@@ -54,12 +56,16 @@ async fn main() -> Result<(), ()> {
     match &cli.command {
         Commands::Upload { file } => {
             // Simulate generating an upload URL
-            let Ok(upload) = handle_file_request_upload(&mut state).await else {
-                return Err(());
-            };
+            let validation = validate_file(file);
 
-            let Ok(mut file) = std::fs::File::open(file) else {
-                eprintln!("Failed to open file");
+            if let Err(e) = validation {
+                eprintln!("Failed to validate file: {e}");
+                return Err(());
+            }
+
+            let mut file = validation.unwrap();
+
+            let Ok(upload) = handle_file_request_upload(&mut state).await else {
                 return Err(());
             };
 
