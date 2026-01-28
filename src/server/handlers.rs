@@ -12,7 +12,6 @@ use crate::{
         get_download_by_id, get_file_by_id, get_upload_by_id,
     },
     state::State,
-    validation::validate_file
 };
 
 #[derive(Error, Debug)]
@@ -57,10 +56,12 @@ pub enum FileDownloadError {
     FileReadError,
 }
 
+// TODO(alec): Make this into an Axum view
 pub async fn handle_file_request_upload(state: &mut State) -> Result<Upload, sqlx::Error> {
     create_upload(state.get_pool()).await
 }
 
+// TODO(alec): Make this into an Axum view
 pub async fn handle_file_upload(
     state: &mut State,
     upload_id: &Uuid,
@@ -108,6 +109,7 @@ pub async fn handle_file_upload(
     Ok(file)
 }
 
+// TODO(alec): Make this into an Axum view
 pub async fn handle_file_request_download(
     state: &mut State,
     file_id: Uuid,
@@ -131,6 +133,7 @@ pub async fn handle_file_request_download(
     Ok(download.unwrap())
 }
 
+// TODO(alec): Make this into an Axum view
 pub async fn handle_file_download(
     state: &mut State,
     download_id: Uuid,

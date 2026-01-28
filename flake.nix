@@ -27,6 +27,7 @@
           rust-analyzer
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
           sqlx-cli
+          bacon # File watching
         ];
 
         editorDeps = with pkgs; [

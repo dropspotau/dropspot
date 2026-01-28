@@ -1,4 +1,4 @@
-use sqlx::{PgPool, migrate};
+use sqlx::PgPool;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -29,12 +29,4 @@ pub async fn connect() -> Result<PgPool, DatabaseError> {
     }
 
     Ok(db.unwrap())
-}
-
-pub async fn run_migrations(pool: &PgPool) -> Result<(), DatabaseError> {
-    const MIGRATION_PATH: &'static str = "./migrations";
-    migrate!("./migrations")
-        .run(pool)
-        .await
-        .map_err(|e| DatabaseError::MigrationError(e))
 }

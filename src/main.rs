@@ -1,8 +1,8 @@
 mod db;
 mod handlers;
 mod state;
-mod validation;
 mod watch;
+mod lib;
 
 use std::io::Read;
 
@@ -12,12 +12,11 @@ use uuid::Uuid;
 use watch::watch_for_files;
 
 use crate::{
-    db::run_migrations,
     handlers::{
         handle_file_download, handle_file_request_download, handle_file_request_upload,
         handle_file_upload,
     },
-    validation::validate_file,
+    lib::{upload::{self, upload}, validation::validate_file}
 };
 
 #[derive(Parser)]
@@ -46,11 +45,6 @@ async fn main() -> Result<(), ()> {
         return Err(());
     };
 
-    if let Err(e) = run_migrations(&pool).await {
-        eprintln!("Failed to run migrations: {e}");
-        return Err(());
-    };
-
     let mut state = State::new(pool);
 
     match &cli.command {
@@ -64,30 +58,11 @@ async fn main() -> Result<(), ()> {
             }
 
             let mut file = validation.unwrap();
-
-            let Ok(upload) = handle_file_request_upload(&mut state).await else {
-                return Err(());
-            };
-
             let mut buffer = Vec::new();
-            if let Err(e) = file.read_to_end(&mut buffer) {
-                eprintln!("Failed to read file: {e}");
-            }
+            let contents = file.read_to_end(&mut buffer);
 
-            // Simulate uploading a file to that URL
-            let Ok(file) = handle_file_upload(
-                &mut state,
-                &upload.id,
-                format!("file_{}", upload.id),
-                buffer,
-            )
-            .await
-            else {
-                eprintln!("Failed to upload file");
-                return Err(());
-            };
+            upload(file, contents);
 
-            println!("Uploaded: {}", file.id);
         }
         Commands::Download { id } => {
             let Ok(id) = Uuid::parse_str(id) else {
