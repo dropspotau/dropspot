@@ -6,7 +6,7 @@ use std::{
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::{
+use super::{
     db::{
         Download, File, Upload, create_download, create_file, create_upload, delete_files,
         get_download_by_id, get_file_by_id, get_upload_by_id,

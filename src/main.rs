@@ -1,22 +1,20 @@
-mod db;
-mod handlers;
-mod state;
-mod watch;
 mod lib;
+mod server;
+mod watch;
 
 use std::io::Read;
 
 use clap::Parser;
-use state::State;
 use uuid::Uuid;
 use watch::watch_for_files;
 
+use crate::server::state::State;
 use crate::{
-    handlers::{
+    lib::{upload::upload, validation::validate_file},
+    server::handlers::{
         handle_file_download, handle_file_request_download, handle_file_request_upload,
         handle_file_upload,
     },
-    lib::{upload::{self, upload}, validation::validate_file}
 };
 
 #[derive(Parser)]
@@ -62,7 +60,6 @@ async fn main() -> Result<(), ()> {
             let contents = file.read_to_end(&mut buffer);
 
             upload(file, contents);
-
         }
         Commands::Download { id } => {
             let Ok(id) = Uuid::parse_str(id) else {

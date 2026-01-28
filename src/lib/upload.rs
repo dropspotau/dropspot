@@ -1,4 +1,4 @@
-use crate::db::File;
+use crate::server::db::{File, Upload};
 
 use super::constants::ENDPOINT;
 
@@ -8,14 +8,16 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<File, reqwest::Er
     let upload = reqwest::Client::new()
         .post(format!("{ENDPOINT}/upload"))
         .send()
-        .await?;
+        .await?
+        .json::<Upload>()?;
 
     let size = contents.len();
 
     let file = reqwest::Client::new()
         .post(format!("{ENDPOINT}/file"))
         .send()
-        .await?;
+        .await?
+        .json::<File>()?;
 
     Ok(file)
 }
