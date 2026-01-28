@@ -1,15 +1,16 @@
 services:
   db:
-    image: postgres:17
+    image: postgres:18
     restart: always
+    shm_size: 1gb
     environment:
       POSTGRES_USER: dropspot
       POSTGRES_PASSWORD: dropspot
       POSTGRES_DB: dropspot
     ports:
       - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
+    # volumes:
+    #   - db_data:/var/lib/postgresql/data
 
 volumes:
   db_data:
