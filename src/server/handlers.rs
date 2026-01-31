@@ -3,6 +3,8 @@ use std::{
     path::PathBuf,
 };
 
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -56,9 +58,40 @@ pub enum FileDownloadError {
     FileReadError,
 }
 
+
+#[derive(Serialize)]
+pub struct ApiUpload {
+    id: Uuid
+}
+
+impl From<Upload> for ApiUpload {
+    fn from(upload: Upload) -> Self {
+        Self {
+            id: upload.id
+        }
+    }
+}
+
 // TODO(alec): Make this into an Axum view
-pub async fn handle_file_request_upload(state: &mut State) -> Result<Upload, sqlx::Error> {
-    create_upload(state.get_pool()).await
+pub async fn handle_file_request_upload(state: &mut State) -> Result<ApiUpload, sqlx::Error> {
+    create_upload(state.get_pool()).await.map(Into::into)
+}
+
+#[derive(Serialize)]
+pub struct ApiFile {
+    id: Uuid,
+    name: String,
+    size: i64,
+}
+
+impl From<File> for ApiFile {
+    fn from(file: File) -> Self {
+        Self {
+            id: file.id,
+            name: file.name,
+            size: file.size,
+        }
+    }
 }
 
 // TODO(alec): Make this into an Axum view
@@ -67,7 +100,7 @@ pub async fn handle_file_upload(
     upload_id: &Uuid,
     file_name: String,
     contents: Vec<u8>,
-) -> Result<File, FileUploadError> {
+) -> Result<ApiFile, FileUploadError> {
     let pool = state.get_pool();
 
     let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
@@ -106,14 +139,31 @@ pub async fn handle_file_upload(
         return Err(FileUploadError::FileWriteError);
     }
 
-    Ok(file)
+    Ok(file.into())
+}
+
+#[derive(Serialize)]
+pub struct ApiDownload {
+    id: Uuid,
+    url: String,
+    expires_at: DateTime<Utc>,
+}
+
+impl From<Download> for ApiDownload {
+    fn from(download: Download) -> Self {
+        Self {
+            id: download.id,
+            url: download.url,
+            expires_at: download.expires_at,
+        }
+    }
 }
 
 // TODO(alec): Make this into an Axum view
 pub async fn handle_file_request_download(
     state: &mut State,
     file_id: Uuid,
-) -> Result<Download, FileDownloadError> {
+) -> Result<ApiDownload, FileDownloadError> {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
@@ -130,7 +180,7 @@ pub async fn handle_file_request_download(
         return Err(FileDownloadError::DownloadCreateError(e));
     };
 
-    Ok(download.unwrap())
+    Ok(download.unwrap().into())
 }
 
 // TODO(alec): Make this into an Axum view
