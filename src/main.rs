@@ -8,6 +8,7 @@ use clap::Parser;
 use uuid::Uuid;
 use watch::watch_for_files;
 
+use crate::server::db;
 use crate::server::state::State;
 use crate::{
     lib::{upload::upload, validation::validate_file},
@@ -43,9 +44,9 @@ async fn main() -> Result<(), ()> {
     let mut state = State::new(pool);
 
     match &cli.command {
-        Commands::Upload { file } => {
+        Commands::Upload { file: file_name } => {
             // Simulate generating an upload URL
-            let validation = validate_file(file);
+            let validation = validate_file(file_name);
 
             if let Err(e) = validation {
                 eprintln!("Failed to validate file: {e}");
@@ -54,9 +55,9 @@ async fn main() -> Result<(), ()> {
 
             let mut file = validation.unwrap();
             let mut buffer = Vec::new();
-            let contents = file.read_to_end(&mut buffer);
+            let contents = file.read_to_end(&mut buffer).unwrap();
 
-            upload(file, contents);
+            upload(file_name.clone(), buffer);
         }
         Commands::Download { id } => {
             let Ok(id) = Uuid::parse_str(id) else {

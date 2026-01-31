@@ -4,7 +4,7 @@ use std::{
 };
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -58,18 +58,21 @@ pub enum FileDownloadError {
     FileReadError,
 }
 
-
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiUpload {
-    id: Uuid
+    pub id: Uuid,
 }
 
 impl From<Upload> for ApiUpload {
     fn from(upload: Upload) -> Self {
-        Self {
-            id: upload.id
-        }
+        Self { id: upload.id }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateUploadBody {
+    pub name: String,
+    pub size: usize,
 }
 
 // TODO(alec): Make this into an Axum view
@@ -77,11 +80,11 @@ pub async fn handle_file_request_upload(state: &mut State) -> Result<ApiUpload, 
     create_upload(state.get_pool()).await.map(Into::into)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiFile {
-    id: Uuid,
-    name: String,
-    size: i64,
+    pub id: Uuid,
+    pub name: String,
+    pub size: i64,
 }
 
 impl From<File> for ApiFile {
@@ -142,18 +145,16 @@ pub async fn handle_file_upload(
     Ok(file.into())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ApiDownload {
-    id: Uuid,
-    url: String,
-    expires_at: DateTime<Utc>,
+    pub id: Uuid,
+    pub expires_at: DateTime<Utc>,
 }
 
 impl From<Download> for ApiDownload {
     fn from(download: Download) -> Self {
         Self {
             id: download.id,
-            url: download.url,
             expires_at: download.expires_at,
         }
     }

@@ -1,7 +1,7 @@
 use std::{thread::sleep, time::Duration};
 
-use crate::db::{get_downloads, get_files, get_uploads};
-use crate::state::State;
+use super::State;
+use super::db::{get_downloads, get_files, get_uploads};
 
 pub async fn watch_for_files(state: State) {
     let pool = state.get_pool();
