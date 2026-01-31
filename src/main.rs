@@ -11,10 +11,7 @@ use watch::watch_for_files;
 use crate::server::state::State;
 use crate::{
     lib::{upload::upload, validation::validate_file},
-    server::handlers::{
-        handle_file_download, handle_file_request_download, handle_file_request_upload,
-        handle_file_upload,
-    },
+    server::handlers::{handle_file_download, handle_file_request_download},
 };
 
 #[derive(Parser)]

@@ -1,3 +1,8 @@
+mod connect;
+mod download;
+mod file;
+mod upload;
+
 pub use connect::connect;
 pub use download::{Download, create_download, get_download_by_id, get_downloads};
 pub use file::{File, create_file, delete_files, get_file_by_id, get_files};
