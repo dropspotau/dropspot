@@ -1,10 +1,10 @@
 use sqlx::PgPool;
 
-pub struct State {
+pub struct AppState {
     pool: PgPool,
 }
 
-impl State {
+impl AppState {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }

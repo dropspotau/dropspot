@@ -1,9 +1,9 @@
 use std::{thread::sleep, time::Duration};
 
-use super::State;
+use super::AppState;
 use super::db::{get_downloads, get_files, get_uploads};
 
-pub async fn watch_for_files(state: State) {
+pub async fn watch_for_files(state: AppState) {
     let pool = state.get_pool();
 
     loop {

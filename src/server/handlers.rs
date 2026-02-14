@@ -1,8 +1,10 @@
 use std::{
     io::{Read, Write},
     path::PathBuf,
+    sync::Arc,
 };
 
+use axum::extract::{Json, Path, Query, State};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -13,7 +15,7 @@ use super::{
         Download, File, Upload, create_download, create_file, create_upload, delete_files,
         get_download_by_id, get_file_by_id, get_upload_by_id,
     },
-    state::State,
+    state::AppState,
 };
 
 #[derive(Error, Debug)]
@@ -76,8 +78,16 @@ pub struct CreateUploadBody {
 }
 
 // TODO(alec): Make this into an Axum view
-pub async fn handle_file_request_upload(state: &mut State) -> Result<ApiUpload, sqlx::Error> {
-    create_upload(state.get_pool()).await.map(Into::into)
+pub async fn handle_file_request_upload(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<ApiUpload>, sqlx::Error> {
+    let upload = create_upload(state.get_pool()).await.map(Into::into);
+
+    if let Err(e) = upload {
+        return Err(e);
+    }
+
+    return Ok(Json(upload.unwrap()));
 }
 
 #[derive(Serialize, Deserialize)]
@@ -97,26 +107,31 @@ impl From<File> for ApiFile {
     }
 }
 
-// TODO(alec): Make this into an Axum view
-pub async fn handle_file_upload(
-    state: &mut State,
-    upload_id: &Uuid,
+#[derive(Deserialize)]
+struct FileUploadPayload {
     file_name: String,
     contents: Vec<u8>,
-) -> Result<ApiFile, FileUploadError> {
+}
+
+// TODO(alec): Make this into an Axum view
+pub async fn handle_file_upload(
+    State(state): State<Arc<AppState>>,
+    Path(upload_id): Path<Uuid>,
+    Json(payload): Json<FileUploadPayload>,
+) -> Result<Json<ApiFile>, FileUploadError> {
     let pool = state.get_pool();
 
     let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
         return Err(FileUploadError::UploadNotFound);
     };
 
-    let path = PathBuf::from(&file_name);
-    let size = contents.len();
+    let path = PathBuf::from(&payload.file_name);
+    let size = payload.contents.len();
 
     let pool = state.get_pool();
     let file = create_file(
         pool,
-        file_name,
+        payload.file_name,
         &upload.id,
         path.to_str().unwrap().to_owned(),
         size as i64,
@@ -133,7 +148,7 @@ pub async fn handle_file_upload(
         return Err(FileUploadError::FileCreateError);
     };
 
-    if io_file.write(&contents).is_err() {
+    if io_file.write(&payload.contents).is_err() {
         // Don't save the file
         if let Err(e) = delete_files(pool, &[file.id]).await {
             return Err(FileUploadError::FileDatabaseCreateError(e));
@@ -142,7 +157,7 @@ pub async fn handle_file_upload(
         return Err(FileUploadError::FileWriteError);
     }
 
-    Ok(file.into())
+    Ok(Json(file.into()))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -162,9 +177,9 @@ impl From<Download> for ApiDownload {
 
 // TODO(alec): Make this into an Axum view
 pub async fn handle_file_request_download(
-    state: &mut State,
-    file_id: Uuid,
-) -> Result<ApiDownload, FileDownloadError> {
+    State(state): State<Arc<AppState>>,
+    Path(file_id): Path<Uuid>,
+) -> Result<Json<ApiDownload>, FileDownloadError> {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
@@ -181,13 +196,13 @@ pub async fn handle_file_request_download(
         return Err(FileDownloadError::DownloadCreateError(e));
     };
 
-    Ok(download.unwrap().into())
+    Ok(Json(download.unwrap().into()))
 }
 
 // TODO(alec): Make this into an Axum view
 pub async fn handle_file_download(
-    state: &mut State,
-    download_id: Uuid,
+    State(state): State<Arc<AppState>>,
+    Path(download_id): Path<Uuid>,
 ) -> Result<impl Iterator<Item = u8> + use<>, FileDownloadError> {
     let pool = state.get_pool();
 
