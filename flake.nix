@@ -22,11 +22,9 @@
           };
         };
 
+        rust = with pkgs; (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml);
         rustDeps = with pkgs; [
-          # rustup
-          # cargo
-          # rust-analyzer
-          (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+          rust
           sqlx-cli
           bacon # File watching
         ];
@@ -50,6 +48,9 @@
             # For later when I add Postgres support
             PGHOST = "/tmp";
           };
+
+          # TODO(alec): How to get RUST_SRC_PATH from the `rust` package we use from rust-overlay
+          RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
         };
       }
     );

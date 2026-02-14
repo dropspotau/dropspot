@@ -55,9 +55,15 @@ async fn main() -> Result<(), ()> {
 
             let mut file = validation.unwrap();
             let mut buffer = Vec::new();
-            let contents = file.read_to_end(&mut buffer).unwrap();
+            if let Err(e) = file.read_to_end(&mut buffer) {
+                eprintln!("Failed to read file: {e}");
+                return Err(());
+            }
 
-            upload(file_name.clone(), buffer);
+            if let Err(e) = upload(file_name.clone(), buffer).await {
+                eprintln!("Failed to upload file: {e}");
+                return Err(());
+            }
         }
         Commands::Download { id } => {
             let Ok(id) = Uuid::parse_str(id) else {

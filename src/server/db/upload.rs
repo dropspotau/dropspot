@@ -9,18 +9,6 @@ pub struct Upload {
 }
 
 impl Upload {
-    pub fn generate() -> Self {
-        let id = Uuid::new_v4();
-        let created_at = Utc::now();
-        let expires_at = created_at + Duration::seconds(3);
-
-        Self {
-            id,
-            created_at,
-            expires_at,
-        }
-    }
-
     pub fn is_expired(&self) -> bool {
         Utc::now() > self.expires_at
     }
