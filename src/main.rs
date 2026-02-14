@@ -1,4 +1,4 @@
-mod lib;
+mod core;
 mod server;
 mod watch;
 
@@ -11,7 +11,7 @@ use watch::watch_for_files;
 use crate::server::db;
 use crate::server::state::State;
 use crate::{
-    lib::{upload::upload, validation::validate_file},
+    core::{upload::upload, validation::validate_file},
     server::handlers::{handle_file_download, handle_file_request_download},
 };
 
