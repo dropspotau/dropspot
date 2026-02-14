@@ -148,7 +148,8 @@ pub async fn create_file(
 }
 
 pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx::Error> {
-    let ids = sqlx::query!(
+    let ids = sqlx::query_as!(
+        FileId,
         r#"
             delete from file
             where id = any($1)
@@ -159,5 +160,5 @@ pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx
     .fetch_all(pool)
     .await?;
 
-    Ok(ids.iter().map(|row| row.id).collect())
+    Ok(ids.into_iter().map(|row| row.id).collect())
 }
