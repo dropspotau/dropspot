@@ -23,8 +23,9 @@
         };
 
         rustDeps = with pkgs; [
-          rustup
-          rust-analyzer
+          # rustup
+          # cargo
+          # rust-analyzer
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
           sqlx-cli
           bacon # File watching
