@@ -110,11 +110,12 @@ pub async fn handle_file_upload(
     State(state): State<Arc<AppState>>,
     Path(upload_id): Path<Uuid>,
     Json(payload): Json<FileUploadPayload>,
-) -> Result<Json<ApiFile>, Json<FileUploadError>> {
+) -> Response {
     let pool = state.get_pool();
 
     let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
-        return Err(Json(FileUploadError::UploadNotFound));
+        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        return api_error.into_response();
     };
 
     let path = PathBuf::from(&payload.file_name);
@@ -131,23 +132,29 @@ pub async fn handle_file_upload(
     .await;
 
     if let Err(e) = file {
-        return Err(Json(FileUploadError::FileDatabaseCreateError(e)));
+        let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+        return api_error.into_response();
     }
 
     let file = file.unwrap();
 
+    // TODO(alec): Create file providers to upload to AWS, GCP etc.
     let Ok(mut io_file) = std::fs::File::create(file.get_path()) else {
-        return Err(Json(FileUploadError::FileCreateError));
+        let api_error: ApiError = FileUploadError::FileCreateError.into();
+        return api_error.into_response();
     };
 
     if io_file.write(&payload.contents).is_err() {
         // Don't save the file
         if let Err(e) = delete_files(pool, &[file.id]).await {
-            return Err(Json(FileUploadError::FileDatabaseCreateError(e)));
+            let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+            return api_error.into_response();
         };
 
-        return Err(Json(FileUploadError::FileWriteError));
+        let api_error: ApiError = FileUploadError::FileWriteError.into();
+        return api_error.into_response();
     }
 
-    Ok(Json(file.into()))
+    let api_file: ApiFile = file.into();
+    Json(api_file).into_response()
 }
