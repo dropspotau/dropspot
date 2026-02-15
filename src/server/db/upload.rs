@@ -1,6 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{PgConnection, PgPool};
+use sqlx::PgPool;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
@@ -32,13 +32,13 @@ pub async fn get_uploads(pool: &PgPool) -> Result<Vec<Upload>, sqlx::Error> {
     .await
 }
 
-pub async fn get_upload_by_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Error> {
+pub async fn get_upload_by_file_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Error> {
     sqlx::query_as!(
         Upload,
         r#"
             select id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
             from upload
-            where id = $1
+            where file_id = $1
             limit 1
         "#,
         id
@@ -47,7 +47,7 @@ pub async fn get_upload_by_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::
     .await
 }
 
-pub async fn create_upload(pool: &mut PgConnection, file_id: &Uuid) -> Result<Upload, sqlx::Error> {
+pub async fn create_upload(pool: &PgPool, file_id: &Uuid) -> Result<Upload, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
 
@@ -66,7 +66,7 @@ pub async fn create_upload(pool: &mut PgConnection, file_id: &Uuid) -> Result<Up
     .await
 }
 
-pub async fn start_upload(pool: &mut PgConnection, id: &Uuid) -> Result<Upload, sqlx::Error> {
+pub async fn start_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Error> {
     sqlx::query_as!(
         Upload,
         r#"
@@ -81,7 +81,7 @@ pub async fn start_upload(pool: &mut PgConnection, id: &Uuid) -> Result<Upload, 
     .await
 }
 
-pub async fn finish_upload(pool: &mut PgConnection, id: &Uuid) -> Result<Upload, sqlx::Error> {
+pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Error> {
     sqlx::query_as!(
         Upload,
         r#"

@@ -12,7 +12,7 @@ use thiserror::Error;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use uuid::Uuid;
 
-use crate::server::db::{finish_upload, get_file_by_id, start_upload};
+use crate::server::db::{finish_upload, get_file_by_id, get_upload_by_file_id, start_upload};
 
 use super::super::{
     db::{File, create_file, delete_files},
@@ -100,19 +100,7 @@ pub async fn handle_file_upload(
         api_error.status = StatusCode::NOT_FOUND;
         return api_error.into_response();
     };
-
-    let Ok(mut transaction) = pool.begin().await else {
-        let api_error = ApiError {
-            message: "Failed to start transaction".to_string(),
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-        };
-        return api_error.into_response();
-    };
-
-    if let Err(e) = start_upload(&mut transaction, &file_id).await {
-        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
-        return api_error.into_response();
-    };
+    println!("Got file {}", file.id);
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
     let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
@@ -123,7 +111,21 @@ pub async fn handle_file_upload(
     let mut reader_stream = body.into_data_stream();
     let mut writer = BufWriter::new(io_file);
 
+    let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
+        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        return api_error.into_response();
+    };
+
+    println!("Starting upload");
+    if let Err(e) = start_upload(pool, &upload.id).await {
+        println!("Failed to start upload: {e}");
+        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        return api_error.into_response();
+    };
+
+    println!("Streaming upload");
     while let Some(bytes) = reader_stream.next().await {
+        println!("{bytes:?}");
         if bytes.is_err() {
             if let Err(e) = delete_files(pool, &[file.id]).await {
                 let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
@@ -147,12 +149,8 @@ pub async fn handle_file_upload(
         };
     }
 
-    if let Err(e) = finish_upload(&mut transaction, &file_id).await {
-        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
-        return api_error.into_response();
-    };
-
-    if let Err(e) = transaction.commit().await {
+    println!("Finishing upload");
+    if let Err(e) = finish_upload(pool, &upload.id).await {
         let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
         return api_error.into_response();
     };

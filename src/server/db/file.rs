@@ -123,8 +123,6 @@ pub async fn create_file(
     let expires_at = Utc::now() + Duration::minutes(3);
     let max_downloads = 1;
 
-    let mut transaction = pool.begin().await?;
-
     let id = sqlx::query_as!(
         Id,
         r#"
@@ -139,12 +137,10 @@ pub async fn create_file(
         expires_at,
         max_downloads
     )
-    .fetch_one(&mut *transaction)
+    .fetch_one(pool)
     .await?;
 
-    create_upload(&mut *transaction, &id.id).await?;
-    transaction.commit().await?;
-
+    create_upload(pool, &id.id).await?;
     get_file_by_id(pool, &id.id).await
 }
 

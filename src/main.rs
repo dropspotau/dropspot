@@ -114,8 +114,8 @@ async fn main() -> Result<(), ()> {
                 .route("/download/{download_id}", get(handle_file_download))
                 .with_state(shared_state);
 
-            println!("Listening on port 3000");
-            let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
+            println!("Listening on port 8000");
+            let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
             if let Err(e) = axum::serve(listener, app).await {
                 eprintln!("Server run error: {e}");
             }
