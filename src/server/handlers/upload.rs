@@ -4,7 +4,10 @@ use std::{
     sync::Arc,
 };
 
-use axum::extract::{Json, Path, State};
+use axum::{
+    extract::{Json, Path, State},
+    response::{IntoResponse, Response},
+};
 use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -42,6 +45,7 @@ impl Into<ApiError> for FileUploadError {
     fn into(self) -> ApiError {
         ApiError {
             message: self.to_string(),
+            status: StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -64,16 +68,18 @@ pub struct CreateUploadBody {
 }
 
 // TODO(alec): Make this into an Axum view
-pub async fn handle_file_request_upload(
-    State(state): State<Arc<AppState>>,
-) -> Result<Json<ApiUpload>, Json<ApiError>> {
-    let upload = create_upload(state.get_pool()).await.map(Into::into);
+pub async fn handle_file_request_upload(State(state): State<Arc<AppState>>) -> Response {
+    let upload = create_upload(state.get_pool())
+        .await
+        .map(|upload| ApiUpload::from(upload))
+        .map_err(FileUploadError::FileDatabaseCreateError);
 
     if let Err(e) = upload {
-        return Err(Json(FileUploadError::FileDatabaseCreateError(e).into()));
+        let api_error: ApiError = e.into();
+        return api_error.into_response();
     }
 
-    return Ok(Json(upload.unwrap()));
+    return Json(upload.unwrap()).into_response();
 }
 
 #[derive(Serialize, Deserialize)]
