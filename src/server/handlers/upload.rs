@@ -1,4 +1,4 @@
-use std::{path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     body::Body,
@@ -12,8 +12,10 @@ use thiserror::Error;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use uuid::Uuid;
 
+use crate::server::db::{finish_upload, get_file_by_id, start_upload};
+
 use super::super::{
-    db::{File, Upload, create_file, create_upload, delete_files, get_upload_by_id},
+    db::{File, create_file, delete_files},
     state::AppState,
     types::ApiError,
 };
@@ -22,6 +24,9 @@ use super::super::{
 pub enum FileUploadError {
     #[error("Upload not found")]
     UploadNotFound,
+
+    #[error("Could not record upload changes")]
+    UploadDatabaseError(sqlx::Error),
 
     #[error("Error writing file to database: {0}")]
     FileDatabaseCreateError(sqlx::Error),
@@ -43,39 +48,27 @@ impl Into<ApiError> for FileUploadError {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ApiUpload {
-    pub id: Uuid,
-}
-
-impl From<Upload> for ApiUpload {
-    fn from(upload: Upload) -> Self {
-        Self { id: upload.id }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct CreateUploadBody {
+pub struct CreateFileBody {
     pub name: String,
-    pub size: usize,
+    pub size: i64,
 }
 
-// TODO(alec): Make this into an Axum view
 pub async fn handle_file_request_upload(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<CreateUploadBody>,
+    Json(payload): Json<CreateFileBody>,
 ) -> Response {
-    let upload = create_upload(state.get_pool(), payload.name)
+    let file = create_file(state.get_pool(), &payload.name, &payload.name, payload.size)
         .await
-        .map(|upload| ApiUpload::from(upload))
+        .map(ApiFile::from)
         .map_err(FileUploadError::FileDatabaseCreateError);
 
-    if let Err(e) = upload {
+    if let Err(e) = file {
         let api_error: ApiError = e.into();
         return api_error.into_response();
     }
 
     println!("Uploaded");
-    return Json(upload.unwrap()).into_response();
+    return Json(file.unwrap()).into_response();
 }
 
 #[derive(Serialize, Deserialize)]
@@ -95,40 +88,31 @@ impl From<File> for ApiFile {
     }
 }
 
-// TODO(alec): Make this into an Axum view
 pub async fn handle_file_upload(
     State(state): State<Arc<AppState>>,
-    Path(upload_id): Path<Uuid>,
+    Path(file_id): Path<Uuid>,
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
 
-    let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
+    let Ok(file) = get_file_by_id(pool, &file_id).await else {
         let mut api_error: ApiError = FileUploadError::UploadNotFound.into();
         api_error.status = StatusCode::NOT_FOUND;
         return api_error.into_response();
     };
 
-    let size: usize = 10; // TODO(alec): Get size from header
-    let file_name = "test.txt".to_string();
-    let path = PathBuf::from(&file_name);
-
-    let pool = state.get_pool();
-    let file = create_file(
-        pool,
-        file_name,
-        &upload.id,
-        path.to_str().unwrap().to_owned(),
-        size as i64,
-    )
-    .await;
-
-    if let Err(e) = file {
-        let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+    let Ok(mut transaction) = pool.begin().await else {
+        let api_error = ApiError {
+            message: "Failed to start transaction".to_string(),
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+        };
         return api_error.into_response();
-    }
+    };
 
-    let file = file.unwrap();
+    if let Err(e) = start_upload(&mut transaction, &file_id).await {
+        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        return api_error.into_response();
+    };
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
     let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
@@ -162,6 +146,16 @@ pub async fn handle_file_upload(
             return api_error.into_response();
         };
     }
+
+    if let Err(e) = finish_upload(&mut transaction, &file_id).await {
+        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        return api_error.into_response();
+    };
+
+    if let Err(e) = transaction.commit().await {
+        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        return api_error.into_response();
+    };
 
     println!("Uploaded file {}", file.id);
     let api_file: ApiFile = file.into();

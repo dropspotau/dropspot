@@ -1,12 +1,17 @@
 use chrono::{DateTime, Duration, Utc};
-use sqlx::PgPool;
+use serde::{Deserialize, Serialize};
+use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
+#[derive(Serialize, Deserialize)]
 pub struct Upload {
     pub id: Uuid,
-    pub file_name: String,
+    pub file_id: Uuid,
     pub created_at: DateTime<Utc>,
     pub expires_at: DateTime<Utc>,
+    pub upload_started_at: Option<DateTime<Utc>>,
+    pub upload_finished_at: Option<DateTime<Utc>>,
+    pub has_uploaded: bool,
 }
 
 impl Upload {
@@ -19,7 +24,7 @@ pub async fn get_uploads(pool: &PgPool) -> Result<Vec<Upload>, sqlx::Error> {
     sqlx::query_as!(
         Upload,
         r#"
-            select id, file_name, created_at, expires_at
+            select id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
             from upload
         "#
     )
@@ -31,7 +36,7 @@ pub async fn get_upload_by_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::
     sqlx::query_as!(
         Upload,
         r#"
-            select id, file_name, created_at, expires_at
+            select id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
             from upload
             where id = $1
             limit 1
@@ -42,20 +47,50 @@ pub async fn get_upload_by_id(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::
     .await
 }
 
-pub async fn create_upload(pool: &PgPool, name: String) -> Result<Upload, sqlx::Error> {
+pub async fn create_upload(pool: &mut PgConnection, file_id: &Uuid) -> Result<Upload, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
 
     sqlx::query_as!(
         Upload,
         r#"
-            insert into upload (file_name, created_at, expires_at)
+            insert into upload (file_id , created_at, expires_at)
             values ($1, $2, $3)
-            returning id, file_name, created_at, expires_at
+            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
         "#,
-        name,
+        file_id,
         created_at,
         expires_at
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn start_upload(pool: &mut PgConnection, id: &Uuid) -> Result<Upload, sqlx::Error> {
+    sqlx::query_as!(
+        Upload,
+        r#"
+            update upload
+            set upload_started_at = now()
+            where id = $1
+            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+        "#,
+        id
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn finish_upload(pool: &mut PgConnection, id: &Uuid) -> Result<Upload, sqlx::Error> {
+    sqlx::query_as!(
+        Upload,
+        r#"
+            update upload
+            set upload_finished_at = now()
+            where id = $1
+            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+        "#,
+        id
     )
     .fetch_one(pool)
     .await

@@ -4,15 +4,16 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::server::db::create_upload;
+
 /// Used in queries that just return an ID
-struct FileId {
+struct Id {
     id: Uuid,
 }
 
 pub struct File {
     pub id: Uuid,
     pub name: String,
-    pub upload_id: Uuid,
     pub path: PathBuf,
     pub size: i64,
     pub created_at: DateTime<Utc>,
@@ -46,7 +47,6 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             select
               file.id,
               file.name,
-              file.upload_id,
               file.path,
               file.size,
               file.created_at,
@@ -70,7 +70,6 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
             select
               file.id,
               file.name,
-              file.upload_id,
               file.path,
               file.size,
               file.created_at,
@@ -95,7 +94,6 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
             select
               file.id,
               file.name,
-              file.upload_id,
               file.path,
               file.size,
               file.created_at,
@@ -117,39 +115,42 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
 
 pub async fn create_file(
     pool: &PgPool,
-    name: String,
-    upload_id: &Uuid,
-    path: String,
+    name: &str,
+    path: &str,
     size: i64,
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
     let max_downloads = 1;
 
+    let mut transaction = pool.begin().await?;
+
     let id = sqlx::query_as!(
-        FileId,
+        Id,
         r#"
-            insert into file (name, upload_id, path, size, created_at, expires_at, max_downloads)
-            values ($1, $2, $3, $4, $5, $6, $7)
+            insert into file (name, path, size, created_at, expires_at, max_downloads)
+            values ($1, $2, $3, $4, $5, $6)
             returning id
         "#,
         name,
-        upload_id,
         path,
         size,
         created_at,
         expires_at,
         max_downloads
     )
-    .fetch_one(pool)
+    .fetch_one(&mut *transaction)
     .await?;
+
+    create_upload(&mut *transaction, &id.id).await?;
+    transaction.commit().await?;
 
     get_file_by_id(pool, &id.id).await
 }
 
 pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx::Error> {
     let ids = sqlx::query_as!(
-        FileId,
+        Id,
         r#"
             delete from file
             where id = any($1)

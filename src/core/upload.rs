@@ -1,29 +1,34 @@
-use crate::server::handlers::{ApiUpload, CreateUploadBody};
+use crate::server::handlers::{ApiFile, CreateFileBody};
 
 use super::constants::ENDPOINT;
 
-pub async fn upload(name: String, contents: Vec<u8>) -> Result<ApiUpload, reqwest::Error> {
+pub async fn upload(name: String, contents: Vec<u8>) -> Result<ApiFile, reqwest::Error> {
     let size = contents.len();
 
     // Request an upload
-    let upload = reqwest::Client::new()
+    let file = reqwest::Client::new()
         .post(format!("{ENDPOINT}/upload"))
         .header("Content-Type", "application/json")
-        .json(&CreateUploadBody { name, size })
+        .json(&CreateFileBody {
+            name,
+            size: size as i64,
+        })
         .send()
         .await?
-        .json::<ApiUpload>()
+        .json::<ApiFile>()
         .await?;
 
-    let file = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/upload/{}", upload.id))
+    // Upload the file body
+    let file_stream = reqwest::Client::new()
+        .post(format!("{ENDPOINT}/upload/{}", file.id))
         .header("Content-Type", "application/octet-stream")
+        .body(contents)
         .send()
         .await?;
 
-    if let Err(err) = file.error_for_status() {
+    if let Err(err) = file_stream.error_for_status() {
         return Err(err);
     }
 
-    Ok(upload)
+    Ok(file)
 }
