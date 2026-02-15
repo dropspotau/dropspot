@@ -1,21 +1,20 @@
-use std::{
-    io::{Read, Write},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{io::Read, sync::Arc};
 
-use axum::extract::{Json, Path, State};
+use axum::{
+    body::Body,
+    extract::{Json, Path, State},
+    response::{IntoResponse, Response},
+};
 use chrono::{DateTime, Utc};
+use futures_util::StreamExt;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
 use super::super::{
-    db::{
-        Download, File, Upload, create_download, create_file, create_upload, delete_files,
-        get_download_by_id, get_file_by_id, get_upload_by_id,
-    },
+    db::{Download, create_download, get_download_by_id, get_file_by_id},
     state::AppState,
     types::ApiError,
 };
@@ -48,6 +47,7 @@ impl Into<ApiError> for FileDownloadError {
     fn into(self) -> ApiError {
         ApiError {
             message: self.to_string(),
+            status: StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -69,31 +69,38 @@ impl From<Download> for ApiDownload {
 pub async fn handle_file_request_download(
     State(state): State<Arc<AppState>>,
     Path(file_id): Path<Uuid>,
-) -> Result<Json<ApiDownload>, Json<FileDownloadError>> {
+) -> Response {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
-        return Err(Json(FileDownloadError::FileNotFound));
+        let mut api_error: ApiError = FileDownloadError::FileNotFound.into();
+        api_error.status = StatusCode::NOT_FOUND;
+        return api_error.into_response();
     };
 
     if file.is_expired() {
-        return Err(Json(FileDownloadError::FileExpired));
+        let mut api_error: ApiError = FileDownloadError::FileExpired.into();
+        api_error.status = StatusCode::BAD_REQUEST;
+        return api_error.into_response();
     }
 
-    let download = create_download(pool, &file.id).await;
+    let download = create_download(pool, &file.id)
+        .await
+        .map(|download| ApiDownload::from(download));
 
     if let Err(e) = download {
-        return Err(Json(FileDownloadError::DownloadCreateError(e)));
+        let api_error: ApiError = FileDownloadError::DownloadCreateError(e).into();
+        return api_error.into_response();
     };
 
-    Ok(Json(download.unwrap().into()))
+    let api_download: ApiDownload = download.unwrap().into();
+    Json(api_download).into_response()
 }
 
-// TODO(alec): Make this into an Axum view
 pub async fn handle_file_download(
     State(state): State<Arc<AppState>>,
     Path(download_id): Path<Uuid>,
-) -> Result<impl Iterator<Item = u8> + use<>, StatusCode> {
+) -> Result<Response, StatusCode> {
     let pool = state.get_pool();
 
     let Ok(download) = get_download_by_id(pool, &download_id).await else {
@@ -105,32 +112,22 @@ pub async fn handle_file_download(
     };
 
     if download.is_expired() {
-        // return Err(FileDownloadError::DownloadExpired);
-        eprintln!(
-            "Download not found: {:?}",
-            FileDownloadError::DownloadExpired
-        );
         return Err(StatusCode::NOT_FOUND);
     }
 
     let Ok(file) = get_file_by_id(pool, &download.file_id).await else {
-        // return Err(FileDownloadError::FileNotFound);
         return Err(StatusCode::NOT_FOUND);
     };
 
     let file_path = file.get_path();
-    let Ok(mut io_file) = std::fs::File::open(file_path) else {
-        // return Err(FileDownloadError::FileOpenError);
+    let Ok(io_file) = tokio::fs::File::open(file_path).await else {
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     };
 
-    // TODO (alec): Don't read the whole file into memory
-    let mut buffer = Vec::with_capacity(file.size as usize);
-    if io_file.read_to_end(&mut buffer).is_err() {
-        // return Err(FileDownloadError::FileReadError);
-        return Err(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    let reader_stream = ReaderStream::new(io_file);
+
+    let body = Body::from_stream(reader_stream);
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage
-    Ok(buffer.into_iter())
+    Ok(body.into_response())
 }

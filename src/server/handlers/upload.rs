@@ -114,7 +114,8 @@ pub async fn handle_file_upload(
     let pool = state.get_pool();
 
     let Ok(upload) = get_upload_by_id(pool, &upload_id).await else {
-        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        let mut api_error: ApiError = FileUploadError::UploadNotFound.into();
+        api_error.status = StatusCode::NOT_FOUND;
         return api_error.into_response();
     };
 
@@ -139,7 +140,7 @@ pub async fn handle_file_upload(
     let file = file.unwrap();
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
-    let Ok(mut io_file) = std::fs::File::create(file.get_path()) else {
+    let Ok(mut io_file) = tokio::fs::File::create(file.get_path()).await else {
         let api_error: ApiError = FileUploadError::FileCreateError.into();
         return api_error.into_response();
     };
