@@ -71,6 +71,7 @@ pub async fn handle_file_request_upload(State(state): State<Arc<AppState>>) -> R
         return api_error.into_response();
     }
 
+    println!("Uploaded");
     return Json(upload.unwrap()).into_response();
 }
 
@@ -133,7 +134,6 @@ pub async fn handle_file_upload(
     };
 
     let mut reader_stream = body.into_data_stream();
-    // let reader_stream = ReaderStream::new(body);
     let mut writer = BufWriter::new(io_file);
 
     while let Some(bytes) = reader_stream.next().await {
@@ -160,6 +160,7 @@ pub async fn handle_file_upload(
         };
     }
 
+    println!("Uploaded file {}", file.id);
     let api_file: ApiFile = file.into();
     Json(api_file).into_response()
 }

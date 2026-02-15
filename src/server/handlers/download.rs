@@ -90,6 +90,7 @@ pub async fn handle_file_request_download(
     };
 
     let api_download: ApiDownload = download.unwrap().into();
+    println!("Prepared to download {}", api_download.id);
     Json(api_download).into_response()
 }
 
@@ -130,5 +131,6 @@ pub async fn handle_file_download(
     let body = Body::from_stream(reader_stream);
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage
+    println!("Streaming file {}", file.id);
     Ok(body.into_response())
 }

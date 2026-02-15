@@ -72,10 +72,15 @@ async fn main() -> Result<(), ()> {
                 return Err(());
             }
 
-            if let Err(e) = upload(file_name.clone(), buffer).await {
+            let upload = upload(file_name.clone(), buffer).await;
+
+            if let Err(e) = upload {
                 eprintln!("Failed to upload file: {e}");
                 return Err(());
             }
+
+            let upload = upload.unwrap();
+            println!("Uploaded file {}", upload.id);
         }
         Commands::Download { id } => {
             let Ok(id) = Uuid::parse_str(id) else {
@@ -109,8 +114,8 @@ async fn main() -> Result<(), ()> {
                 .route("/download/{download_id}", get(handle_file_download))
                 .with_state(shared_state);
 
-            // run our app with hyper, listening globally on port 3000
-            let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+            println!("Listening on port 3000");
+            let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
             if let Err(e) = axum::serve(listener, app).await {
                 eprintln!("Server run error: {e}");
             }
