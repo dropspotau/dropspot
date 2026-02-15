@@ -60,8 +60,11 @@ pub struct CreateUploadBody {
 }
 
 // TODO(alec): Make this into an Axum view
-pub async fn handle_file_request_upload(State(state): State<Arc<AppState>>) -> Response {
-    let upload = create_upload(state.get_pool())
+pub async fn handle_file_request_upload(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<CreateUploadBody>,
+) -> Response {
+    let upload = create_upload(state.get_pool(), payload.name)
         .await
         .map(|upload| ApiUpload::from(upload))
         .map_err(FileUploadError::FileDatabaseCreateError);
