@@ -6,7 +6,6 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::{DateTime, Utc};
-use futures_util::StreamExt;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -38,9 +37,6 @@ pub enum FileDownloadError {
 
     #[error("Failed to open file")]
     FileOpenError,
-
-    #[error("Failed to read file")]
-    FileReadError,
 }
 
 impl Into<ApiError> for FileDownloadError {
@@ -112,20 +108,25 @@ pub async fn handle_file_download(
     };
 
     if download.is_expired() {
+        let error = FileDownloadError::DownloadExpired;
+        eprintln!("Download error: {error}");
         return Err(StatusCode::NOT_FOUND);
     }
 
     let Ok(file) = get_file_by_id(pool, &download.file_id).await else {
+        let error = FileDownloadError::FileNotFound;
+        eprintln!("Download error: {error}");
         return Err(StatusCode::NOT_FOUND);
     };
 
     let file_path = file.get_path();
     let Ok(io_file) = tokio::fs::File::open(file_path).await else {
+        let error = FileDownloadError::FileOpenError;
+        eprintln!("Download error: {error}");
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     };
 
     let reader_stream = ReaderStream::new(io_file);
-
     let body = Body::from_stream(reader_stream);
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage

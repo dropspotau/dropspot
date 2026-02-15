@@ -9,6 +9,7 @@ use axum::Router;
 use axum::routing::{get, post};
 use clap::Parser;
 use futures_util::StreamExt;
+use tokio::net::TcpListener;
 use uuid::Uuid;
 
 use crate::{
@@ -52,7 +53,7 @@ async fn main() -> Result<(), ()> {
         return Err(());
     };
 
-    let mut state = AppState::new(pool);
+    let state = AppState::new(pool);
 
     match &cli.command {
         Commands::Upload { file: file_name } => {
@@ -89,7 +90,7 @@ async fn main() -> Result<(), ()> {
                 return Err(());
             }
 
-            let download_stream = download_stream.unwrap();
+            let mut download_stream = download_stream.unwrap();
 
             while let Some(bytes) = download_stream.next().await {
                 println!("{bytes:?}");
@@ -107,6 +108,12 @@ async fn main() -> Result<(), ()> {
                 .route("/download{file_id}", get(handle_file_request_download))
                 .route("/download/{download_id}", get(handle_file_download))
                 .with_state(shared_state);
+
+            // run our app with hyper, listening globally on port 3000
+            let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+            if let Err(e) = axum::serve(listener, app).await {
+                eprintln!("Server run error: {e}");
+            }
         }
     }
 

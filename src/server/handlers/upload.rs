@@ -1,24 +1,19 @@
-use std::{
-    io::{Read, Write},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{path::PathBuf, sync::Arc};
 
 use axum::{
+    body::Body,
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
-use chrono::{DateTime, Utc};
+use futures_util::StreamExt;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tokio::io::{AsyncWriteExt, BufWriter};
 use uuid::Uuid;
 
 use super::super::{
-    db::{
-        Download, File, Upload, create_download, create_file, create_upload, delete_files,
-        get_download_by_id, get_file_by_id, get_upload_by_id,
-    },
+    db::{File, Upload, create_file, create_upload, delete_files, get_upload_by_id},
     state::AppState,
     types::ApiError,
 };
@@ -30,9 +25,6 @@ pub enum FileUploadError {
 
     #[error("Error writing file to database: {0}")]
     FileDatabaseCreateError(sqlx::Error),
-
-    #[error("Error deleting file from database: {0}")]
-    FileDatabaseDeleteError(sqlx::Error),
 
     #[error("Failed to create file")]
     FileCreateError,
@@ -99,17 +91,11 @@ impl From<File> for ApiFile {
     }
 }
 
-#[derive(Deserialize)]
-struct FileUploadPayload {
-    file_name: String,
-    contents: Vec<u8>,
-}
-
 // TODO(alec): Make this into an Axum view
 pub async fn handle_file_upload(
     State(state): State<Arc<AppState>>,
     Path(upload_id): Path<Uuid>,
-    Json(payload): Json<FileUploadPayload>,
+    body: Body,
 ) -> Response {
     let pool = state.get_pool();
 
@@ -119,13 +105,14 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    let path = PathBuf::from(&payload.file_name);
-    let size = payload.contents.len();
+    let size: usize = 10; // TODO(alec): Get size from header
+    let file_name = "test.txt".to_string();
+    let path = PathBuf::from(&file_name);
 
     let pool = state.get_pool();
     let file = create_file(
         pool,
-        payload.file_name,
+        file_name,
         &upload.id,
         path.to_str().unwrap().to_owned(),
         size as i64,
@@ -140,20 +127,37 @@ pub async fn handle_file_upload(
     let file = file.unwrap();
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
-    let Ok(mut io_file) = tokio::fs::File::create(file.get_path()).await else {
+    let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
         let api_error: ApiError = FileUploadError::FileCreateError.into();
         return api_error.into_response();
     };
 
-    if io_file.write(&payload.contents).is_err() {
-        // Don't save the file
-        if let Err(e) = delete_files(pool, &[file.id]).await {
-            let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+    let mut reader_stream = body.into_data_stream();
+    // let reader_stream = ReaderStream::new(body);
+    let mut writer = BufWriter::new(io_file);
+
+    while let Some(bytes) = reader_stream.next().await {
+        if bytes.is_err() {
+            if let Err(e) = delete_files(pool, &[file.id]).await {
+                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                return api_error.into_response();
+            };
+
+            let api_error: ApiError = FileUploadError::FileWriteError.into();
             return api_error.into_response();
         };
 
-        let api_error: ApiError = FileUploadError::FileWriteError.into();
-        return api_error.into_response();
+        if let Err(e) = writer.write(&bytes.unwrap()).await {
+            eprintln!("Error writing to file: {e}");
+
+            if let Err(e) = delete_files(pool, &[file.id]).await {
+                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                return api_error.into_response();
+            };
+
+            let api_error: ApiError = FileUploadError::FileWriteError.into();
+            return api_error.into_response();
+        };
     }
 
     let api_file: ApiFile = file.into();
