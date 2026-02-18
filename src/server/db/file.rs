@@ -57,6 +57,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             left join download
             on download.file_id = file.id
             group by file.id
+            having file.max_downloads >= count(download.id)
         "#
     )
     .fetch_all(pool)
