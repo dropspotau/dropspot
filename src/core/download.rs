@@ -11,23 +11,21 @@ pub async fn download(
     file_id: Uuid,
 ) -> Result<impl Stream<Item = Result<Bytes, Error>> + use<>, reqwest::Error> {
     // Request a download URL
-    // TODO(alec): Make this return an object with a download ID and URL
     let download = reqwest::Client::new()
-        .get(format!("{ENDPOINT}/download/{file_id}"))
+        .get(format!("{ENDPOINT}/api/file/{file_id}/download"))
         .send()
         .await?
+        .error_for_status()?
         .json::<ApiDownload>()
         .await?;
 
     // Actually download the file
     let download_id = download.id;
     let stream = reqwest::Client::new()
-        .get(format!("{ENDPOINT}/download/{download_id}"))
+        .get(format!("{ENDPOINT}/api/download/{download_id}/download"))
         .send()
         .await?
         .bytes_stream();
-
-    // TODO(alec): Return something from the standard library
 
     Ok(stream)
 }

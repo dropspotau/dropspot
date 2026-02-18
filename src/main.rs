@@ -8,7 +8,7 @@ use std::sync::Arc;
 use axum::Router;
 use axum::routing::{get, post};
 use clap::Parser;
-use futures_util::StreamExt;
+use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
@@ -61,21 +61,21 @@ async fn main() -> Result<(), ()> {
             let validation = validate_file(file_name);
 
             if let Err(e) = validation {
-                eprintln!("Failed to validate file: {e}");
+                eprintln!("Failed to validate file: {e:?}");
                 return Err(());
             }
 
             let mut file = validation.unwrap();
             let mut buffer = Vec::new();
             if let Err(e) = file.read_to_end(&mut buffer) {
-                eprintln!("Failed to read file: {e}");
+                eprintln!("Failed to upload file: {e:?}");
                 return Err(());
             }
 
             let upload = upload(file_name.clone(), buffer).await;
 
             if let Err(e) = upload {
-                eprintln!("Failed to upload file: {e}");
+                eprintln!("Failed to upload file: {e:?}");
                 return Err(());
             }
 
@@ -96,6 +96,9 @@ async fn main() -> Result<(), ()> {
             }
 
             let mut download_stream = download_stream.unwrap();
+            println!("Downloading file");
+
+            println!("{:?}", download_stream.size_hint());
 
             while let Some(bytes) = download_stream.next().await {
                 println!("{bytes:?}");
@@ -108,10 +111,16 @@ async fn main() -> Result<(), ()> {
             let shared_state = Arc::new(state);
 
             let app = Router::new()
-                .route("/upload", post(handle_file_request_upload))
-                .route("/upload/{upload_id}", post(handle_file_upload))
-                .route("/download{file_id}", get(handle_file_request_download))
-                .route("/download/{download_id}", get(handle_file_download))
+                .route("/api/upload", post(handle_file_request_upload))
+                .route("/api/upload/{file_id}/upload", post(handle_file_upload))
+                .route(
+                    "/api/file/{file_id}/download",
+                    get(handle_file_request_download),
+                )
+                .route(
+                    "/api/download/{download_id}/download",
+                    get(handle_file_download),
+                )
                 .with_state(shared_state);
 
             println!("Listening on port 8000");

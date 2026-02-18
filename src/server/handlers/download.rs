@@ -47,7 +47,7 @@ impl Into<ApiError> for FileDownloadError {
         }
     }
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ApiDownload {
     pub id: Uuid,
     pub expires_at: DateTime<Utc>,
@@ -71,12 +71,14 @@ pub async fn handle_file_request_download(
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
         let mut api_error: ApiError = FileDownloadError::FileNotFound.into();
         api_error.status = StatusCode::NOT_FOUND;
+        eprintln!("File error: {api_error:?}");
         return api_error.into_response();
     };
 
     if file.is_expired() {
         let mut api_error: ApiError = FileDownloadError::FileExpired.into();
         api_error.status = StatusCode::BAD_REQUEST;
+        eprintln!("File error: {api_error:?}");
         return api_error.into_response();
     }
 
@@ -84,8 +86,11 @@ pub async fn handle_file_request_download(
         .await
         .map(|download| ApiDownload::from(download));
 
+    println!("Created download {download:?}");
+
     if let Err(e) = download {
         let api_error: ApiError = FileDownloadError::DownloadCreateError(e).into();
+        eprintln!("File error: {api_error:?}");
         return api_error.into_response();
     };
 
@@ -129,6 +134,7 @@ pub async fn handle_file_download(
 
     let reader_stream = ReaderStream::new(io_file);
     let body = Body::from_stream(reader_stream);
+    println!("body {:?}", body);
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage
     println!("Streaming file {}", file.id);

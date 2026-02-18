@@ -7,7 +7,7 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<ApiFile, reqwest:
 
     // Request an upload
     let file = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/upload"))
+        .post(format!("{ENDPOINT}/api/upload"))
         .header("Content-Type", "application/json")
         .json(&CreateFileBody {
             name,
@@ -20,7 +20,7 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<ApiFile, reqwest:
 
     // Upload the file body
     let file_stream = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/upload/{}", file.id))
+        .post(format!("{ENDPOINT}/api/upload/{}/upload", file.id))
         .header("Content-Type", "application/octet-stream")
         .body(contents)
         .send()

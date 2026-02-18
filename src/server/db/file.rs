@@ -121,7 +121,7 @@ pub async fn create_file(
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
-    let max_downloads = 1;
+    let max_downloads = 100;
 
     let id = sqlx::query_as!(
         Id,

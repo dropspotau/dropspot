@@ -1,8 +1,11 @@
-use axum::response::{IntoResponse, Response};
+use axum::{
+    Json,
+    response::{IntoResponse, Response},
+};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ApiError {
     pub message: String,
 
@@ -13,6 +16,6 @@ pub struct ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let status = self.status;
-        (status, self).into_response()
+        (status, Json(self)).into_response()
     }
 }
