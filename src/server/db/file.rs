@@ -57,7 +57,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             left join download
             on download.file_id = file.id
             group by file.id
-            having file.max_downloads >= count(download.id)
+            having file.max_downloads >= count(download.id) and now() < file.expires_at
         "#
     )
     .fetch_all(pool)
@@ -81,7 +81,7 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
             left join download
             on download.file_id = file.id
             group by file.id
-            having file.max_downloads < count(download.id)
+            having file.max_downloads < count(download.id) or now() > file.expires_at
         "#
     )
     .fetch_all(pool)
