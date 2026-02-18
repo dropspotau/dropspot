@@ -12,12 +12,16 @@ use thiserror::Error;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use uuid::Uuid;
 
-use crate::server::db::{finish_upload, get_file_by_id, get_upload_by_file_id, start_upload};
-
-use super::super::{
-    db::{File, create_file, delete_files},
-    state::AppState,
-    types::ApiError,
+use super::{
+    super::{
+        db::{
+            create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
+            start_upload,
+        },
+        state::AppState,
+        types::ApiError,
+    },
+    file::ApiFile,
 };
 
 #[derive(Error, Debug)]
@@ -67,25 +71,7 @@ pub async fn handle_file_request_upload(
         return api_error.into_response();
     }
 
-    println!("Uploaded");
     return Json(file.unwrap()).into_response();
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ApiFile {
-    pub id: Uuid,
-    pub name: String,
-    pub size: i64,
-}
-
-impl From<File> for ApiFile {
-    fn from(file: File) -> Self {
-        Self {
-            id: file.id,
-            name: file.name,
-            size: file.size,
-        }
-    }
 }
 
 pub async fn handle_file_upload(

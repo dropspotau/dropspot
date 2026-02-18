@@ -8,9 +8,6 @@ pub enum DatabaseError {
 
     #[error("Database error: {0}")]
     ConnectionError(sqlx::Error),
-
-    #[error("Migration error: {0}")]
-    MigrationError(sqlx::migrate::MigrateError),
 }
 
 /// Returns a Postgres database connection pool.

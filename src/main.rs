@@ -12,6 +12,8 @@ use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
+use crate::core::file::list_files;
+use crate::server::handlers::handle_list_files;
 use crate::{
     core::{download::download, upload::upload, validation::validate_file},
     server::{
@@ -39,6 +41,8 @@ enum Commands {
     Upload { file: String },
     #[command(about = "Download a file")]
     Download { id: String },
+    #[command(about = "List files")]
+    List,
     #[command(about = "Watch for files")]
     Watch,
     #[command(about = "Run the server")]
@@ -104,6 +108,17 @@ async fn main() -> Result<(), ()> {
                 println!("{bytes:?}");
             }
         }
+        Commands::List {} => {
+            let files = list_files().await;
+
+            if let Err(e) = files {
+                eprintln!("Failed to list files: {e}");
+                return Err(());
+            }
+
+            let files = files.unwrap();
+            println!("{files:?}");
+        }
         Commands::Watch {} => {
             watch_for_files(state).await;
         }
@@ -113,6 +128,7 @@ async fn main() -> Result<(), ()> {
             let app = Router::new()
                 .route("/api/upload", post(handle_file_request_upload))
                 .route("/api/upload/{file_id}/upload", post(handle_file_upload))
+                .route("/api/file", get(handle_list_files))
                 .route(
                     "/api/file/{file_id}/download",
                     get(handle_file_request_download),
