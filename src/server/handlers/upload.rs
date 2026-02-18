@@ -125,7 +125,7 @@ pub async fn handle_file_upload(
 
     println!("Streaming upload");
     while let Some(bytes) = reader_stream.next().await {
-        println!("{bytes:?}");
+        println!("Writing {bytes:?}");
         if bytes.is_err() {
             if let Err(e) = delete_files(pool, &[file.id]).await {
                 let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
@@ -147,9 +147,20 @@ pub async fn handle_file_upload(
             let api_error: ApiError = FileUploadError::FileWriteError.into();
             return api_error.into_response();
         };
+
+        if let Err(e) = writer.flush().await {
+            eprintln!("Error flushing to file: {e}");
+
+            if let Err(e) = delete_files(pool, &[file.id]).await {
+                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                return api_error.into_response();
+            };
+
+            let api_error: ApiError = FileUploadError::FileWriteError.into();
+            return api_error.into_response();
+        }
     }
 
-    println!("Finishing upload");
     if let Err(e) = finish_upload(pool, &upload.id).await {
         let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
         return api_error.into_response();
