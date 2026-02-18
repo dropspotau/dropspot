@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Json, State},
+    extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
 use reqwest::StatusCode;
@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::server::{
     ApiError,
-    db::{File, get_files},
+    db::{File, get_file_by_id, get_files},
 };
 
 use super::super::state::AppState;
@@ -20,6 +20,9 @@ use super::super::state::AppState;
 pub enum FileError {
     #[error("Could not list files")]
     FileListError(sqlx::Error),
+
+    #[error("Could not retrieve file")]
+    FileRetrieveError(sqlx::Error),
 }
 
 impl Into<ApiError> for FileError {
@@ -64,4 +67,18 @@ pub async fn handle_list_files(State(state): State<Arc<AppState>>) -> Response {
         .collect::<Vec<ApiFile>>();
 
     Json(files).into_response()
+}
+
+pub async fn handle_get_file(State(state): State<Arc<AppState>>, Path(id): Path<Uuid>) -> Response {
+    let pool = state.get_pool();
+    let file = get_file_by_id(&pool, &id)
+        .await
+        .map(|file| ApiFile::from(file));
+
+    if let Err(e) = file {
+        let api_error: ApiError = FileError::FileRetrieveError(e).into();
+        return api_error.into_response();
+    }
+
+    Json(file.unwrap()).into_response()
 }

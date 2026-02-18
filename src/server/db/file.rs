@@ -105,7 +105,7 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
             left join download
             on download.file_id = file.id
             group by file.id
-            having file.id = $1
+            having file.id = $1 and file.max_downloads >= count(download.id) and now() < file.expires_at
             limit 1
         "#,
         id

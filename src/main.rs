@@ -12,15 +12,18 @@ use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::core::file::list_files;
-use crate::server::handlers::handle_list_files;
 use crate::{
-    core::{download::download, upload::upload, validation::validate_file},
+    core::{
+        download::download,
+        file::{get_file, list_files},
+        upload::upload,
+        validation::validate_file,
+    },
     server::{
         db::connect,
         handlers::{
             handle_file_download, handle_file_request_download, handle_file_request_upload,
-            handle_file_upload,
+            handle_file_upload, handle_get_file, handle_list_files,
         },
         state::AppState,
     },
@@ -43,6 +46,8 @@ enum Commands {
     Download { id: String },
     #[command(about = "List files")]
     List,
+    #[command(about = "Retrieve a file")]
+    Get { id: Uuid },
     #[command(about = "Watch for files")]
     Watch,
     #[command(about = "Run the server")]
@@ -119,6 +124,17 @@ async fn main() -> Result<(), ()> {
             let files = files.unwrap();
             println!("{files:?}");
         }
+        Commands::Get { id } => {
+            let file = get_file(id).await;
+
+            if let Err(e) = file {
+                eprintln!("Failed to get file: {e}");
+                return Err(());
+            }
+
+            let file = file.unwrap();
+            println!("{file:?}");
+        }
         Commands::Watch {} => {
             watch_for_files(state).await;
         }
@@ -129,6 +145,7 @@ async fn main() -> Result<(), ()> {
                 .route("/api/upload", post(handle_file_request_upload))
                 .route("/api/upload/{file_id}/upload", post(handle_file_upload))
                 .route("/api/file", get(handle_list_files))
+                .route("/api/file/{id}", get(handle_get_file))
                 .route(
                     "/api/file/{file_id}/download",
                     get(handle_file_request_download),
