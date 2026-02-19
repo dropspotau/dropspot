@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use axum::Router;
 use axum::routing::{get, post};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
@@ -38,8 +38,8 @@ struct Cli {
     command: Commands,
 }
 
-#[derive(Parser)]
-enum Commands {
+#[derive(Subcommand)]
+enum FileCommands {
     #[command(about = "Upload a file")]
     Upload { file: String },
     #[command(about = "Download a file")]
@@ -48,6 +48,12 @@ enum Commands {
     List,
     #[command(about = "Retrieve a file")]
     Get { id: Uuid },
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    #[command(subcommand)]
+    File(FileCommands),
     #[command(about = "Watch for files")]
     Watch,
     #[command(about = "Run the server")]
@@ -65,76 +71,78 @@ async fn main() -> Result<(), ()> {
     let state = AppState::new(pool);
 
     match &cli.command {
-        Commands::Upload { file: file_name } => {
-            // Simulate generating an upload URL
-            let validation = validate_file(file_name);
+        Commands::File(file_commands) => match file_commands {
+            FileCommands::Upload { file: file_name } => {
+                // Simulate generating an upload URL
+                let validation = validate_file(file_name);
 
-            if let Err(e) = validation {
-                eprintln!("Failed to validate file: {e:?}");
-                return Err(());
+                if let Err(e) = validation {
+                    eprintln!("Failed to validate file: {e:?}");
+                    return Err(());
+                }
+
+                let mut file = validation.unwrap();
+                let mut buffer = Vec::new();
+                if let Err(e) = file.read_to_end(&mut buffer) {
+                    eprintln!("Failed to upload file: {e:?}");
+                    return Err(());
+                }
+
+                let upload = upload(file_name.clone(), buffer).await;
+
+                if let Err(e) = upload {
+                    eprintln!("Failed to upload file: {e:?}");
+                    return Err(());
+                }
+
+                let upload = upload.unwrap();
+                println!("Uploaded file {}", upload.id);
             }
+            FileCommands::Download { id } => {
+                let Ok(id) = Uuid::parse_str(id) else {
+                    eprintln!("Invalid UUID");
+                    return Err(());
+                };
 
-            let mut file = validation.unwrap();
-            let mut buffer = Vec::new();
-            if let Err(e) = file.read_to_end(&mut buffer) {
-                eprintln!("Failed to upload file: {e:?}");
-                return Err(());
+                let download_stream = download(id).await;
+
+                if let Err(e) = download_stream {
+                    eprintln!("Failed to download file: {e}");
+                    return Err(());
+                }
+
+                let mut download_stream = download_stream.unwrap();
+                println!("Downloading file");
+
+                println!("{:?}", download_stream.size_hint());
+
+                while let Some(bytes) = download_stream.next().await {
+                    println!("{bytes:?}");
+                }
             }
+            FileCommands::List {} => {
+                let files = list_files().await;
 
-            let upload = upload(file_name.clone(), buffer).await;
+                if let Err(e) = files {
+                    eprintln!("Failed to list files: {e}");
+                    return Err(());
+                }
 
-            if let Err(e) = upload {
-                eprintln!("Failed to upload file: {e:?}");
-                return Err(());
+                let files = files.unwrap();
+                println!("{files:?}");
             }
+            FileCommands::Get { id } => {
+                let file = get_file(id).await;
 
-            let upload = upload.unwrap();
-            println!("Uploaded file {}", upload.id);
-        }
-        Commands::Download { id } => {
-            let Ok(id) = Uuid::parse_str(id) else {
-                eprintln!("Invalid UUID");
-                return Err(());
-            };
+                if let Err(e) = file {
+                    eprintln!("Failed to get file: {e}");
+                    return Err(());
+                }
 
-            let download_stream = download(id).await;
-
-            if let Err(e) = download_stream {
-                eprintln!("Failed to download file: {e}");
-                return Err(());
+                let file = file.unwrap();
+                println!("{file:?}");
             }
-
-            let mut download_stream = download_stream.unwrap();
-            println!("Downloading file");
-
-            println!("{:?}", download_stream.size_hint());
-
-            while let Some(bytes) = download_stream.next().await {
-                println!("{bytes:?}");
-            }
-        }
-        Commands::List {} => {
-            let files = list_files().await;
-
-            if let Err(e) = files {
-                eprintln!("Failed to list files: {e}");
-                return Err(());
-            }
-
-            let files = files.unwrap();
-            println!("{files:?}");
-        }
-        Commands::Get { id } => {
-            let file = get_file(id).await;
-
-            if let Err(e) = file {
-                eprintln!("Failed to get file: {e}");
-                return Err(());
-            }
-
-            let file = file.unwrap();
-            println!("{file:?}");
-        }
+        },
         Commands::Watch {} => {
             watch_for_files(state).await;
         }
