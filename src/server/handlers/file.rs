@@ -9,12 +9,9 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::server::{
-    ApiError,
-    db::{File, get_file_by_id, get_files},
-};
-
-use super::super::state::AppState;
+use super::super::db::{File, get_file_by_id, get_files};
+use super::super::state::AppState;;
+use super::super::types::ApiError;
 
 #[derive(Error, Debug)]
 pub enum FileError {

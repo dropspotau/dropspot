@@ -12,23 +12,21 @@ use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::{
-    core::{
-        download::download,
-        file::{get_file, list_files},
-        upload::upload,
-        validation::validate_file,
-    },
-    server::{
-        db::connect,
-        handlers::{
-            handle_file_download, handle_file_request_download, handle_file_request_upload,
-            handle_file_upload, handle_get_file, handle_list_files,
-        },
-        state::AppState,
-    },
-    watch::watch_for_files,
+use crate::core::{
+    download::download,
+    file::{get_file, list_files},
+    upload::upload,
+    validation::validate_file,
 };
+use crate::server::{
+    db::connect,
+    handlers::{
+        handle_file_download, handle_file_request_download, handle_file_request_upload,
+        handle_file_upload, handle_get_file, handle_list_files,
+    },
+    state::AppState,
+};
+use crate::watch::watch_for_files;
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
