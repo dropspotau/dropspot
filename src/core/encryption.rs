@@ -2,7 +2,10 @@ use std::io::{Read, Write};
 
 use aes_gcm::{
     Aes256Gcm, Nonce,
-    aead::{self, Aead, AeadCore, KeyInit, OsRng, stream::EncryptorBE32},
+    aead::{
+        self, Aead, AeadCore, KeyInit, OsRng,
+        stream::{DecryptorBE32, EncryptorBE32},
+    },
 };
 use thiserror::Error;
 
@@ -19,6 +22,7 @@ pub(crate) struct Encryption {
     pub nonce: Vec<u8>,
 }
 
+// Size of each chunk for encryption and decryption
 const CHUNK_SIZE: usize = 4096;
 
 pub(crate) fn encrypt_file(
@@ -49,8 +53,9 @@ pub(crate) fn encrypt_file(
         } else {
             // Final chunk (can be smaller than CHUNK_SIZE, or even 0 bytes)
             // Using encrypt_last secures the file against truncation attacks.
-            let slice = &buffer[..read_count];
-            let ciphertext = stream_encryptor.encrypt_last(slice).unwrap();
+            let ciphertext = stream_encryptor
+                .encrypt_last(&buffer[..read_count])
+                .unwrap();
             writer.write_all(&ciphertext).unwrap();
             break;
         }
@@ -74,23 +79,29 @@ pub(crate) enum DecryptionError {
     CipherError(aes_gcm::Error),
 }
 
-pub(crate) fn decrypt_file(
+pub(crate) fn decrypt_chunk(
     encryption: &Encryption,
-    contents: &[u8],
+    chunk: &[u8],
 ) -> Result<Vec<u8>, DecryptionError> {
     let Ok(cipher) = Aes256Gcm::new_from_slice(&encryption.key) else {
         return Err(DecryptionError::CipherInvalidLengthError);
     };
     let nonce = Nonce::from_slice(&encryption.nonce);
+    let mut stream_decryptor = DecryptorBE32::from_aead(cipher, nonce.into());
+    // IMPORTANT: A ciphertext chunk is the plaintext chunk size PLUS the 16-byte tag.
+    let plaintext: Vec<u8>;
 
-    if let Err(e) = cipher.decrypt(&nonce, contents) {
-        eprintln!("FAILED TO DECRYPT: {e:?}");
-        return Err(DecryptionError::CipherError(e));
+    let read_count = chunk.len();
+    println!("Chunk size: {read_count}");
+
+    // The last 16 bytes of each block are the authentication tag
+    if read_count == CHUNK_SIZE + 16 {
+        plaintext = stream_decryptor.decrypt_next(chunk).unwrap();
+    } else {
+        // The final chunk will be smaller than CHUNK_SIZE + 16.
+        // If the file was exactly a multiple of CHUNK_SIZE, this will read exactly 16 bytes (just the final tag).
+        plaintext = stream_decryptor.decrypt_last(&chunk[..read_count]).unwrap();
     }
-
-    let plaintext = cipher
-        .decrypt(&nonce, contents.as_ref())
-        .map_err(|e| DecryptionError::CipherError(e))?;
 
     Ok(plaintext)
 }

@@ -17,7 +17,7 @@ use futures_util::StreamExt;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::core::encryption::{Encryption, decrypt_file};
+use crate::core::encryption::{Encryption, decrypt_chunk};
 use crate::core::{
     download::download,
     file::{get_file, list_files},
@@ -152,7 +152,7 @@ async fn main() -> Result<(), ()> {
                 };
 
                 let mut stream_writer = BufWriter::new(local_file);
-                let download_stream = download(id).await;
+                let download_stream = download(id, encryption).await;
 
                 if let Err(e) = download_stream {
                     eprintln!("Failed to download file: {e}");
@@ -161,44 +161,22 @@ async fn main() -> Result<(), ()> {
 
                 let mut download_stream = download_stream.unwrap();
 
+                let mut massive_buffer = Vec::<u8>::new();
+
                 while let Some(bytes) = download_stream.next().await {
                     if let Err(e) = bytes {
-                        println!("Failed to download file: {e:?}");
+                        eprintln!("Failed to download file: {e:?}");
                         return Err(());
                     };
 
-                    let bytes = bytes.unwrap();
+                    let bytes = bytes.unwrap()
+                    massive_buffer.extend_from_slice(bytes.as_ref());
 
-                    if bytes.len() == 0 {
-                        continue;
-                    }
-
-                    let decrypted_bytes = decrypt_file(&encryption, &bytes);
-                    if let Err(e) = decrypted_bytes {
-                        println!("Failed to decrypt file: {e:?}");
-                        return Err(());
-                    }
-
-                    if let Err(e) = stream_writer.write(&bytes) {
-                        println!("Failed to write bytes to local file: {e:?}");
-                        return Err(());
-                    };
+                    // stream_writer.write_all(&bytes.unwrap()).unwrap();
+                    // stream_writer.flush().unwrap();
                 }
 
-                // let mut f = File::open("files/test.png").unwrap();
-                // let mut buffer = Vec::new();
-                // f.read_to_end(&mut buffer).unwrap();
-                // let contents = decrypt_file(&encryption, &buffer);
-                //
-                // if let Err(e) = contents {
-                //     eprintln!("Failed to decrypt file: {e:?}");
-                //     return Err(());
-                // }
-                //
-                // let contents = contents.unwrap();
-                //
-                // let mut f = File::create("download_test.png").unwrap();
-                // f.write_all(&contents).unwrap();
+                println!("Download complete");
             }
             FileCommands::List {} => {
                 let files = list_files().await;
