@@ -113,12 +113,19 @@ async fn main() -> Result<(), ()> {
                 let upload = upload.unwrap();
 
                 let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
-                let key_base64 = engine.encode(upload.encryption.key);
-                let nonce_base64 = engine.encode(upload.encryption.nonce);
+                let key_base64 = engine.encode(&upload.encryption.key);
+                let nonce_base64 = engine.encode(&upload.encryption.nonce);
 
                 println!("Uploaded file {}", &upload.file.id);
                 println!("Key: {key_base64}");
+                println!("Key: {:?}", upload.encryption.key);
                 println!("Nonce: {nonce_base64}");
+                println!("Nonce: {:?}", upload.encryption.nonce);
+
+                println!(
+                    "cargo run file download {} {key_base64} {nonce_base64}",
+                    upload.file.id
+                );
             }
             FileCommands::Download { id, key, nonce } => {
                 let Ok(id) = Uuid::parse_str(id) else {
@@ -139,7 +146,7 @@ async fn main() -> Result<(), ()> {
 
                 // Decrypt the file
                 let local_file_name = format!("download_{}", &file.name);
-                let Ok(local_file) = File::create(local_file_name) else {
+                let Ok(local_file) = File::create(&local_file_name) else {
                     eprintln!("Failed to open local file to save");
                     return Err(());
                 };
@@ -172,6 +179,21 @@ async fn main() -> Result<(), ()> {
                         return Err(());
                     };
                 }
+
+                // let mut f = File::open("files/test.png").unwrap();
+                // let mut buffer = Vec::new();
+                // f.read_to_end(&mut buffer).unwrap();
+                // let contents = decrypt_file(&encryption, &buffer);
+                //
+                // if let Err(e) = contents {
+                //     eprintln!("Failed to decrypt file: {e:?}");
+                //     return Err(());
+                // }
+                //
+                // let contents = contents.unwrap();
+                //
+                // let mut f = File::create("download_test.png").unwrap();
+                // f.write_all(&contents).unwrap();
             }
             FileCommands::List {} => {
                 let files = list_files().await;
