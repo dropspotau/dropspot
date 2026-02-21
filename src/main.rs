@@ -51,13 +51,20 @@ enum FileCommands {
 }
 
 #[derive(Subcommand)]
-enum Commands {
-    #[command(subcommand)]
-    File(FileCommands),
+enum ServerCommands {
     #[command(about = "Watch for files")]
     Watch,
     #[command(about = "Run the server")]
     Server,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    #[command(subcommand)]
+    File(FileCommands),
+
+    #[command(subcommand)]
+    Server(ServerCommands),
 }
 
 #[tokio::main]
@@ -143,33 +150,35 @@ async fn main() -> Result<(), ()> {
                 println!("{file:?}");
             }
         },
-        Commands::Watch {} => {
-            watch_for_files(state).await;
-        }
-        Commands::Server => {
-            let shared_state = Arc::new(state);
-
-            let app = Router::new()
-                .route("/api/upload", post(handle_file_request_upload))
-                .route("/api/upload/{file_id}/upload", post(handle_file_upload))
-                .route("/api/file", get(handle_list_files))
-                .route("/api/file/{id}", get(handle_get_file))
-                .route(
-                    "/api/file/{file_id}/download",
-                    get(handle_file_request_download),
-                )
-                .route(
-                    "/api/download/{download_id}/download",
-                    get(handle_file_download),
-                )
-                .with_state(shared_state);
-
-            println!("Listening on port 8000");
-            let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
-            if let Err(e) = axum::serve(listener, app).await {
-                eprintln!("Server run error: {e}");
+        Commands::Server(server_commands) => match server_commands {
+            ServerCommands::Watch {} => {
+                watch_for_files(state).await;
             }
-        }
+            ServerCommands::Server => {
+                let shared_state = Arc::new(state);
+
+                let app = Router::new()
+                    .route("/api/upload", post(handle_file_request_upload))
+                    .route("/api/upload/{file_id}/upload", post(handle_file_upload))
+                    .route("/api/file", get(handle_list_files))
+                    .route("/api/file/{id}", get(handle_get_file))
+                    .route(
+                        "/api/file/{file_id}/download",
+                        get(handle_file_request_download),
+                    )
+                    .route(
+                        "/api/download/{download_id}/download",
+                        get(handle_file_download),
+                    )
+                    .with_state(shared_state);
+
+                println!("Listening on port 8000");
+                let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
+                if let Err(e) = axum::serve(listener, app).await {
+                    eprintln!("Server run error: {e}");
+                }
+            }
+        },
     }
 
     Ok(())
