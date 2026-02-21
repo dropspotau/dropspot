@@ -3,9 +3,18 @@ use futures_util::Stream;
 use reqwest::Error;
 use uuid::Uuid;
 
-use crate::server::handlers::ApiDownload;
+use crate::{core::encryption::DecryptionError, server::handlers::ApiDownload};
 
 use super::constants::ENDPOINT;
+
+#[derive(Debug, thiserror::Error)]
+pub enum DownloadError {
+    #[error("Encryption error: {0}")]
+    DecryptionError(DecryptionError),
+
+    #[error("Upload error: {0}")]
+    RequestError(reqwest::Error),
+}
 
 pub async fn download(
     file_id: Uuid,

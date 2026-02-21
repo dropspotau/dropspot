@@ -13,6 +13,7 @@ use futures_util::{Stream, StreamExt};
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
+use crate::core::encryption::{Encryption, decrypt_file};
 use crate::core::{
     download::download,
     file::{get_file, list_files},
@@ -42,7 +43,11 @@ enum FileCommands {
     #[command(about = "Upload a file")]
     Upload { file: String },
     #[command(about = "Download a file")]
-    Download { id: String },
+    Download {
+        id: String,
+        key: String,
+        nonce: String,
+    },
     #[command(about = "List files")]
     List,
     #[command(about = "Retrieve a file")]
@@ -102,22 +107,27 @@ async fn main() -> Result<(), ()> {
                 }
 
                 let upload = upload.unwrap();
-                println!("Uploaded file {}", upload.id);
+                println!("Uploaded file {}", &upload.file.id);
             }
-            FileCommands::Download { id } => {
+            FileCommands::Download { id, key, nonce } => {
                 let Ok(id) = Uuid::parse_str(id) else {
                     eprintln!("Invalid UUID");
                     return Err(());
                 };
+
+                let key = key.as_bytes().to_vec();
+                let nonce = nonce.as_bytes().to_vec();
+
+                let encryption = Encryption { key, nonce };
 
                 let Ok(file) = get_file(&id).await else {
                     eprintln!("Failed to retrieve file details");
                     return Err(());
                 };
 
-                let file_name = format!("download_{}", &file.name);
-                println!("Downloading file to {file_name}");
-                let Ok(local_file) = File::create(file_name) else {
+                // Decrypt the file
+                let local_file_name = format!("download_{}", &file.name);
+                let Ok(local_file) = File::create(local_file_name) else {
                     eprintln!("Failed to open local file to save");
                     return Err(());
                 };
@@ -138,6 +148,13 @@ async fn main() -> Result<(), ()> {
                     };
 
                     let bytes = bytes.unwrap();
+
+                    let decrypted_bytes = decrypt_file(&encryption, &bytes);
+                    if let Err(e) = decrypted_bytes {
+                        println!("Failed to decrypt file: {e:?}");
+                        return Err(());
+                    }
+
                     if let Err(e) = stream_writer.write(&bytes) {
                         println!("Failed to write bytes to local file: {e:?}");
                         return Err(());
