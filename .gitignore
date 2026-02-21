@@ -6,3 +6,7 @@
 
 # SQLx files
 /.sqlx
+
+# Test files
+test.*
+download_test.*

@@ -86,7 +86,6 @@ pub async fn handle_file_upload(
         api_error.status = StatusCode::NOT_FOUND;
         return api_error.into_response();
     };
-    println!("Got file {}", file.id);
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
     let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
@@ -102,16 +101,12 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    println!("Starting upload");
     if let Err(e) = start_upload(pool, &upload.id).await {
-        println!("Failed to start upload: {e}");
         let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
         return api_error.into_response();
     };
 
-    println!("Streaming upload");
     while let Some(bytes) = reader_stream.next().await {
-        println!("Writing {bytes:?}");
         if bytes.is_err() {
             if let Err(e) = delete_files(pool, &[file.id]).await {
                 let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
@@ -152,7 +147,6 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    println!("Uploaded file {}", file.id);
     let api_file: ApiFile = file.into();
     Json(api_file).into_response()
 }

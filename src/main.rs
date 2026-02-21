@@ -2,7 +2,8 @@ mod core;
 mod server;
 mod watch;
 
-use std::io::Read;
+use std::fs::File;
+use std::io::{BufWriter, Read, Write};
 use std::sync::Arc;
 
 use axum::Router;
@@ -53,7 +54,7 @@ enum ServerCommands {
     #[command(about = "Watch for files")]
     Watch,
     #[command(about = "Run the server")]
-    Server,
+    Run,
 }
 
 #[derive(Subcommand)]
@@ -109,6 +110,19 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
+                let Ok(file) = get_file(&id).await else {
+                    eprintln!("Failed to retrieve file details");
+                    return Err(());
+                };
+
+                let file_name = format!("download_{}", &file.name);
+                println!("Downloading file to {file_name}");
+                let Ok(local_file) = File::create(file_name) else {
+                    eprintln!("Failed to open local file to save");
+                    return Err(());
+                };
+
+                let mut stream_writer = BufWriter::new(local_file);
                 let download_stream = download(id).await;
 
                 if let Err(e) = download_stream {
@@ -117,12 +131,17 @@ async fn main() -> Result<(), ()> {
                 }
 
                 let mut download_stream = download_stream.unwrap();
-                println!("Downloading file");
-
-                println!("{:?}", download_stream.size_hint());
 
                 while let Some(bytes) = download_stream.next().await {
-                    println!("{bytes:?}");
+                    if let Err(ref e) = bytes {
+                        println!("Failed to download file: {e:?}");
+                    };
+
+                    let bytes = bytes.unwrap();
+                    if let Err(e) = stream_writer.write(&bytes) {
+                        println!("Failed to write bytes to local file: {e:?}");
+                        return Err(());
+                    };
                 }
             }
             FileCommands::List {} => {
@@ -152,7 +171,7 @@ async fn main() -> Result<(), ()> {
             ServerCommands::Watch {} => {
                 watch_for_files(state).await;
             }
-            ServerCommands::Server => {
+            ServerCommands::Run => {
                 let shared_state = Arc::new(state);
 
                 let app = Router::new()
