@@ -1,3 +1,5 @@
+use std::io::{BufRead, BufReader, BufWriter};
+
 use crate::core::encryption::{Encryption, EncryptionError, encrypt_file};
 use crate::server::handlers::{ApiFile, CreateFileBody};
 
@@ -19,9 +21,11 @@ pub struct UploadResult {
 
 pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, UploadError> {
     let size = contents.len();
+    let reader = BufReader::new(contents.as_slice());
+    let mut encrypted_contents = Vec::<u8>::new();
+    let writer = BufWriter::new(&mut encrypted_contents);
 
-    let (encryption, encrypted_contents) =
-        encrypt_file(&contents).map_err(|e| UploadError::EncryptionError(e))?;
+    let encryption = encrypt_file(reader, writer).map_err(|e| UploadError::EncryptionError(e))?;
 
     // Request an upload
     let file = reqwest::Client::new()

@@ -162,11 +162,16 @@ async fn main() -> Result<(), ()> {
                 let mut download_stream = download_stream.unwrap();
 
                 while let Some(bytes) = download_stream.next().await {
-                    if let Err(ref e) = bytes {
+                    if let Err(e) = bytes {
                         println!("Failed to download file: {e:?}");
+                        return Err(());
                     };
 
                     let bytes = bytes.unwrap();
+
+                    if bytes.len() == 0 {
+                        continue;
+                    }
 
                     let decrypted_bytes = decrypt_file(&encryption, &bytes);
                     if let Err(e) = decrypted_bytes {
