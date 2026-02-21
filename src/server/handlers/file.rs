@@ -10,7 +10,7 @@ use thiserror::Error;
 use uuid::Uuid;
 
 use super::super::db::{File, get_file_by_id, get_files};
-use super::super::state::AppState;;
+use super::super::state::AppState;
 use super::super::types::ApiError;
 
 #[derive(Error, Debug)]
