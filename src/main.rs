@@ -8,8 +8,12 @@ use std::sync::Arc;
 
 use axum::Router;
 use axum::routing::{get, post};
+use base64::alphabet::URL_SAFE;
+use base64::engine::GeneralPurpose;
+use base64::engine::general_purpose::NO_PAD;
+use base64::prelude::*;
 use clap::{Parser, Subcommand};
-use futures_util::{Stream, StreamExt};
+use futures_util::StreamExt;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
@@ -107,7 +111,14 @@ async fn main() -> Result<(), ()> {
                 }
 
                 let upload = upload.unwrap();
+
+                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
+                let key_base64 = engine.encode(upload.encryption.key);
+                let nonce_base64 = engine.encode(upload.encryption.nonce);
+
                 println!("Uploaded file {}", &upload.file.id);
+                println!("Key: {key_base64}");
+                println!("Nonce: {nonce_base64}");
             }
             FileCommands::Download { id, key, nonce } => {
                 let Ok(id) = Uuid::parse_str(id) else {
@@ -115,8 +126,9 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
-                let key = key.as_bytes().to_vec();
-                let nonce = nonce.as_bytes().to_vec();
+                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
+                let key = engine.decode(key).unwrap();
+                let nonce = engine.decode(nonce).unwrap();
 
                 let encryption = Encryption { key, nonce };
 

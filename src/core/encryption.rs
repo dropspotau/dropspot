@@ -30,7 +30,6 @@ pub(crate) fn encrypt_file(contents: &[u8]) -> Result<(Encryption, Vec<u8>), Enc
     let plaintext = cipher
         .decrypt(&nonce, ciphertext.as_ref())
         .map_err(|e| EncryptionError::CipherError(e))?;
-    assert_eq!(&plaintext, b"plaintext message");
 
     Ok((
         Encryption {
@@ -45,6 +44,7 @@ pub(crate) fn encrypt_file(contents: &[u8]) -> Result<(Encryption, Vec<u8>), Enc
 pub(crate) enum DecryptionError {
     #[error("Cipher invalid length")]
     CipherInvalidLengthError,
+
     #[error("Cipher error: {0}")]
     CipherError(aes_gcm::Error),
 }

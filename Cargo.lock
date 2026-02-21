@@ -513,6 +513,7 @@ version = "0.1.0"
 dependencies = [
  "aes-gcm",
  "axum",
+ "base64",
  "bytes",
  "chrono",
  "clap",
