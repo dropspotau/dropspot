@@ -3,7 +3,7 @@ mod server;
 mod watch;
 
 use std::fs::File;
-use std::io::{BufWriter, Read, Write};
+use std::io::{BufRead, BufReader, BufWriter, Cursor, Read, Write};
 use std::sync::Arc;
 
 use axum::Router;
@@ -17,7 +17,7 @@ use futures_util::StreamExt;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::core::encryption::{Encryption, decrypt_chunk};
+use crate::core::encryption::{Encryption, decrypt_chunk, decrypt_file};
 use crate::core::{
     download::download,
     file::{get_file, list_files},
@@ -151,8 +151,8 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
-                let mut stream_writer = BufWriter::new(local_file);
-                let download_stream = download(id, encryption).await;
+                let stream_writer = BufWriter::new(local_file);
+                let download_stream = download(id, &encryption).await;
 
                 if let Err(e) = download_stream {
                     eprintln!("Failed to download file: {e}");
@@ -169,12 +169,19 @@ async fn main() -> Result<(), ()> {
                         return Err(());
                     };
 
-                    let bytes = bytes.unwrap()
+                    let bytes = bytes.unwrap();
                     massive_buffer.extend_from_slice(bytes.as_ref());
 
                     // stream_writer.write_all(&bytes.unwrap()).unwrap();
                     // stream_writer.flush().unwrap();
                 }
+
+                let reader = Cursor::new(massive_buffer);
+
+                if let Err(e) = decrypt_file(&encryption, reader, stream_writer) {
+                    eprintln!("Failed to decrypt file: {e:?}");
+                    return Err(());
+                };
 
                 println!("Download complete");
             }

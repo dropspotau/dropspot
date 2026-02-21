@@ -26,7 +26,7 @@ pub enum DownloadError {
 
 pub async fn download(
     file_id: Uuid,
-    encryption: Encryption,
+    encryption: &Encryption,
 ) -> Result<impl Stream<Item = Result<Vec<u8>, Error>> + use<>, DownloadError> {
     // Request a download URL
     let download = reqwest::Client::new()
@@ -51,12 +51,14 @@ pub async fn download(
                 return Err(e);
             };
 
-            let decrypted_bytes = decrypt_chunk(&encryption, &bytes.unwrap().to_vec());
-            if let Err(e) = decrypted_bytes {
-                panic!("Failed to decrypt file: {e:?}");
-            }
+            bytes.map(|bytes| bytes.to_vec())
 
-            decrypted_bytes.map_err(|_e| panic!(""))
+            // let decrypted_bytes = decrypt_chunk(&encryption, &bytes.unwrap().to_vec());
+            // if let Err(e) = decrypted_bytes {
+            //     panic!("Failed to decrypt file: {e:?}");
+            // }
+            //
+            // decrypted_bytes.map_err(|_e| panic!(""))
         });
 
     Ok(stream)

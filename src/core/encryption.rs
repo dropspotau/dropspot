@@ -3,7 +3,7 @@ use std::io::{Read, Write};
 use aes_gcm::{
     Aes256Gcm, Nonce,
     aead::{
-        self, Aead, AeadCore, KeyInit, OsRng,
+        AeadCore, KeyInit, OsRng,
         stream::{DecryptorBE32, EncryptorBE32},
     },
 };
@@ -81,8 +81,9 @@ pub(crate) enum DecryptionError {
 
 pub(crate) fn decrypt_chunk(
     encryption: &Encryption,
-    chunk: &[u8],
-) -> Result<Vec<u8>, DecryptionError> {
+    mut reader: impl Read,
+    buffer: &mut [u8],
+) -> Result<(Vec<u8>, bool), DecryptionError> {
     let Ok(cipher) = Aes256Gcm::new_from_slice(&encryption.key) else {
         return Err(DecryptionError::CipherInvalidLengthError);
     };
@@ -91,17 +92,59 @@ pub(crate) fn decrypt_chunk(
     // IMPORTANT: A ciphertext chunk is the plaintext chunk size PLUS the 16-byte tag.
     let plaintext: Vec<u8>;
 
-    let read_count = chunk.len();
-    println!("Chunk size: {read_count}");
+    let read_count = reader.read(buffer).unwrap();
+    println!("Read size: {read_count} {}", CHUNK_SIZE + 16);
 
     // The last 16 bytes of each block are the authentication tag
-    if read_count == CHUNK_SIZE + 16 {
-        plaintext = stream_decryptor.decrypt_next(chunk).unwrap();
+    let is_last = read_count < CHUNK_SIZE + 16;
+    if !is_last {
+        let result = stream_decryptor.decrypt_next(buffer.as_ref());
+
+        if let Err(e) = result {
+            println!("Error decrypting next: {e:?}");
+            return Err(DecryptionError::CipherError(e));
+        }
+
+        plaintext = result.unwrap();
     } else {
         // The final chunk will be smaller than CHUNK_SIZE + 16.
         // If the file was exactly a multiple of CHUNK_SIZE, this will read exactly 16 bytes (just the final tag).
-        plaintext = stream_decryptor.decrypt_last(&chunk[..read_count]).unwrap();
+        let result = stream_decryptor.decrypt_last(&buffer[..read_count]);
+
+        if let Err(e) = result {
+            println!("Error decrypting last: {e:?}");
+            return Err(DecryptionError::CipherError(e));
+        }
+
+        plaintext = result.unwrap();
     }
 
-    Ok(plaintext)
+    println!("{is_last}");
+
+    Ok((plaintext, is_last))
+}
+
+pub(crate) fn decrypt_file(
+    encryption: &Encryption,
+    mut reader: impl Read,
+    mut writer: impl Write,
+) -> Result<Vec<u8>, DecryptionError> {
+    let mut buffer = [0u8; CHUNK_SIZE + 16];
+    let mut i = 0;
+
+    loop {
+        println!("i: {i}");
+        println!("{buffer:?}");
+        buffer = [0u8; CHUNK_SIZE + 16];
+        let (decrypted_bytes, is_last) = decrypt_chunk(&encryption, &mut reader, &mut buffer)?;
+        writer.write_all(&decrypted_bytes).unwrap();
+
+        if is_last {
+            break;
+        }
+
+        i += 1;
+    }
+
+    Ok(Vec::new())
 }
