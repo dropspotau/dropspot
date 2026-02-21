@@ -17,7 +17,7 @@ use futures_util::StreamExt;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::core::encryption::{Encryption, decrypt_chunk, decrypt_file};
+use crate::core::encryption::{Encryption, decrypt_file};
 use crate::core::{
     download::download,
     file::{get_file, list_files},
@@ -152,7 +152,7 @@ async fn main() -> Result<(), ()> {
                 };
 
                 let stream_writer = BufWriter::new(local_file);
-                let download_stream = download(id, &encryption).await;
+                let download_stream = download(id).await;
 
                 if let Err(e) = download_stream {
                     eprintln!("Failed to download file: {e}");

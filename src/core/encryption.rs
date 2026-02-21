@@ -79,71 +79,48 @@ pub(crate) enum DecryptionError {
     CipherError(aes_gcm::Error),
 }
 
-pub(crate) fn decrypt_chunk(
-    encryption: &Encryption,
-    mut reader: impl Read,
-    buffer: &mut [u8],
-) -> Result<(Vec<u8>, bool), DecryptionError> {
-    let Ok(cipher) = Aes256Gcm::new_from_slice(&encryption.key) else {
-        return Err(DecryptionError::CipherInvalidLengthError);
-    };
-    let nonce = Nonce::from_slice(&encryption.nonce);
-    let mut stream_decryptor = DecryptorBE32::from_aead(cipher, nonce.into());
-    // IMPORTANT: A ciphertext chunk is the plaintext chunk size PLUS the 16-byte tag.
-    let plaintext: Vec<u8>;
-
-    let read_count = reader.read(buffer).unwrap();
-    println!("Read size: {read_count} {}", CHUNK_SIZE + 16);
-
-    // The last 16 bytes of each block are the authentication tag
-    let is_last = read_count < CHUNK_SIZE + 16;
-    if !is_last {
-        let result = stream_decryptor.decrypt_next(buffer.as_ref());
-
-        if let Err(e) = result {
-            println!("Error decrypting next: {e:?}");
-            return Err(DecryptionError::CipherError(e));
-        }
-
-        plaintext = result.unwrap();
-    } else {
-        // The final chunk will be smaller than CHUNK_SIZE + 16.
-        // If the file was exactly a multiple of CHUNK_SIZE, this will read exactly 16 bytes (just the final tag).
-        let result = stream_decryptor.decrypt_last(&buffer[..read_count]);
-
-        if let Err(e) = result {
-            println!("Error decrypting last: {e:?}");
-            return Err(DecryptionError::CipherError(e));
-        }
-
-        plaintext = result.unwrap();
-    }
-
-    println!("{is_last}");
-
-    Ok((plaintext, is_last))
-}
-
 pub(crate) fn decrypt_file(
     encryption: &Encryption,
     mut reader: impl Read,
     mut writer: impl Write,
 ) -> Result<Vec<u8>, DecryptionError> {
-    let mut buffer = [0u8; CHUNK_SIZE + 16];
-    let mut i = 0;
+    let Ok(cipher) = Aes256Gcm::new_from_slice(&encryption.key) else {
+        return Err(DecryptionError::CipherInvalidLengthError);
+    };
+    let nonce = Nonce::from_slice(&encryption.nonce);
+    let mut stream_decryptor = DecryptorBE32::from_aead(cipher, nonce.into());
 
+    let mut buffer = [0u8; CHUNK_SIZE + 16];
     loop {
-        println!("i: {i}");
-        println!("{buffer:?}");
-        buffer = [0u8; CHUNK_SIZE + 16];
-        let (decrypted_bytes, is_last) = decrypt_chunk(&encryption, &mut reader, &mut buffer)?;
-        writer.write_all(&decrypted_bytes).unwrap();
+        let read_count = reader.read(&mut buffer).unwrap();
+
+        // The last 16 bytes of each block are the authentication tag
+        let is_last = read_count < CHUNK_SIZE + 16;
 
         if is_last {
-            break;
-        }
+            // The final chunk will be smaller than CHUNK_SIZE + 16.
+            // If the file was exactly a multiple of CHUNK_SIZE, this will read exactly 16 bytes (just the final tag).
+            let result = stream_decryptor.decrypt_last(&buffer[..read_count]);
 
-        i += 1;
+            if let Err(e) = result {
+                println!("Error decrypting last: {e:?}");
+                return Err(DecryptionError::CipherError(e));
+            }
+
+            let plaintext = result.unwrap();
+            writer.write_all(&plaintext).unwrap();
+            break;
+        } else {
+            let result = stream_decryptor.decrypt_next(buffer.as_ref());
+
+            if let Err(e) = result {
+                println!("Error decrypting next: {e:?}");
+                return Err(DecryptionError::CipherError(e));
+            }
+
+            let plaintext = result.unwrap();
+            writer.write_all(&plaintext).unwrap();
+        }
     }
 
     Ok(Vec::new())

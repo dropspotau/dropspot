@@ -1,12 +1,9 @@
-use std::io::Write;
-
-use bytes::Bytes;
-use futures_util::{Stream, StreamExt, TryStreamExt};
+use futures_util::{Stream, StreamExt};
 use reqwest::Error;
 use uuid::Uuid;
 
 use crate::{
-    core::encryption::{DecryptionError, Encryption, decrypt_chunk},
+    core::encryption::{DecryptionError, Encryption},
     server::handlers::ApiDownload,
 };
 
@@ -26,7 +23,6 @@ pub enum DownloadError {
 
 pub async fn download(
     file_id: Uuid,
-    encryption: &Encryption,
 ) -> Result<impl Stream<Item = Result<Vec<u8>, Error>> + use<>, DownloadError> {
     // Request a download URL
     let download = reqwest::Client::new()
