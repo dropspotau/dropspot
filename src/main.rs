@@ -3,7 +3,7 @@ mod server;
 mod watch;
 
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Cursor, Read, Write};
+use std::io::{BufWriter, Read};
 use std::sync::Arc;
 
 use axum::Router;
@@ -13,11 +13,10 @@ use base64::engine::GeneralPurpose;
 use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
-use futures_util::StreamExt;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
-use crate::core::encryption::{Encryption, decrypt_file};
+use crate::core::encryption::Encryption;
 use crate::core::{
     download::download,
     file::{get_file, list_files},
