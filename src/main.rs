@@ -23,6 +23,7 @@ use crate::core::{
     upload::upload,
     validation::validate_file,
 };
+use crate::server::handlers::handle_index;
 use crate::server::{
     db::connect,
     handlers::{
@@ -201,6 +202,7 @@ async fn main() -> Result<(), ()> {
                         "/api/download/{download_id}/download",
                         get(handle_file_download),
                     )
+                    .route("/app", get(handle_index))
                     .with_state(shared_state);
 
                 println!("Listening on port 8000");

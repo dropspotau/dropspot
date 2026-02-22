@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 aes-gcm = { version = "0.10.3", features = ["std", "stream"] }
+askama = "0.15.4"
 axum = "0.8.8"
 base64 = "0.22.1"
 bytes = { version = "1.11.0", features = ["serde"] }
