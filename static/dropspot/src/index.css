@@ -1,3 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap");
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +14,54 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /** DropSpot theme */
+  --dropspot-primary: #339cff;
+  --dropspot-primary-light: #61AFF9;
+  --dropspot-primary-lighter: #9ECFE8;
+  --dropspot-primary-dark: #255CBD;
+  --dropspot-primary-darker: #0F3473;
+  --dropspot-primary-darkest: #001A47;
+  --dropspot-hover: #e6e6e6;
+  --dropspot-box-shadow: 0 0 21px 7px rgb(255, 255, 255, 0.5);
+  --dropspot-box-shadow-semi-minor: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+  --dropspot-box-shadow-minor: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --dropspot-grey: #B9B9B9;
+  --dropspot-grey-light: #DFDFDF;
+  --dropspot-grey-lighter: #EDEDED;
+  --dropspot-grey-dark: #3F3F3F;
+  --dropspot-danger: #FF6868;
+  --dropspot-danger-light: #FFF1F1;
+  --dropspot-summer-light: #EFEFE5;
+  --dropspot-summer: #F9FD3A;
+  --dropspot-success: #6CC070;
+
+  --dropspot-dark: #1D2021;
+  --dropspot-teal: #19688C;
+  --dropspot-teal-dark: #165675;
+
+  --dropspot-font: "Roboto", "Helvetica", "Arial", sans-serif;
+  --dropspot-font-plain: system-ui;
+
+
+  /** Icons */
+  --icon-dark-background-colour: #FFFFFF;
+  --icon-dark-background-hover-colour: #FFFFFF;
+  --icon-dark-background-focus-colour: #FFFFFF;
+  --icon-dark-background-pressed-colour: var(--dropspot-dark);
+
+  --icon-ripple-dark-background-colour: #FFFFFF;
+  --icon-ripple-dark-background-opacity: 0.5;
+
+  --icon-size-small: 1rem;
+  --info-drawer-width: 24dvw;
+
+  @media only screen and (max-width: 48rem) {
+    --info-drawer-width: 72dvw;
+  }
+
+  /** Popover */
+  --popover-background-colour: #FFFFFF;
 }
 
 a {
@@ -29,7 +80,7 @@ body {
   place-items: center;
   min-height: 100dvh;
   min-width: 100dvw;
-  background-color: blue;
+  background-color: var(--dropspot-primary);
 }
 
 @media (prefers-color-scheme: light) {
