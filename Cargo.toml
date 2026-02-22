@@ -1,6 +1,6 @@
 [workspace]
 # members = ["core", "server", "cli"]
-members = ["core"]
+members = ["core", "cli"]
 resolver = "2"
 
 [workspace.package]
