@@ -1,12 +1,18 @@
 use std::io::{Cursor, Write};
 
+use chrono::{DateTime, Utc};
 use futures_util::StreamExt;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::core::encryption::{DecryptionError, Encryption, decrypt_file};
-use crate::server::handlers::ApiDownload;
-
 use super::constants::ENDPOINT;
+use crate::encryption::{DecryptionError, Encryption, decrypt_file};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ApiDownload {
+    pub id: Uuid,
+    pub expires_at: DateTime<Utc>,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum DownloadError {

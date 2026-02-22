@@ -31,13 +31,6 @@ impl Into<ApiError> for FileError {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ApiFile {
-    pub id: Uuid,
-    pub name: String,
-    pub size: i64,
-}
-
 impl From<File> for ApiFile {
     fn from(file: File) -> Self {
         Self {

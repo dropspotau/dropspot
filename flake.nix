@@ -27,6 +27,7 @@
           rust
           sqlx-cli
           bacon # File watching
+          wasm-pack # WebAssembly compilation
         ];
 
         editorDeps = with pkgs; [

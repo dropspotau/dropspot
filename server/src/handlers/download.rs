@@ -47,11 +47,6 @@ impl Into<ApiError> for FileDownloadError {
         }
     }
 }
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ApiDownload {
-    pub id: Uuid,
-    pub expires_at: DateTime<Utc>,
-}
 
 impl From<Download> for ApiDownload {
     fn from(download: Download) -> Self {

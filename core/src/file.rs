@@ -1,8 +1,7 @@
 use uuid::Uuid;
 
-use crate::server::handlers::ApiFile;
-
-use super::constants::ENDPOINT;
+use crate::constants::ENDPOINT;
+use crate::upload::ApiFile;
 
 pub async fn list_files() -> Result<Vec<ApiFile>, reqwest::Error> {
     let files = reqwest::Client::new()

@@ -51,12 +51,6 @@ impl Into<ApiError> for FileUploadError {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CreateFileBody {
-    pub name: String,
-    pub size: i64,
-}
-
 pub async fn handle_file_request_upload(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<CreateFileBody>,

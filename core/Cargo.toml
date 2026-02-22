@@ -1,0 +1,16 @@
+[package]
+name = "dropspot-core"
+version = "0.1.0"
+edition = "2024"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+aes-gcm.workspace = true
+chrono.workspace = true
+futures-util.workspace = true
+http-serde.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+wasm-bindgen.workspace = true

@@ -1,9 +1,17 @@
 use std::io::{BufRead, BufReader, BufWriter};
 
-use crate::core::encryption::{Encryption, EncryptionError, encrypt_file};
-use crate::server::handlers::{ApiFile, CreateFileBody};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use super::constants::ENDPOINT;
+use crate::constants::ENDPOINT;
+use crate::encryption::{Encryption, EncryptionError, encrypt_file};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ApiFile {
+    pub id: Uuid,
+    pub name: String,
+    pub size: i64,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum UploadError {
@@ -12,6 +20,12 @@ pub enum UploadError {
 
     #[error("Upload error: {0}")]
     RequestError(reqwest::Error),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateFileBody {
+    pub name: String,
+    pub size: i64,
 }
 
 pub struct UploadResult {
