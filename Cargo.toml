@@ -1,6 +1,6 @@
 [workspace]
 members = ["core", "server"]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 name = "dropspot"
