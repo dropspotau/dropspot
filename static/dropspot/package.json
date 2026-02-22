@@ -9,13 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dropspot-core": "file:../../core/pkg",
     "htmx.org": "4.0.0-alpha7",
     "lit": "^3.3.1"
   },
   "devDependencies": {
     "@tsconfig/recommended": "1.0.13",
     "typescript": "5.9.3",
-    "vite": "^8.0.0-beta.13"
+    "vite": "^8.0.0-beta.13",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
   },
   "pnpm": {
     "overrides": {
