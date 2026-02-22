@@ -1,6 +1,8 @@
 use std::io::{BufReader, BufWriter};
 
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+use wasm_bindgen::prelude::*;
 
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
@@ -21,6 +23,8 @@ pub struct CreateFileBody {
     pub size: i64,
 }
 
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UploadResult {
     pub file: File,
     pub encryption: Encryption,
@@ -63,4 +67,16 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
     }
 
     Ok(UploadResult { file, encryption })
+}
+
+#[wasm_bindgen]
+pub async fn upload_js(name: String, contents: Vec<u8>) -> Result<UploadResult, JsError> {
+    let upload = upload(name, contents).await;
+
+    if let Err(e) = upload {
+        return Err(JsError::new(&format!("{e:?}")));
+    };
+
+    let upload = upload.unwrap();
+    Ok(upload)
 }

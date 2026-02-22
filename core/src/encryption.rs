@@ -7,6 +7,7 @@ use aes_gcm::{
         stream::{DecryptorBE32, EncryptorBE32},
     },
 };
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -15,6 +16,7 @@ pub enum EncryptionError {
     CipherError(aes_gcm::Error),
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Encryption {
     /// AES-256 GCM key
     pub key: Vec<u8>,

@@ -2,7 +2,9 @@
 name = "dropspot-core"
 version = "0.1.0"
 edition = "2024"
-crate-type = ["lib", "cdylib"]
+
+[lib]
+crate-type = ["lib", "cdylib", "rlib"]
 
 [dependencies]
 aes-gcm.workspace = true
@@ -11,6 +13,16 @@ futures-util.workspace = true
 http-serde.workspace = true
 reqwest.workspace = true
 serde.workspace = true
+serde-wasm-bindgen = "0.6.5"
 thiserror.workspace = true
 uuid.workspace = true
 wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+
+tsify = { version = "0.5.6", features = ["js"] }
+
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.2.11", features = ["js"] }
+# web-sys = { version = "0.3.69", features = ["console", "Window"] }
+# zstd = { version = "0.13.2", features = ["wasm"] }
+uuid = { workspace = true, features = ["js"] }
