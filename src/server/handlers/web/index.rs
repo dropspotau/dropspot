@@ -1,8 +1,7 @@
 use askama::Template;
-use axum::{
-    http::status::StatusCode,
-    response::{Html, IntoResponse, Response},
-};
+use axum::response::IntoResponse;
+
+use super::template::HtmlTemplate;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -13,20 +12,11 @@ pub async fn handle_index() -> impl IntoResponse {
     HtmlTemplate(template)
 }
 
-struct HtmlTemplate<T>(T);
+#[derive(Template)]
+#[template(path = "header.html")]
+struct HeaderTemplate {}
 
-impl<T> IntoResponse for HtmlTemplate<T>
-where
-    T: Template,
-{
-    fn into_response(self) -> Response {
-        match self.0.render() {
-            Ok(html) => Html(html).into_response(),
-            Err(err) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to render template. Error: {err}"),
-            )
-                .into_response(),
-        }
-    }
+pub async fn handle_header() -> impl IntoResponse {
+    let template = HeaderTemplate {};
+    HtmlTemplate(template)
 }

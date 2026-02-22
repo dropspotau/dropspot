@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DropSpot</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/dropspot/dist/style.css">
+    <script type="module" src="/static/dropspot/dist/index.js"></script>
 </head>
 <body>
+    <div hx-get="/app/header" hx-trigger="load" hx-target="this" hx-swap="outerHTML">Loading...</div>
     <h1>DropSpot</h1>
+    <my-element></my-element>
 </body>
 </html>
