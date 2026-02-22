@@ -14,6 +14,7 @@ use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
 use tokio::net::TcpListener;
+use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
 use crate::core::encryption::Encryption;
@@ -188,6 +189,8 @@ async fn main() -> Result<(), ()> {
             }
             ServerCommands::Run => {
                 let shared_state = Arc::new(state);
+                let serve_dir = ServeDir::new("static")
+                    .not_found_service(ServeFile::new("static/not_found.html"));
 
                 let app = Router::new()
                     .route("/api/upload", post(handle_file_request_upload))
@@ -203,6 +206,8 @@ async fn main() -> Result<(), ()> {
                         get(handle_file_download),
                     )
                     .route("/app", get(handle_index))
+                    .nest_service("/static", serve_dir.clone())
+                    .fallback_service(serve_dir)
                     .with_state(shared_state);
 
                 println!("Listening on port 8000");
