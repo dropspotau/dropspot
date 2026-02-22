@@ -1,7 +1,7 @@
 use std::{thread::sleep, time::Duration};
 
 use super::AppState;
-use super::server::db::{get_downloads, get_files, get_uploads};
+use super::server::db::get_expired_files;
 
 pub async fn watch_for_files(state: AppState) {
     let pool = state.get_pool();
@@ -10,32 +10,17 @@ pub async fn watch_for_files(state: AppState) {
         println!("Watching for files...");
         sleep(Duration::new(1, 0));
 
-        let uploads = get_uploads(pool).await;
+        let expired_files = get_expired_files(pool).await;
+        if let Err(e) = expired_files {
+            eprintln!("Failed to get expired files: {e}");
+            continue;
+        };
 
-        let expired_keys = uploads
+        let expired_files = expired_files
             .unwrap()
-            .iter()
-            .filter(|upload| upload.is_expired())
-            .map(|upload| upload.id)
+            .into_iter()
+            .map(|file| file.id)
             .collect::<Vec<_>>();
-
-        println!("Removed uploads: {expired_keys:?}");
-
-        let files = get_files(pool).await;
-
-        if let Err(e) = files {
-            eprintln!("Failed to get files: {e}");
-            continue;
-        };
-
-        let downloads = get_downloads(pool).await;
-
-        if let Err(e) = downloads {
-            eprintln!("Failed to get downloads: {e}");
-            continue;
-        };
-
-        println!("This many files: {}", files.unwrap().len());
-        println!("This many downloads: {}", downloads.unwrap().len());
+        println!("{expired_files:?}");
     }
 }
