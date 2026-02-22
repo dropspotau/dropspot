@@ -152,36 +152,10 @@ async fn main() -> Result<(), ()> {
                 };
 
                 let stream_writer = BufWriter::new(local_file);
-                let download_stream = download(id).await;
-
-                if let Err(e) = download_stream {
+                if let Err(e) = download(id, &encryption, stream_writer).await {
                     eprintln!("Failed to download file: {e}");
                     return Err(());
                 }
-
-                let mut download_stream = download_stream.unwrap();
-
-                let mut massive_buffer = Vec::<u8>::new();
-
-                while let Some(bytes) = download_stream.next().await {
-                    if let Err(e) = bytes {
-                        eprintln!("Failed to download file: {e:?}");
-                        return Err(());
-                    };
-
-                    let bytes = bytes.unwrap();
-                    massive_buffer.extend_from_slice(bytes.as_ref());
-
-                    // stream_writer.write_all(&bytes.unwrap()).unwrap();
-                    // stream_writer.flush().unwrap();
-                }
-
-                let reader = Cursor::new(massive_buffer);
-
-                if let Err(e) = decrypt_file(&encryption, reader, stream_writer) {
-                    eprintln!("Failed to decrypt file: {e:?}");
-                    return Err(());
-                };
 
                 println!("Download complete");
             }

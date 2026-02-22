@@ -1,11 +1,10 @@
-use futures_util::{Stream, StreamExt};
-use reqwest::Error;
+use std::io::{Cursor, Write};
+
+use futures_util::StreamExt;
 use uuid::Uuid;
 
-use crate::{
-    core::encryption::{DecryptionError, Encryption},
-    server::handlers::ApiDownload,
-};
+use crate::core::encryption::{DecryptionError, Encryption, decrypt_file};
+use crate::server::handlers::ApiDownload;
 
 use super::constants::ENDPOINT;
 
@@ -23,7 +22,9 @@ pub enum DownloadError {
 
 pub async fn download(
     file_id: Uuid,
-) -> Result<impl Stream<Item = Result<Vec<u8>, Error>> + use<>, DownloadError> {
+    encryption: &Encryption,
+    writer: impl Write,
+) -> Result<(), DownloadError> {
     // Request a download URL
     let download = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file/{file_id}/download"))
@@ -36,7 +37,7 @@ pub async fn download(
 
     // Actually download the file
     let download_id = download.id;
-    let stream = reqwest::Client::new()
+    let mut stream = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/download/{download_id}/download"))
         .send()
         .await
@@ -48,14 +49,26 @@ pub async fn download(
             };
 
             bytes.map(|bytes| bytes.to_vec())
-
-            // let decrypted_bytes = decrypt_chunk(&encryption, &bytes.unwrap().to_vec());
-            // if let Err(e) = decrypted_bytes {
-            //     panic!("Failed to decrypt file: {e:?}");
-            // }
-            //
-            // decrypted_bytes.map_err(|_e| panic!(""))
         });
 
-    Ok(stream)
+    let mut massive_buffer = Vec::<u8>::new();
+
+    while let Some(bytes) = stream.next().await {
+        if let Err(e) = bytes {
+            eprintln!("Failed to download file: {e:?}");
+            return Err(DownloadError::RequestError(e));
+        };
+
+        let bytes = bytes.unwrap();
+        massive_buffer.extend_from_slice(bytes.as_ref());
+    }
+
+    let reader = Cursor::new(massive_buffer);
+
+    if let Err(e) = decrypt_file(&encryption, reader, writer) {
+        eprintln!("Failed to decrypt file: {e:?}");
+        return Err(DownloadError::DecryptionError(e));
+    };
+
+    Ok(())
 }

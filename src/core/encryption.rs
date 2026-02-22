@@ -83,7 +83,7 @@ pub(crate) fn decrypt_file(
     encryption: &Encryption,
     mut reader: impl Read,
     mut writer: impl Write,
-) -> Result<Vec<u8>, DecryptionError> {
+) -> Result<(), DecryptionError> {
     let Ok(cipher) = Aes256Gcm::new_from_slice(&encryption.key) else {
         return Err(DecryptionError::CipherInvalidLengthError);
     };
@@ -123,5 +123,5 @@ pub(crate) fn decrypt_file(
         }
     }
 
-    Ok(Vec::new())
+    Ok(())
 }
