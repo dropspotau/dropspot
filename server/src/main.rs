@@ -1,5 +1,7 @@
-mod core;
-mod server;
+mod db;
+mod handlers;
+mod state;
+mod types;
 mod watch;
 
 use std::fs::File;
@@ -17,22 +19,20 @@ use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
-use crate::core::encryption::Encryption;
-use crate::core::{
+use crate::db::connect;
+use crate::handlers::{
+    handle_file_download, handle_file_request_download, handle_file_request_upload,
+    handle_file_upload, handle_get_file, handle_header, handle_index, handle_list_files,
+};
+use crate::state::AppState;
+use crate::watch::watch_for_files;
+use dropspot_core::encryption::Encryption;
+use dropspot_core::{
     download::download,
     file::{get_file, list_files},
     upload::upload,
     validation::validate_file,
 };
-use crate::server::{
-    db::connect,
-    handlers::{
-        handle_file_download, handle_file_request_download, handle_file_request_upload,
-        handle_file_upload, handle_get_file, handle_header, handle_index, handle_list_files,
-    },
-    state::AppState,
-};
-use crate::watch::watch_for_files;
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
@@ -78,12 +78,6 @@ enum Commands {
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     let cli = Cli::parse();
-
-    let Ok(pool) = connect().await else {
-        return Err(());
-    };
-
-    let state = AppState::new(pool);
 
     match &cli.command {
         Commands::File(file_commands) => match file_commands {
@@ -184,9 +178,19 @@ async fn main() -> Result<(), ()> {
         },
         Commands::Server(server_commands) => match server_commands {
             ServerCommands::Watch {} => {
+                let Ok(pool) = connect().await else {
+                    return Err(());
+                };
+
+                let state = AppState::new(pool);
                 watch_for_files(state).await;
             }
             ServerCommands::Run => {
+                let Ok(pool) = connect().await else {
+                    return Err(());
+                };
+
+                let state = AppState::new(pool);
                 let shared_state = Arc::new(state);
                 let serve_dir = ServeDir::new("static")
                     .not_found_service(ServeFile::new("static/not_found.html"));

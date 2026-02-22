@@ -5,18 +5,15 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
-use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use super::super::{
-    db::{Download, create_download, get_download_by_id, get_file_by_id},
-    state::AppState,
-    types::ApiError,
-};
+use crate::db::{Download, create_download, get_download_by_id, get_file_by_id};
+use crate::state::AppState;
+use crate::types::ApiError;
+use dropspot_core::download::Download as ApiDownload;
 
 #[derive(Error, Debug)]
 pub enum FileDownloadError {

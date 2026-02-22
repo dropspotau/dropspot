@@ -5,11 +5,11 @@ use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::constants::ENDPOINT;
+use crate::constants::ENDPOINT;
 use crate::encryption::{DecryptionError, Encryption, decrypt_file};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ApiDownload {
+pub struct Download {
     pub id: Uuid,
     pub expires_at: DateTime<Utc>,
 }
@@ -37,7 +37,7 @@ pub async fn download(
         .send()
         .await
         .map_err(DownloadError::RequestError)?
-        .json::<ApiDownload>()
+        .json::<Download>()
         .await
         .map_err(DownloadError::RequestError)?;
 

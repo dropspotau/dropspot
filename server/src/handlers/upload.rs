@@ -5,23 +5,21 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
+use dropspot_core::file::File as ApiFile;
+use dropspot_core::upload::CreateFileBody;
 use futures_util::StreamExt;
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use uuid::Uuid;
 
-use super::{
-    super::{
-        db::{
-            create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
-            start_upload,
-        },
-        state::AppState,
-        types::ApiError,
+use crate::{
+    db::{
+        create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
+        start_upload,
     },
-    file::ApiFile,
+    state::AppState,
+    types::ApiError,
 };
 
 #[derive(Error, Debug)]

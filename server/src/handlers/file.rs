@@ -4,14 +4,14 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
+use dropspot_core::file::File as ApiFile;
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
-use super::super::db::{File, get_file_by_id, get_files};
-use super::super::state::AppState;
-use super::super::types::ApiError;
+use crate::db::{File, get_file_by_id, get_files};
+use crate::state::AppState;
+use crate::types::ApiError;
 
 #[derive(Error, Debug)]
 pub enum FileError {

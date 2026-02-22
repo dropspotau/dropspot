@@ -4,7 +4,7 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::server::db::create_upload;
+use super::upload::create_upload;
 
 /// Used in queries that just return an ID
 struct Id {

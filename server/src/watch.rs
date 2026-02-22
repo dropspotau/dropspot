@@ -1,7 +1,7 @@
 use std::{thread::sleep, time::Duration};
 
-use super::AppState;
-use super::server::db::get_expired_files;
+use crate::db::get_expired_files;
+use crate::state::AppState;
 
 pub async fn watch_for_files(state: AppState) {
     let pool = state.get_pool();

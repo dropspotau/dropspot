@@ -1,17 +1,10 @@
-use std::io::{BufRead, BufReader, BufWriter};
+use std::io::{BufReader, BufWriter};
 
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ApiFile {
-    pub id: Uuid,
-    pub name: String,
-    pub size: i64,
-}
+use crate::file::File;
 
 #[derive(Debug, thiserror::Error)]
 pub enum UploadError {
@@ -29,7 +22,7 @@ pub struct CreateFileBody {
 }
 
 pub struct UploadResult {
-    pub file: ApiFile,
+    pub file: File,
     pub encryption: Encryption,
 }
 
@@ -52,7 +45,7 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
         .send()
         .await
         .map_err(|e| UploadError::RequestError(e))?
-        .json::<ApiFile>()
+        .json::<File>()
         .await
         .map_err(|e| UploadError::RequestError(e))?;
 

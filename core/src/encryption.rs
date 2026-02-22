@@ -10,12 +10,12 @@ use aes_gcm::{
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub(crate) enum EncryptionError {
+pub enum EncryptionError {
     #[error("Cipher error: {0}")]
     CipherError(aes_gcm::Error),
 }
 
-pub(crate) struct Encryption {
+pub struct Encryption {
     /// AES-256 GCM key
     pub key: Vec<u8>,
     /// AES-256 GCM nonce
@@ -71,7 +71,7 @@ pub(crate) fn encrypt_file(
 }
 
 #[derive(Error, Debug)]
-pub(crate) enum DecryptionError {
+pub enum DecryptionError {
     #[error("Cipher invalid length")]
     CipherInvalidLengthError,
 
