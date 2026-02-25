@@ -16,7 +16,6 @@ const upload = document.querySelector("#upload");
 
 if (upload) {
   upload.addEventListener("click", async () => {
-    console.log("Clicked");
     const result = await upload_js("test.txt", new Uint8Array([1, 2, 3, 4, 5]));
     console.debug(result);
   });
