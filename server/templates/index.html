@@ -8,9 +8,13 @@
     <script type="module" src="/static/dropspot/dist/index.js"></script>
 </head>
 <body>
-    <div hx-get="/app/header" hx-trigger="load" hx-target="this" hx-swap="outerHTML">Loading...</div>
-    <h1>DropSpot</h1>
-    <my-element></my-element>
-    <button>Try do WASM</button>
+    <header hx-get="/app/header" hx-trigger="load" hx-target="this" hx-swap="outerHTML">Loading...</header>
+    <main>
+        <section class="upload-area">
+            <div id="upload" class="upload-circle">
+                <h1 class="text">dropspot</h1>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
