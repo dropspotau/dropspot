@@ -1,5 +1,6 @@
 import htmx from "htmx.org";
 import init, { upload_js } from "dropspot-core";
+
 import "./index.css";
 import "./upload-circle.css";
 import "./utils.css";
