@@ -8,7 +8,9 @@ import "./my-element";
 
 console.debug(htmx);
 
-await init(); // How good are top-level awaits?
+init().then(() => {
+  console.log("DropSpot initialised");
+});
 
 const upload = document.querySelector("#upload");
 
