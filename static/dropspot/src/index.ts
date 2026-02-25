@@ -1,11 +1,13 @@
 import htmx from "htmx.org";
-import { upload_js } from "dropspot-core";
+import init, { upload_js } from "dropspot-core";
 import "./index.css";
 import "./upload-circle.css";
 import "./utils.css";
 import "./my-element";
 
 console.debug(htmx);
+
+await init(); // How good are top-level awaits?
 
 const upload = document.querySelector("#upload");
 
