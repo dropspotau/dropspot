@@ -70,6 +70,7 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
 }
 
 #[wasm_bindgen]
+#[cfg(target_arch = "wasm32")]
 pub async fn upload_js(name: String, contents: Vec<u8>) -> Result<UploadResult, JsError> {
     let upload = upload(name, contents).await;
 

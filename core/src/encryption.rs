@@ -9,6 +9,7 @@ use aes_gcm::{
 };
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tsify::Tsify;
 
 #[derive(Error, Debug)]
 pub enum EncryptionError {
@@ -16,7 +17,8 @@ pub enum EncryptionError {
     CipherError(aes_gcm::Error),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Encryption {
     /// AES-256 GCM key
     pub key: Vec<u8>,

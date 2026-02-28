@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use wasm_bindgen::prelude::*;
+use tsify::Tsify;
 
 use crate::constants::ENDPOINT;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Tsify, Debug)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct File {
     pub id: Uuid,
     pub name: String,

@@ -1,9 +1,10 @@
-use std::io::{Cursor, Write};
+use std::io::{BufWriter, Cursor, Write};
 
 use chrono::{DateTime, Utc};
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use wasm_bindgen::prelude::*;
 
 use crate::constants::ENDPOINT;
 use crate::encryption::{DecryptionError, Encryption, decrypt_file};
@@ -77,4 +78,21 @@ pub async fn download(
     };
 
     Ok(())
+}
+
+// #[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub async fn download_js(file_id: String, encryption: Encryption) -> Result<Vec<u8>, JsError> {
+    let file_id = Uuid::parse_str(&file_id)
+        .map_err(|err| JsError::new(&format!("Invalid passed to download_js: {err}")))?;
+    let mut buffer = Vec::<u8>::new();
+    let writer = BufWriter::new(&mut buffer);
+
+    let download = download(file_id, &encryption, writer).await;
+
+    if let Err(e) = download {
+        return Err(JsError::new(&format!("{e:?}")));
+    };
+
+    Ok(buffer)
 }
