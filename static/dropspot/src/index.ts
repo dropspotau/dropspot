@@ -13,10 +13,29 @@ init().then(() => {
 });
 
 const upload = document.querySelector("#upload");
+const fileInput = document.querySelector("#file-input");
 
-if (upload) {
-  upload.addEventListener("click", async () => {
-    const result = await upload_js("test.txt", new Uint8Array([1, 2, 3, 4, 5]));
+if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
+  upload.addEventListener("click", () => {
+    if (fileInput) {
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener("change", async (e) => {
+    if (!fileInput.files) {
+      return;
+    }
+
+    const [file] = Array.from(fileInput.files);
+
+    if (!file) {
+      return;
+    }
+
+    const fileContents = new Uint8Array(await file.arrayBuffer());
+
+    const result = await upload_js(file.name, fileContents);
     console.debug(result);
 
     const buffer = await download_js(result.file.id, result.encryption);

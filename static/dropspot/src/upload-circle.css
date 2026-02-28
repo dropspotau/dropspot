@@ -40,6 +40,10 @@
     }
 }
 
+.file-upload {
+    display: none;
+}
+
 /* Define the rotation animation */
 @keyframes spin {
     from {
