@@ -5,6 +5,7 @@ import "./index.css";
 import "./upload-circle.css";
 import "./utils.css";
 import "./my-element";
+import { download } from "./download";
 
 console.debug(htmx);
 
@@ -22,7 +23,7 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     }
   });
 
-  fileInput.addEventListener("change", async (e) => {
+  fileInput.addEventListener("change", async () => {
     if (!fileInput.files) {
       return;
     }
@@ -36,9 +37,11 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     const fileContents = new Uint8Array(await file.arrayBuffer());
 
     const result = await upload_js(file.name, fileContents);
-    console.debug(result);
+    const buffer = (await download_js(
+      result.file.id,
+      result.encryption,
+    )) as Uint8Array<ArrayBuffer>;
 
-    const buffer = await download_js(result.file.id, result.encryption);
-    console.debug(buffer);
+    download(result.file.name, buffer);
   });
 }
