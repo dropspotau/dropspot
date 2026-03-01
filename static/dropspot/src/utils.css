@@ -1,6 +1,6 @@
 @layer utils {
     /* The text styling */
-    .text {
+    .text-white {
         color: white;
         font-size: 2.5rem;
         font-weight: bold;

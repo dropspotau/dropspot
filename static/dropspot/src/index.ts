@@ -3,7 +3,7 @@ import init, {
   upload_js,
   download_js,
   create_link_js,
-  parse_link_js,
+  type UploadResult,
 } from "dropspot-core";
 
 import "./index.css";
@@ -16,6 +16,24 @@ console.debug(htmx);
 init().then(() => {
   console.log("DropSpot initialised");
 });
+
+const addRecentUpload = (result: UploadResult): void => {
+  const recentUploads = document.querySelector("#recent-uploads");
+  console.debug(recentUploads);
+
+  if (!recentUploads) {
+    return;
+  }
+
+  const link = create_link_js(result.file.id, result.encryption);
+  const div = document.createElement("div");
+  div.innerHTML = `
+      <div class="recent-upload">
+        <a href="${link}">${result.file.name}</a>
+      </div>
+    `;
+  recentUploads.appendChild(div);
+};
 
 const upload = document.querySelector("#upload");
 const fileInput = document.querySelector("#file-input");
@@ -41,12 +59,10 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     const fileContents = new Uint8Array(await file.arrayBuffer());
 
     const result = await upload_js(file.name, fileContents);
+    addRecentUpload(result);
 
     const link = create_link_js(result.file.id, result.encryption);
     console.debug(link);
-    const parsed = parse_link_js(link);
-    console.debug(parsed);
-    console.debug(result);
     const buffer = (await download_js(
       result.file.id,
       result.encryption,
