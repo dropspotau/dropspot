@@ -576,6 +576,7 @@ name = "dropspot-core"
 version = "0.1.0"
 dependencies = [
  "aes-gcm",
+ "base64",
  "chrono",
  "futures-util",
  "getrandom 0.2.17",
