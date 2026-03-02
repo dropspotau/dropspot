@@ -15,14 +15,6 @@ export class FilePreviewElement extends LitElement {
   @state()
   private blobUrl: string | null = null;
 
-  connectedCallback() {
-    super.connectedCallback();
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-  }
-
   public setBuffer(buffer: Uint8Array<ArrayBuffer>): void {
     this.blobUrl = URL.createObjectURL(new Blob([buffer]));
   }
@@ -50,8 +42,8 @@ export class FilePreviewElement extends LitElement {
     }
 
     return html`
-      <h3>${this.name}</h3>
-      ${previewHtml}
+        <h3>${this.name}</h3>
+        ${this.blobUrl && previewHtml}
     `;
   }
 }
