@@ -11,10 +11,10 @@ export class CopyButtonElement extends LitElement {
   `;
 
   @property()
-  private value = "placeholder";
+  private value: string = "placeholder";
 
   @state()
-  private hasCopied = false;
+  private hasCopied: boolean = false;
 
   connectedCallback() {
     super.connectedCallback();

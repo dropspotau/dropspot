@@ -17,6 +17,7 @@ import "./uploads.css";
 import "./utils.css";
 
 import "./copy-button";
+import "./file-preview";
 import "./my-element";
 import { download } from "./download";
 
@@ -88,7 +89,15 @@ const initialiseDownload = async (): Promise<void> => {
         file.id,
         encryption,
       )) as Uint8Array<ArrayBuffer>;
-      download(file.name, buffer);
+
+      if (false) {
+        download(file.name, buffer);
+      }
+
+      const filePreviewElement = document.createElement("file-preview");
+      filePreviewElement.setAttribute("name", file.name);
+      filePreviewElement.setBuffer(buffer);
+      linkedFileElement.appendChild(filePreviewElement);
     });
   }
 };
