@@ -20,6 +20,7 @@ import "./copy-button";
 import "./file-preview";
 import "./my-element";
 import { download } from "./download";
+import { getFilePreviewType } from "./file-preview";
 
 console.debug(htmx);
 
@@ -48,7 +49,7 @@ const addRecentUpload = (result: UploadResult): void => {
   div.classList.add("recent-upload");
   div.innerHTML = `
       <h3 class="text-white no-margin">${result.file.name}</h3>
-      <copy-button value="${url}"></copy-button>
+      <copy-button value="${url}" class="button-white"></copy-button>
   `;
   recentUploads.appendChild(div);
 };
@@ -90,14 +91,14 @@ const initialiseDownload = async (): Promise<void> => {
         encryption,
       )) as Uint8Array<ArrayBuffer>;
 
-      if (false) {
+      if (getFilePreviewType(file.name)) {
+        const filePreviewElement = document.createElement("file-preview");
+        filePreviewElement.setAttribute("name", file.name);
+        filePreviewElement.setBuffer(buffer);
+        linkedFileElement.appendChild(filePreviewElement);
+      } else {
         download(file.name, buffer);
       }
-
-      const filePreviewElement = document.createElement("file-preview");
-      filePreviewElement.setAttribute("name", file.name);
-      filePreviewElement.setBuffer(buffer);
-      linkedFileElement.appendChild(filePreviewElement);
     });
   }
 };
