@@ -9,4 +9,12 @@
     .no-margin {
         margin: 0;
     }
+
+    .button-white {
+        --md-filled-button-container-color: #FFFFFF;
+        --md-filled-button-label-text-color: var(--dropspot-primary);
+        --md-filled-button-hover-label-text-color: var(--dropspot-primary);
+        --md-filled-button-focus-label-text-color: var(--dropspot-primary);
+        --md-filled-button-pressed-label-text-color: var(--dropspot-primary);
+    }
 }

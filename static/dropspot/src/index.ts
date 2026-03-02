@@ -35,7 +35,6 @@ const createDownloadUrl = (identifier: string): URL => {
 
 const addRecentUpload = (result: UploadResult): void => {
   const recentUploads = document.querySelector("#recent-uploads");
-  console.debug(recentUploads);
 
   if (!recentUploads) {
     return;
@@ -78,7 +77,7 @@ const initialiseDownload = async (): Promise<void> => {
   linkedFileElement.innerHTML = `
       <span class="text-white">You've been sent</span>
       <h3 class="text-white no-margin">${file.name}</h3>
-      <md-filled-button>Download</md-filled-button>
+      <md-filled-button class="button-white">Download</md-filled-button>
   `;
 
   const button = linkedFileElement.querySelector("md-filled-button");
@@ -89,7 +88,6 @@ const initialiseDownload = async (): Promise<void> => {
         file.id,
         encryption,
       )) as Uint8Array<ArrayBuffer>;
-      console.debug(buffer.length);
       download(file.name, buffer);
     });
   }

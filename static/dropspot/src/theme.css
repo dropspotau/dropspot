@@ -59,4 +59,7 @@
 
   /** Popover */
   --popover-background-colour: #FFFFFF;
+
+  /** Material Web */
+  --md-sys-color-primary: var(--dropspot-primary);
 }
