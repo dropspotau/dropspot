@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@material/web": "^2.4.1",
     "dropspot-core": "file:../../core/pkg",
     "htmx.org": "4.0.0-alpha7",
     "lit": "^3.3.1"

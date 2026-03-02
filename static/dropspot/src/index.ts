@@ -8,14 +8,25 @@ import init, {
 
 import "./index.css";
 import "./upload-circle.css";
+import "./uploads.css";
 import "./utils.css";
+
+import "./copy-button";
 import "./my-element";
+import "@material/web/button/filled-button.js";
 
 console.debug(htmx);
 
 init().then(() => {
   console.log("DropSpot initialised");
 });
+
+const createDownloadUrl = (identifier: string): URL => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("file", identifier);
+
+  return url;
+};
 
 const addRecentUpload = (result: UploadResult): void => {
   const recentUploads = document.querySelector("#recent-uploads");
@@ -26,12 +37,14 @@ const addRecentUpload = (result: UploadResult): void => {
   }
 
   const link = create_link_js(result.file.id, result.encryption);
+  const url = createDownloadUrl(link);
+
   const div = document.createElement("div");
+  div.classList.add("recent-upload");
   div.innerHTML = `
-      <div class="recent-upload">
-        <a href="${link}">${result.file.name}</a>
-      </div>
-    `;
+      <h3 class="text-white no-margin">${result.file.name}</h3>
+      <copy-button value="${url}"></copy-button>
+  `;
   recentUploads.appendChild(div);
 };
 

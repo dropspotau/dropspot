@@ -2,8 +2,11 @@
     /* The text styling */
     .text-white {
         color: white;
-        font-size: 2.5rem;
         font-weight: bold;
         margin: 0; /* Remove default h1 margins */
+    }
+
+    .no-margin {
+        margin: 0;
     }
 }

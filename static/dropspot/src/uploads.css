@@ -1,6 +1,20 @@
-.recent-uploads {
+#recent-uploads {
     display: flex;
-    flex-flow: column;
+    flex-flow: column-reverse;
     gap: 1rem;
+    width: 64%;
+    align-self: center;
 }
 
+.recent-upload {
+    display: flex;
+    flex-flow: row;
+    place-items: center;
+    place-content: space-between;
+    flex: 0 0 4rem;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    gap: 1rem;
+    align-items: center;
+    background-color: var(--dropspot-dark);
+}
