@@ -88,3 +88,11 @@ pub fn parse_link_js(link: &str) -> Result<Link, JsError> {
         encryption: encryption,
     })
 }
+
+#[wasm_bindgen]
+pub async fn get_file_js(file_id: String) -> Result<File, JsError> {
+    let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
+    get_file(&file_id)
+        .await
+        .map_err(|e| JsError::new(&format!("{e}")))
+}

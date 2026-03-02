@@ -1,19 +1,24 @@
 import htmx from "htmx.org";
+import "@material/web/button/filled-button.js";
 import init, {
   upload_js,
   download_js,
   create_link_js,
+  parse_link_js,
+  get_file_js,
   type UploadResult,
+  type Link,
 } from "dropspot-core";
 
 import "./index.css";
+import "./theme.css";
 import "./upload-circle.css";
 import "./uploads.css";
 import "./utils.css";
 
 import "./copy-button";
 import "./my-element";
-import "@material/web/button/filled-button.js";
+import { download } from "./download";
 
 console.debug(htmx);
 
@@ -48,6 +53,52 @@ const addRecentUpload = (result: UploadResult): void => {
   recentUploads.appendChild(div);
 };
 
+const tryDetectIdentifier = (): Link | null => {
+  const url = new URL(window.location.href);
+  const file = url.searchParams.get("file");
+
+  if (file) {
+    return parse_link_js(file);
+  }
+
+  return null;
+};
+
+const initialiseDownload = async (): Promise<void> => {
+  const identifier = tryDetectIdentifier();
+  const linkedFileElement = document.querySelector("#linked-file");
+
+  if (!identifier || !linkedFileElement) {
+    return;
+  }
+
+  const { file_id: fileId, encryption } = identifier;
+  const file = await get_file_js(fileId);
+
+  linkedFileElement.innerHTML = `
+      <span class="text-white">You've been sent</span>
+      <h3 class="text-white no-margin">${file.name}</h3>
+      <md-filled-button>Download</md-filled-button>
+  `;
+
+  const button = linkedFileElement.querySelector("md-filled-button");
+
+  if (button) {
+    button.addEventListener("click", async () => {
+      const buffer = (await download_js(
+        file.id,
+        encryption,
+      )) as Uint8Array<ArrayBuffer>;
+      console.debug(buffer.length);
+      download(file.name, buffer);
+    });
+  }
+};
+
+setTimeout(() => {
+  initialiseDownload();
+}, 500);
+
 const upload = document.querySelector("#upload");
 const fileInput = document.querySelector("#file-input");
 
@@ -73,15 +124,5 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
 
     const result = await upload_js(file.name, fileContents);
     addRecentUpload(result);
-
-    const link = create_link_js(result.file.id, result.encryption);
-    console.debug(link);
-    const buffer = (await download_js(
-      result.file.id,
-      result.encryption,
-    )) as Uint8Array<ArrayBuffer>;
-    console.debug(buffer.length);
-
-    // download(result.file.name, buffer);
   });
 }

@@ -18,3 +18,15 @@
     align-items: center;
     background-color: var(--dropspot-dark);
 }
+
+#linked-file {
+    display: flex;
+    flex-flow: row;
+    align-self: center;
+    place-items: center;
+    gap: 1rem;
+
+    &:empty {
+        display: none;
+    }
+}
