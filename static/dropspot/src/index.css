@@ -34,3 +34,34 @@ main {
     background-color: #ffffff;
   }
 }
+
+.download-button {
+    display: flex;
+    place-items: center;
+    place-content: center;
+    --md-circular-progress-size: 2rem;
+
+    md-circular-progress {
+        display: none;
+    }
+
+    &[is-downloading] {
+        opacity: 0.5;
+        pointer-events: none;
+
+        md-icon {
+            display: none;
+        }
+
+        md-circular-progress {
+            display: block;
+        }
+    }
+}
+
+.download-button-contents {
+    display: flex;
+    place-items: center;
+    place-content: center;
+    gap: 0.5rem;
+}

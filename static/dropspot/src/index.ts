@@ -1,5 +1,9 @@
 import htmx from "htmx.org";
 import "@material/web/button/filled-button.js";
+import "@material/web/button/outlined-button.js";
+import "@material/web/icon/icon.js";
+import "@material/web/iconbutton/icon-button.js";
+import "@material/web/progress/circular-progress.js";
 import init, {
   upload_js,
   download_js,
@@ -18,9 +22,8 @@ import "./utils.css";
 
 import "./copy-button";
 import "./file-preview";
+import "./modal";
 import "./my-element";
-import { download } from "./download";
-import { getFilePreviewType } from "./file-preview";
 
 console.debug(htmx);
 
@@ -65,6 +68,8 @@ const tryDetectIdentifier = (): Link | null => {
   return null;
 };
 
+const bufferFileMap: Map<string, Uint8Array<ArrayBuffer>> = new Map();
+
 const initialiseDownload = async (): Promise<void> => {
   const identifier = tryDetectIdentifier();
   const linkedFileElement = document.querySelector("#linked-file");
@@ -79,26 +84,52 @@ const initialiseDownload = async (): Promise<void> => {
   linkedFileElement.innerHTML = `
       <span class="text-white">You've been sent</span>
       <h3 class="text-white no-margin">${file.name}</h3>
-      <md-filled-button class="button-white">Download</md-filled-button>
+      <md-filled-button class="button-white download-button">
+        <div class="download-button-contents">
+          <span>Preview</span>
+          <md-icon>download</md-icon>
+          <md-circular-progress indeterminate></md-circular-progress>
+        </div>
+      </md-filled-button>
   `;
 
   const button = linkedFileElement.querySelector("md-filled-button");
 
   if (button) {
     button.addEventListener("click", async () => {
-      const buffer = (await download_js(
-        file.id,
-        encryption,
-      )) as Uint8Array<ArrayBuffer>;
+      let buffer: Uint8Array<ArrayBuffer>;
 
-      if (getFilePreviewType(file.name)) {
-        const filePreviewElement = document.createElement("file-preview");
-        filePreviewElement.setAttribute("name", file.name);
-        filePreviewElement.setBuffer(buffer);
-        linkedFileElement.appendChild(filePreviewElement);
+      if (bufferFileMap.has(file.id)) {
+        buffer = bufferFileMap.get(file.id)!;
       } else {
-        download(file.name, buffer);
+        try {
+          button.setAttribute("is-downloading", "");
+          buffer = (await download_js(
+            file.id,
+            encryption,
+          )) as Uint8Array<ArrayBuffer>;
+          bufferFileMap.set(file.id, buffer);
+        } catch (e) {
+          console.error(e);
+          button.removeAttribute("is-downloading");
+          return;
+        } finally {
+          button.removeAttribute("is-downloading");
+        }
       }
+
+      // Delete any existing previews for this file
+      const existingPreviews =
+        linkedFileElement.querySelectorAll("file-preview");
+
+      for (const preview of existingPreviews) {
+        preview.remove();
+      }
+
+      const filePreviewElement = document.createElement("file-preview");
+      filePreviewElement.setAttribute("name", file.name);
+      filePreviewElement.setBuffer(buffer);
+      linkedFileElement.appendChild(filePreviewElement);
     });
   }
 };

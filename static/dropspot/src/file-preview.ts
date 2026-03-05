@@ -1,5 +1,6 @@
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { download } from "./download";
 
 @customElement("file-preview")
 export class FilePreviewElement extends LitElement {
@@ -7,17 +8,52 @@ export class FilePreviewElement extends LitElement {
     :host {
       display: flex;
     }
+
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .title {
+      color: var(--dropspot-primary);
+      margin: 0;
+    }
+
+    .text {
+      color: var(--dropspot-primary);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 2rem;
+    }
   `;
 
   @property()
-  private name: string = "placeholder";
+  private name: string = "";
 
   @state()
   private blobUrl: string | null = null;
 
+  @state()
+  private isModalOpen: boolean = false;
+
   public setBuffer(buffer: Uint8Array<ArrayBuffer>): void {
     this.blobUrl = URL.createObjectURL(new Blob([buffer]));
+    this.isModalOpen = true;
   }
+
+  private handleClose = (): void => {
+    this.isModalOpen = false;
+  };
+
+  private handleDownload = (): void => {
+    if (this.blobUrl) {
+      download(this.name, this.blobUrl);
+    }
+  };
 
   render() {
     const previewType = getFilePreviewType(this.name);
@@ -34,30 +70,47 @@ export class FilePreviewElement extends LitElement {
         previewHtml = html`<audio src="${this.blobUrl}" />`;
         break;
       case "text":
-        previewHtml = html`<pre>${this.blobUrl}</pre>`;
+        previewHtml = html`<pre class="text">${this.blobUrl}</pre>`;
         break;
       case null:
-        previewHtml = html`<pre>Unknown file type</pre>`;
+        previewHtml = html`<pre class="text">Unknown file type</pre>`;
         break;
     }
 
     return html`
-        <h3>${this.name}</h3>
-        ${this.blobUrl && previewHtml}
+      <dropspot-modal
+        open="${this.isModalOpen}"
+        .onClose="${() => {
+          this.isModalOpen = false;
+        }}"
+      >
+        <div class="modal-content">
+          <h3 class="title">${this.name}</h3>
+          ${this.blobUrl && previewHtml}
+          <div class="buttons">
+            <md-outlined-button @click="${this.handleClose}"
+              >Close</md-outlined-button
+            >
+            <md-filled-button @click="${this.handleDownload}"
+              >Download</md-filled-button
+            >
+          </div>
+        </div>
+      </dropspot-modal>
     `;
   }
 }
 
 type PreviewType = "image" | "video" | "audio" | "text";
 
-export const getFilePreviewType = (fileName: string): PreviewType | null => {
+const getFilePreviewType = (fileName: string): PreviewType | null => {
   const extension = fileName.split(".").pop();
 
   if (!extension) {
     return null;
   }
 
-  if (["png", "jpg", "jpeg", "gif", "svg"].includes(extension)) {
+  if (["png", "jpg", "jpeg", "gif", "svg", "webp"].includes(extension)) {
     return "image";
   }
 
