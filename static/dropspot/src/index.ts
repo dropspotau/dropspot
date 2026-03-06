@@ -16,6 +16,7 @@ import "./copy-button";
 import "./file-preview";
 import "./modal";
 import "./my-element";
+import "./popover";
 import "./recent-upload";
 
 console.debug(htmx);
@@ -23,3 +24,29 @@ console.debug(htmx);
 init().then(() => {
   console.log("DropSpot initialised");
 });
+
+const settingsDialogButton = document.querySelector("#settings-popover-toggle");
+const filesDialogButton = document.querySelector("#files-popover-toggle");
+
+if (settingsDialogButton) {
+  settingsDialogButton.addEventListener("click", () => {
+    document.dispatchEvent(
+      new CustomEvent("popover-toggle", {
+        detail: {
+          selector: "#settings-popover",
+          srcElement: settingsDialogButton,
+        },
+      }),
+    );
+  });
+}
+
+if (filesDialogButton) {
+  filesDialogButton.addEventListener("click", () => {
+    document.dispatchEvent(
+      new CustomEvent("popover-toggle", {
+        detail: { selector: "#files-popover", srcElement: filesDialogButton },
+      }),
+    );
+  });
+}

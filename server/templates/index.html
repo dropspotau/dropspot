@@ -13,15 +13,21 @@
     <main>
         <input type="file" id="file-input" class="file-upload">
         <section class="upload-area">
-            <md-icon-button class="md-icon-button-white">
+            <md-icon-button id="settings-popover-toggle" class="md-icon-button-white">
                 <md-icon>settings</md-icon>
             </md-icon-button>
+            <dropspot-popover id="settings-popover">
+                <p>This popover was opened using an invoker command.</p>
+            </dropspot-popover>
             <div id="upload" class="upload-circle">
                 <h1 class="text-white">dropspot</h1>
             </div>
-            <md-icon-button class="md-icon-button-white">
+            <md-icon-button id="files-popover-toggle" class="md-icon-button-white">
                 <md-icon>list</md-icon>
             </md-icon-button>
+            <dropspot-popover id="files-popover">
+                <p>This popover was opened using an invoker command.</p>
+            </dropspot-popover>
         </section>
         <section id="linked-file"></section>
         <section id="recent-uploads"></section>
