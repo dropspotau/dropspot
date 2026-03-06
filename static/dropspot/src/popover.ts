@@ -7,7 +7,13 @@ export class PopoverElement extends LitElement {
   static styles = css`
     :host {
       display: contents;
-      position: relative;
+    }
+
+    dialog {
+      display: flex;
+      flex-flow: column;
+      background-color: #ffffff;
+      color: var(--dropspot-primary);
     }
 
     dialog[popover] {
@@ -17,6 +23,10 @@ export class PopoverElement extends LitElement {
       align-self: anchor-center;
 
       &::backdrop {
+        display: none;
+      }
+
+      &:not([open]) {
         display: none;
       }
     }
@@ -36,7 +46,6 @@ export class PopoverElement extends LitElement {
   }
 
   private handlePopoverToggle = (e: PopoverToggleEvent) => {
-    console.debug(e);
     const { selector, srcElement } = e.detail;
     const dialog = this.dialogRef.value;
 
@@ -47,17 +56,19 @@ export class PopoverElement extends LitElement {
     if (!this.isOpen && dialog instanceof HTMLDialogElement) {
       // NOTE(alec): At the time of writing, types don't support `dialog.showPopover` with a source option.
       (dialog as any).showPopover({ source: srcElement });
+      dialog.setAttribute("open", "");
       this.isOpen = true;
     } else if (this.isOpen && dialog instanceof HTMLDialogElement) {
       dialog.close();
+      dialog.removeAttribute("open");
       this.isOpen = false;
     }
   };
 
   render() {
     return html`
-      <dialog popover ${ref(this.dialogRef)}>
-        <p>This dialog was opened using an invoker command.</p>
+      <dialog popover ${ref(this.dialogRef)} ${this.isOpen ? "open" : ""}>
+        <slot></slot>
       </dialog>
     `;
   }
