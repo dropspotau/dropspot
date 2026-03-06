@@ -14,12 +14,13 @@ export class PopoverElement extends LitElement {
       flex-flow: column;
       background-color: #ffffff;
       color: var(--dropspot-primary);
+      border-radius: 0.5rem;
     }
 
     dialog[popover] {
       /* https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/anchor */
       inset: auto;
-      left: anchor(right);
+      left: calc(anchor(right) + 1rem);
       align-self: anchor-center;
 
       &::backdrop {
@@ -67,7 +68,7 @@ export class PopoverElement extends LitElement {
 
   render() {
     return html`
-      <dialog popover ${ref(this.dialogRef)} ${this.isOpen ? "open" : ""}>
+      <dialog popover ${ref(this.dialogRef)}>
         <slot></slot>
       </dialog>
     `;

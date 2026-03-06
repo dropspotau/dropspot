@@ -7,6 +7,8 @@ import "@material/web/progress/circular-progress.js";
 import init from "dropspot-core";
 
 import "./index.css";
+import "./file.css";
+import "./settings.css";
 import "./theme.css";
 import "./upload-circle.css";
 import "./uploads.css";

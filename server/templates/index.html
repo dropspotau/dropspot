@@ -17,7 +17,12 @@
                 <md-icon>settings</md-icon>
             </md-icon-button>
             <dropspot-popover id="settings-popover">
-                <h3>Settings</h3>
+                <section class="settings">
+                    <h3 class="no-margin" style="align-self: center;">Settings</h3>
+                    <div class="settings-loader">
+                        <md-circular-progress indeterminate></md-circular-progress>
+                    </div>
+                </section>
             </dropspot-popover>
             <div id="upload" class="upload-circle">
                 <h1 class="text-white">dropspot</h1>
@@ -26,7 +31,12 @@
                 <md-icon>list</md-icon>
             </md-icon-button>
             <dropspot-popover id="files-popover">
-                <h3>Files</h3>
+                <section class="file-list">
+                    <h3 class="no-margin" style="align-self: center;">Files</h3>
+                    <div class="file-loader">
+                        <md-circular-progress indeterminate></md-circular-progress>
+                    </div>
+                </section>
             </dropspot-popover>
         </section>
         <section id="linked-file"></section>
