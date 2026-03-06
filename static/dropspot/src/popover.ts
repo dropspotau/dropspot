@@ -22,18 +22,19 @@ export class PopoverElement extends LitElement {
       inset: auto;
       left: calc(anchor(right) + 1rem);
       align-self: anchor-center;
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
 
       &::backdrop {
         display: none;
       }
 
       &:not([open]) {
-        display: none;
+        opacity: 0;
       }
     }
   `;
 
-  private isOpen: boolean = false;
   private dialogRef: Ref<HTMLDialogElement> = createRef();
 
   connectedCallback() {
@@ -49,20 +50,29 @@ export class PopoverElement extends LitElement {
   private handlePopoverToggle = (e: PopoverToggleEvent) => {
     const { selector, srcElement } = e.detail;
     const dialog = this.dialogRef.value;
+    const isOpen =
+      dialog instanceof HTMLDialogElement && dialog.hasAttribute("open");
 
-    if (!this.matches(selector)) {
+    if (!this.matches(selector) && dialog instanceof HTMLDialogElement) {
+      // Another dialog opened, so close this one
+      dialog.removeAttribute("open");
+      setTimeout(() => {
+        dialog.close();
+      }, 200);
+
       return;
     }
 
-    if (!this.isOpen && dialog instanceof HTMLDialogElement) {
+    if (!isOpen && dialog instanceof HTMLDialogElement) {
       // NOTE(alec): At the time of writing, types don't support `dialog.showPopover` with a source option.
       (dialog as any).showPopover({ source: srcElement });
       dialog.setAttribute("open", "");
-      this.isOpen = true;
-    } else if (this.isOpen && dialog instanceof HTMLDialogElement) {
-      dialog.close();
+    } else if (isOpen) {
       dialog.removeAttribute("open");
-      this.isOpen = false;
+
+      setTimeout(() => {
+        dialog.close();
+      }, 200);
     }
   };
 
