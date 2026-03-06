@@ -4,6 +4,7 @@
     flex: 0 0 64%;
     place-items: center;
     place-content: center;
+    gap: 2rem;
 }
 
 /* The main container for the circle and text */
