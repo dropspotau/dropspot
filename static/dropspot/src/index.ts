@@ -12,6 +12,7 @@ import init, {
   get_file_js,
   type UploadResult,
   type Link,
+  type File,
 } from "dropspot-core";
 
 import "./index.css";
@@ -68,6 +69,15 @@ const tryDetectIdentifier = (): Link | null => {
   return null;
 };
 
+const showFileNotFound = (linkedFileElement: Element): void => {
+  linkedFileElement.innerHTML = `
+    <md-icon>error</md-icon>
+    <h3 class="text-white no-margin">
+        The file you're looking for doesn't exist.
+    </h3>
+  `;
+};
+
 const bufferFileMap: Map<string, Uint8Array<ArrayBuffer>> = new Map();
 
 const initialiseDownload = async (): Promise<void> => {
@@ -79,7 +89,14 @@ const initialiseDownload = async (): Promise<void> => {
   }
 
   const { file_id: fileId, encryption } = identifier;
-  const file = await get_file_js(fileId);
+  let file: File;
+
+  try {
+    file = await get_file_js(fileId);
+  } catch (e) {
+    showFileNotFound(linkedFileElement);
+    return;
+  }
 
   linkedFileElement.innerHTML = `
       <span class="text-white">You've been sent</span>
