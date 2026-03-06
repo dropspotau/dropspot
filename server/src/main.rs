@@ -22,7 +22,8 @@ use uuid::Uuid;
 use crate::db::connect;
 use crate::handlers::{
     handle_file_download, handle_file_request_download, handle_file_request_upload,
-    handle_file_upload, handle_get_file, handle_header, handle_index, handle_list_files,
+    handle_file_upload, handle_files, handle_get_file, handle_header, handle_index,
+    handle_list_files,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -210,6 +211,7 @@ async fn main() -> Result<(), ()> {
                     )
                     .route("/app", get(handle_index))
                     .route("/app/header", get(handle_header))
+                    .route("/app/files", get(handle_files))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(shared_state);

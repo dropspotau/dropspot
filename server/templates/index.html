@@ -31,9 +31,9 @@
                 <md-icon>list</md-icon>
             </md-icon-button>
             <dropspot-popover id="files-popover">
-                <section class="file-list">
+                <section class="file-menu">
                     <h3 class="no-margin" style="align-self: center;">Files</h3>
-                    <div class="file-loader">
+                    <div class="file-loader" hx-get="/app/files" hx-trigger="load" hx-swap="outerHTML">
                         <md-circular-progress indeterminate></md-circular-progress>
                     </div>
                 </section>

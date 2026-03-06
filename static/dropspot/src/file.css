@@ -1,10 +1,19 @@
-.file-list {
+.file-menu {
+    --menu-padding: 1rem;
+
+    position: relative;
     display: flex;
     flex-flow: column;
-    padding: 1rem;
+    padding: var(--menu-padding);
     gap: 1rem;
-    min-height: 24dvh;
+    min-height: 32dvh;
     min-width: 12dvw;
+
+    /* Material Design Shadow */
+    border-radius: 12px;
+    overflow: hidden;
+
+    list-style: none;
 }
 
 .file-loader {
@@ -13,4 +22,105 @@
     place-content: center;
     flex: 1;
     width: 100%;
+}
+
+.file-list {
+    display: flex;
+    flex-flow: column;
+    padding: 0 1rem;
+    gap: 1rem;
+    width: calc(100% - var(--menu-padding) - var(--menu-padding)); /* Remove left and right padding */
+
+    /* Material Design Shadow */
+    border-radius: 12px;
+    overflow: hidden;
+
+    list-style: none;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  gap: 1.25rem;
+  color: var(--dropspot-primary); /* Material Blue Text */
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--dropspot-hover);
+    cursor: pointer;
+  }
+}
+
+/* Icon Styles */
+.file-icon {
+  display: flex;
+  place-items: center;
+  place-content: center;
+}
+
+.file-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: var(--dropspot-primary); /* Vibrant Material Blue */
+}
+
+/* File Information */
+.file-info {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: 20px;
+}
+
+.file-name {
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px; /* Truncate long names */
+}
+
+.file-size {
+  font-size: 14px;
+  font-weight: 400;
+  color: #1976d2; /* Slightly lighter blue for secondary text */
+  opacity: 0.85;
+}
+
+/* Three-Dot Menu Button */
+.file-action {
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.file-action:hover {
+  background-color: #bbdefb; /* Deeper blue for button hover */
+}
+
+.file-action:active {
+  background-color: #90caf9; /* Simulate Material Ripple */
+}
+
+.file-action svg {
+  width: 24px;
+  height: 24px;
+  fill: #1565c0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .file-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .file-size {
+    margin-top: 4px;
+    font-size: 12px;
+  }
 }
