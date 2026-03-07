@@ -6,36 +6,32 @@ import { createRef, ref, type Ref } from "lit/directives/ref.js";
 export class PopoverElement extends LitElement {
   static styles = css`
     :host {
-      display: contents;
+      position: relative;
     }
 
-    dialog {
-      display: flex;
-      flex-flow: column;
+    .popover {
       background-color: #ffffff;
       color: var(--dropspot-primary);
       border-radius: 0.5rem;
     }
 
-    dialog[popover] {
+    .popover[popover] {
       /* https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/anchor */
       inset: auto;
       left: calc(anchor(right) + 1rem);
       align-self: anchor-center;
-      opacity: 1;
-      transition: opacity 0.2s ease-in-out;
+      opacity: 0;
+      transition:
+        opacity 0.2s ease-in-out,
+        display 0.2s linear;
 
-      &::backdrop {
-        display: none;
-      }
-
-      &:not([open]) {
-        opacity: 0;
+      &:popover-open {
+        opacity: 1;
       }
     }
   `;
 
-  private dialogRef: Ref<HTMLDialogElement> = createRef();
+  private popoverRef: Ref<HTMLDivElement> = createRef();
 
   connectedCallback() {
     super.connectedCallback();
@@ -49,31 +45,19 @@ export class PopoverElement extends LitElement {
 
   private handlePopoverToggle = (e: PopoverToggleEvent) => {
     const { selector, srcElement } = e.detail;
-    const dialog = this.dialogRef.value;
-    const isOpen =
-      dialog instanceof HTMLDialogElement && dialog.hasAttribute("open");
+    const popover = this.popoverRef.value;
 
-    if (!this.matches(selector)) {
-      // Don't react to other popover events
-      return;
-    }
-
-    if (!isOpen && dialog instanceof HTMLDialogElement) {
-      dialog.showPopover({ source: srcElement });
-      dialog.setAttribute("open", "");
-    } else if (isOpen) {
-      setTimeout(() => {
-        console.debug("Closing", dialog);
-        dialog.close();
-      }, 200);
+    if (this.matches(selector) && popover) {
+      // This event was meant for this popover
+      popover.togglePopover({ source: srcElement });
     }
   };
 
   render() {
     return html`
-      <dialog popover ${ref(this.dialogRef)}>
+      <div class="popover" popover="manual" ${ref(this.popoverRef)}>
         <slot></slot>
-      </dialog>
+      </div>
     `;
   }
 }
@@ -88,9 +72,9 @@ declare global {
     "dropspot-popover": PopoverElement;
   }
 
-  interface HTMLDialogElement {
-    /** NOTE(alec): At the time of writing, types don't support `dialog.showPopover` with a source option. */
-    showPopover(options?: { source?: HTMLElement }): void;
+  interface HTMLElement {
+    /** At the time of writing, types don't support `HTMLElement.togglePopover` with a source option. */
+    togglePopover(options?: { source?: HTMLElement }): void;
   }
 
   interface DocumentEventMap {
