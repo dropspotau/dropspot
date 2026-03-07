@@ -53,13 +53,8 @@ export class PopoverElement extends LitElement {
     const isOpen =
       dialog instanceof HTMLDialogElement && dialog.hasAttribute("open");
 
-    if (!this.matches(selector) && dialog instanceof HTMLDialogElement) {
-      // Another dialog opened, so close this one
-      dialog.removeAttribute("open");
-      setTimeout(() => {
-        dialog.close();
-      }, 200);
-
+    if (!this.matches(selector)) {
+      // Don't react to other popover events
       return;
     }
 
@@ -67,9 +62,8 @@ export class PopoverElement extends LitElement {
       dialog.showPopover({ source: srcElement });
       dialog.setAttribute("open", "");
     } else if (isOpen) {
-      dialog.removeAttribute("open");
-
       setTimeout(() => {
+        console.debug("Closing", dialog);
         dialog.close();
       }, 200);
     }
