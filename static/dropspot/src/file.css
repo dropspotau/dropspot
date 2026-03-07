@@ -44,6 +44,7 @@
   padding: 1rem 1.5rem;
   gap: 1.25rem;
   color: var(--dropspot-primary); /* Material Blue Text */
+  border-radius: 0.5rem;
   transition: background-color 0.2s ease;
 
   &:hover {
