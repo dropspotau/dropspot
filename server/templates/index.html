@@ -33,7 +33,7 @@
             <dropspot-popover id="files-popover">
                 <section class="file-menu">
                     <h3 class="no-margin" style="align-self: center;">Files</h3>
-                    <div class="file-loader" hx-get="/app/files" hx-trigger="load" hx-swap="outerHTML">
+                    <div class="file-loader" hx-get="/app/files" hx-trigger="load, file-upload" hx-swap="outerHTML">
                         <md-circular-progress indeterminate></md-circular-progress>
                     </div>
                 </section>

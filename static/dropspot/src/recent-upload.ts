@@ -51,5 +51,21 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
 
     const result = await upload_js(file.name, fileContents);
     addRecentUpload(result);
+
+    const event: FileUploadEvent = new CustomEvent("file-upload", {
+      detail: { upload: result },
+      bubbles: true,
+    });
+    fileInput.dispatchEvent(event);
   });
+}
+
+export type FileUploadEvent = CustomEvent<{
+  upload: UploadResult;
+}>;
+
+declare global {
+  interface DocumentEventMap {
+    "file-upload": FileUploadEvent;
+  }
 }

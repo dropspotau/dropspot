@@ -64,8 +64,7 @@ export class PopoverElement extends LitElement {
     }
 
     if (!isOpen && dialog instanceof HTMLDialogElement) {
-      // NOTE(alec): At the time of writing, types don't support `dialog.showPopover` with a source option.
-      (dialog as any).showPopover({ source: srcElement });
+      dialog.showPopover({ source: srcElement });
       dialog.setAttribute("open", "");
     } else if (isOpen) {
       dialog.removeAttribute("open");
@@ -93,6 +92,11 @@ type PopoverToggleEvent = CustomEvent<{
 declare global {
   interface HTMLElementTagNameMap {
     "dropspot-popover": PopoverElement;
+  }
+
+  interface HTMLDialogElement {
+    /** NOTE(alec): At the time of writing, types don't support `dialog.showPopover` with a source option. */
+    showPopover(options?: { source?: HTMLElement }): void;
   }
 
   interface DocumentEventMap {

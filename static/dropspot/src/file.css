@@ -7,7 +7,7 @@
     padding: var(--menu-padding);
     gap: 1rem;
     min-height: 32dvh;
-    min-width: 12dvw;
+    min-width: max(12dvw, 30rem);
 
     /* Material Design Shadow */
     border-radius: 12px;
