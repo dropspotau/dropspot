@@ -19,13 +19,6 @@
                 <md-icon>more_vert</md-icon>
             </md-icon-button>
             <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
-                <!-- TODO(alec): Opening this <md-menu> only works after another <md-menu> on the page has been opened...? -->
-                <md-menu-item>
-                    <div slot="headline" class="menu-item">
-                        <md-icon>visibility</md-icon>
-                        <span>View</span>
-                    </div>
-                </md-menu-item>
                 <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
                     <div slot="headline" class="menu-item text-danger">
                         <md-icon>delete</md-icon>
