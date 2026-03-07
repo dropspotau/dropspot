@@ -1,17 +1,24 @@
 .file-menu {
     --menu-padding: 1rem;
+    --menu-height: 32dvh;
+    --menu-width: 20dvw;
 
     position: relative;
     display: flex;
     flex-flow: column;
     padding: var(--menu-padding);
     gap: 1rem;
-    min-height: 32dvh;
-    min-width: max(12dvw, 30rem);
+    height: var(--menu-height);
+    width: var(--menu-width);
 
     /* Material Design Shadow */
     border-radius: 12px;
     overflow: hidden;
+
+    @media (max-width: 480px) {
+        --menu-height: 80dvh;
+        --menu-width: 100dvh;
+    }
 }
 
 .file-loader {
@@ -73,10 +80,9 @@
 /* File Information */
 .file-info {
   display: flex;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: space-between;
-  margin-right: 20px;
+  flex: 1;
+  place-items: center;
+  place-content: space-between;
 }
 
 .file-name {
