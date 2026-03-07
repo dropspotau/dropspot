@@ -12,8 +12,6 @@
     /* Material Design Shadow */
     border-radius: 12px;
     overflow: hidden;
-
-    list-style: none;
 }
 
 .file-loader {
@@ -31,11 +29,17 @@
     gap: 1rem;
     width: calc(100% - var(--menu-padding) - var(--menu-padding)); /* Remove left and right padding */
 
-    /* Material Design Shadow */
-    border-radius: 12px;
-    overflow: hidden;
+    &[hidden] {
+        display: none;
+    }
+}
 
-    list-style: none;
+#file-detail {
+    display: flex;
+
+    &[hidden] {
+        display: none;
+    }
 }
 
 .file-item {

@@ -3,39 +3,82 @@
 {% endif %}
 
 {% if !is_empty %}
-    <ul class="file-list">
-    {% for file in files %}
-        <li id="file-{{ file.id }}" class="file-item">
-            <div class="file-icon">
-                <svg viewBox="0 0 24 24">
-                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                </svg>
-            </div>
-            <div class="file-info">
-                <span class="file-name">{{ file.name }}</span>
-                <span class="file-size">4.2 MB</span>
-            </div>
-            <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
-                <md-icon>more_vert</md-icon>
-            </md-icon-button>
-            <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
-                <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
-                    <div slot="headline" class="menu-item text-danger">
-                        <md-icon>delete</md-icon>
-                        <span>Delete</span></div>
-                </md-menu-item>
-            </md-menu>
-            <script type="module">
-                const button = document.querySelector(`#file-actions-{{ file.id }}`);
-                const menu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
+    <div class="file-menu-container">
+        <ul id="file-list" class="file-list">
+        {% for file in files %}
+            <li id="file-{{ file.id }}" class="file-item">
+                <div class="file-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                    </svg>
+                </div>
+                <div class="file-info">
+                    <span class="file-name">{{ file.name }}</span>
+                    <span class="file-size">4.2 MB</span>
+                </div>
+                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
+                    <md-icon>more_vert</md-icon>
+                </md-icon-button>
+                <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
+                    <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
+                        <div slot="headline" class="menu-item text-danger">
+                            <md-icon>delete</md-icon>
+                            <span>Delete</span></div>
+                    </md-menu-item>
+                </md-menu>
+                <script type="module">
+                    const fileList = document.querySelector("#file-list");
+                    const listItem = document.querySelector(`#file-{{ file.id }}`);
+                    const button = document.querySelector(`#file-actions-{{ file.id }}`);
+                    const menu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
 
-                if (button && menu) {
-                    button.addEventListener("click", () => {
-                        menu.open = !menu.open;
-                    });
-                }
-            </script>
-        </li>
-    {% endfor %}
-  </ul>
+                    if (button && menu) {
+                        button.addEventListener("click", () => {
+                            menu.open = !menu.open;
+                        });
+                    }
+
+                    if (listItem) {
+                        listItem.addEventListener("click", (e) => {
+                            e.stopPropagation();
+
+                            const { target, currentTarget } = e;
+                            const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
+
+                            if (isMenuClick) {
+                                return;
+                            }
+
+                            const detail = document.querySelector("#file-detail");
+                            detail.removeAttribute("hidden");
+
+                            const detailName = document.querySelector("#file-detail-name");
+                            detailName.textContent = `{{ file.name }}`;
+
+                            fileList.setAttribute("hidden", "");
+                        });
+                    }
+                </script>
+            </li>
+        {% endfor %}
+      </ul>
+      <section id="file-detail" hidden>
+          <md-icon-button id="file-back">
+              <md-icon>arrow_back</md-icon>
+          </md-icon-button>
+          <div id="file-detail-name"></div>
+      </section>
+      <script type="module">
+          const backButton = document.querySelector("#file-back");
+          const fileList = document.querySelector("#file-list");
+          const detail = document.querySelector("#file-detail");
+
+          if (backButton && fileList && detail) {
+              backButton.addEventListener("click", () => {
+                  detail.setAttribute("hidden", "");
+                  fileList.removeAttribute("hidden");
+              });
+          }
+      </script>
+  </div>
 {% endif %}
