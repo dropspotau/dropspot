@@ -38,6 +38,25 @@ impl File {
     pub fn get_path(&self) -> PathBuf {
         PathBuf::from(FILES_DIR).join(self.path.clone())
     }
+
+    pub fn get_formatted_size(&self) -> String {
+        let size = self.size as f64;
+        const KB: f64 = 1024.0;
+        const MB: f64 = KB * 1024.0;
+        const GB: f64 = MB * 1024.0;
+
+        let formatted_size = if size >= GB {
+            format!("{:.2} GB", size / GB)
+        } else if size >= MB {
+            format!("{:.2} MB", size / MB)
+        } else if size >= KB {
+            format!("{:.2} KB", size / KB)
+        } else {
+            format!("{size:.0} B")
+        };
+
+        formatted_size
+    }
 }
 
 pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {

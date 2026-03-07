@@ -29,6 +29,11 @@ export class FilePreviewElement extends LitElement {
       display: flex;
       gap: 2rem;
     }
+
+    img, video, audio, pre {
+      max-height: 100%;
+      max-width: 100%;
+    }
   `;
 
   @property()
