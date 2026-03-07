@@ -23,6 +23,7 @@ import "./modal";
 import "./my-element";
 import "./popover";
 import "./recent-upload";
+import "./toast";
 
 console.debug(htmx);
 

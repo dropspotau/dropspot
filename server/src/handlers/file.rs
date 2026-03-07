@@ -72,3 +72,4 @@ pub async fn handle_get_file(State(state): State<Arc<AppState>>, Path(id): Path<
 
     Json(file.unwrap()).into_response()
 }
+
