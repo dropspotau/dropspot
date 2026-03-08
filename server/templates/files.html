@@ -1,5 +1,10 @@
 {% if is_empty %}
-    <div>No files</div>
+    <div class="file-empty-state">
+      <md-icon class="file-empty-icon">folder</md-icon>
+      
+      <h3 class="file-empty-title no-margin">No files yet</h3>
+      <p class="file-empty-subtitle no-margin">Files will appear here when uploaded</p>
+    </div>
 {% endif %}
 
 {% if !is_empty %}

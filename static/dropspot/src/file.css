@@ -1,7 +1,7 @@
 .file-menu {
     --menu-padding: 1rem;
     --menu-height: 32dvh;
-    --menu-width: 20dvw;
+    --menu-width: 16dvw;
 
     position: relative;
     display: flex;
@@ -49,6 +49,35 @@
     }
 }
 
+/* Files popover */
+.file-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Adjust this margin to push it down into the center of your popover */
+  margin-top: 80px; 
+  padding: 20px;
+  text-align: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.file-empty-icon {
+  --md-icon-size: 4rem;
+  color: #c5d3e0; /* A soft, muted blue-gray */
+  margin-bottom: 16px;
+}
+
+.file-empty-title {
+  color: var(--dropspot-grey-darker);
+  font-size: 1.5rem;
+}
+
+.file-empty-subtitle {
+  font-size: 1rem;
+  color: var(--dropspot-grey-dark);
+}
+
 .file-item {
   display: flex;
   align-items: center;
@@ -76,6 +105,7 @@
   height: 1.5rem;
   fill: var(--dropspot-primary); /* Vibrant Material Blue */
 }
+
 
 /* File Information */
 .file-info {
