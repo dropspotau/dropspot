@@ -135,3 +135,50 @@
     font-size: 12px;
   }
 }
+
+/* File details popover */
+.file-name-header {
+  font-size: 18px;
+  color: #222;
+  margin: 0 0 24px 0;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.file-details-grid {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.file-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.file-detail-label {
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.file-detail-value {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  background-color: #e6f4ff;
+  color: #3FA9FF;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  width: fit-content;
+}

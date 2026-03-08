@@ -57,6 +57,10 @@ impl File {
 
         formatted_size
     }
+
+    pub fn get_remaining_downloads(&self) -> i32 {
+        self.max_downloads - self.download_count
+    }
 }
 
 pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {

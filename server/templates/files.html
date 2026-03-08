@@ -50,10 +50,36 @@
                             }
 
                             const detail = document.querySelector("#file-detail");
-                            detail.removeAttribute("hidden");
+                            if (detail) {
+                                detail.removeAttribute("hidden");
+                            }
 
                             const detailName = document.querySelector("#file-detail-name");
-                            detailName.textContent = `{{ file.name }}`;
+                            if (detailName) {
+                                detailName.textContent = `{{ file.name }}`;
+                            }
+
+                            const detailSize = document.querySelector("#file-detail-size");
+                            if (detailSize) {
+                                detailSize.textContent = `{{ file.get_formatted_size() }}`;
+                            }
+
+                            const detailUploadedBy = document.querySelector("#file-detail-uploaded-by");
+                            if (detailUploadedBy) {
+                                detailUploadedBy.textContent = "Oscar Webber";
+                            }
+
+                            const detailUploadAt = document.querySelector("#file-detail-upload-at");
+                            if (detailUploadAt) {
+                                detailUploadAt.textContent = "March 8, 2026 at 7:34 PM";
+                            }
+
+                            const detailRemainingDownloads = document.querySelector("#file-detail-remaining-downloads");
+                            if (detailRemainingDownloads) {
+                                detailRemainingDownloads.textContent = `{{ file.get_remaining_downloads() }}`;
+                            }
+
+                            console.debug(fileList);
 
                             fileList.setAttribute("hidden", "");
                         });
@@ -66,7 +92,31 @@
           <md-icon-button id="file-back">
               <md-icon>arrow_back</md-icon>
           </md-icon-button>
-          <div id="file-detail-name"></div>
+        <div class="file-details-container">
+            <h3 class="file-detail-name">4c8513462e4170776e3bb5fbd70a6776.mp4</h3>
+          
+            <div class="file-details-grid">
+                <div class="file-detail-item">
+                    <span class="file-detail-label">File Size</span>
+                    <span id="file-detail-size" class="file-detail-value">24.8 MB</span>
+                </div>
+            
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Uploaded By</span>
+                    <span id="file-detail-uploaded-by" class="file-detail-value">Alex Johnson</span>
+                </div>
+                
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Upload Date</span>
+                    <span id="file-detail-uploaded-at" class="file-detail-value">March 8, 2026 at 7:34 PM</span>
+                </div>
+                
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Downloads Remaining</span>
+                    <span id="file-detail-remaining-downloads" class="file-detail-value badge">5</span>
+                </div>
+          </div>
+        </div>
       </section>
       <script type="module">
           const backButton = document.querySelector("#file-back");
