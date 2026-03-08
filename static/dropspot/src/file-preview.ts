@@ -30,9 +30,19 @@ export class FilePreviewElement extends LitElement {
       gap: 2rem;
     }
 
-    img, video, audio, pre {
+    img,
+    video,
+    audio,
+    pre {
       max-height: 100%;
       max-width: 100%;
+    }
+
+    .button-items {
+      --md-circule-progress-size: 2rem;
+      display: flex;
+      place-items: center;
+      gap: 0.5rem;
     }
   `;
 
@@ -93,12 +103,18 @@ export class FilePreviewElement extends LitElement {
           <h3 class="title">${this.name}</h3>
           ${this.blobUrl && previewHtml}
           <div class="buttons">
-            <md-outlined-button @click="${this.handleClose}"
-              >Close</md-outlined-button
-            >
-            <md-filled-button @click="${this.handleDownload}"
-              >Download</md-filled-button
-            >
+            <md-outlined-button @click="${this.handleClose}">
+              <div class="button-items">
+                <span>Close</span>
+                <md-icon>close</md-icon>
+              </div>
+            </md-outlined-button>
+            <md-filled-button @click="${this.handleDownload}">
+              <div class="button-items">
+                <span>Download</span>
+                <md-icon>download</md-icon>
+              </div>
+            </md-filled-button>
           </div>
         </div>
       </dropspot-modal>

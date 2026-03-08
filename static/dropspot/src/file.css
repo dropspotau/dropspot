@@ -43,6 +43,7 @@
 
 #file-detail {
     display: flex;
+    padding: 0 1rem;
 
     &[hidden] {
         display: none;
@@ -113,6 +114,7 @@
   flex: 1;
   place-items: center;
   place-content: space-between;
+  gap: 0.5rem;
 }
 
 .file-name {
@@ -129,6 +131,7 @@
   font-weight: 400;
   color: #1976d2; /* Slightly lighter blue for secondary text */
   opacity: 0.85;
+  flex: 0 0 fit-content;
 }
 
 /* Three-Dot Menu Button */
@@ -167,6 +170,12 @@
 }
 
 /* File details popover */
+.popover-back-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
 .file-name-header {
   font-size: 18px;
   color: #222;
