@@ -29,9 +29,6 @@ impl File {
         let is_date_expired = Utc::now() > self.expires_at;
         let is_past_download_capacity = self.max_downloads <= self.download_count;
 
-        println!(" {is_date_expired} {}", self.expires_at);
-        println!("{} {}", self.max_downloads, self.download_count);
-
         is_date_expired || is_past_download_capacity
     }
 
@@ -85,6 +82,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             on download.file_id = file.id
             group by file.id
             having file.max_downloads >= count(download.id) and now() < file.expires_at
+            order by file.created_at asc
         "#
     )
     .fetch_all(pool)
@@ -109,6 +107,7 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
             on download.file_id = file.id
             group by file.id
             having file.max_downloads < count(download.id) or now() > file.expires_at
+            order by file.created_at asc
         "#
     )
     .fetch_all(pool)

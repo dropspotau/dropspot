@@ -1,8 +1,8 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { PreviewType } from "./file-preview";
+import { getFilePreviewType, type PreviewType } from "./file-preview";
 
-const getIcon = (previewType: PreviewType | string): string => {
+const getIcon = (previewType: PreviewType | null): string => {
   switch (previewType) {
     case "image":
       return "image";
@@ -29,7 +29,8 @@ export class FileIconElement extends LitElement {
   private extension: string = "txt";
 
   render() {
-    return html`<md-icon>${getIcon(this.extension)}</md-icon>`;
+    const previewType = getFilePreviewType(this.extension);
+    return html`<md-icon>${getIcon(previewType)}</md-icon>`;
   }
 }
 
