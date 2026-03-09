@@ -1,47 +1,144 @@
-<div class="settings-section">
-  <h3 class="section-label">File Settings</h3>
-  <ul class="settings-list">
-    
-    <li class="settings-item">
-      <md-icon class="settings-icon">av_timer</md-icon>
-      <div class="settings-text">
-        <span class="settings-item-title">Default Expiry</span>
-        <span class="settings-item-desc">Set default download and time limits</span>
-      </div>
-      <md-icon class="settings-action">chevron_right</md-icon>
-    </li>
+<section id="settings-main" class="settings-page">
+  <div class="settings-section">
+    <h3 class="section-label">Settings</h3>
+    <ul class="settings-list">
+      
+      <li class="settings-item">
+        <md-icon class="settings-icon">av_timer</md-icon>
+        <div class="settings-text">
+          <span class="settings-item-title">Default Expiry</span>
+          <span class="settings-item-desc">Set default download and time limits</span>
+        </div>
+        <md-icon class="settings-action">chevron_right</md-icon>
+      </li>
 
-    <li class="settings-item">
-      <md-icon class="settings-icon">database</md-icon>
-      <div class="settings-text">
-        <span class="settings-item-title">Storage Allocation</span>
-        <span class="settings-item-desc">Manage your available space</span>
-      </div>
-      <md-icon class="settings-action">chevron_right</md-icon>
-    </li>
-  </ul>
-</div>
+      <li class="settings-item">
+        <md-icon class="settings-icon">database</md-icon>
+        <div class="settings-text">
+          <span class="settings-item-title">Storage Allocation</span>
+          <span class="settings-item-desc">Manage your available space</span>
+        </div>
+        <md-icon class="settings-action">chevron_right</md-icon>
+      </li>
+    </ul>
+  </div>
 
-<div class="settings-section">
-  <h3 class="section-label">Organisation Settings</h3>
-  <ul class="settings-list">
-    
-    <li class="settings-item">
-      <md-icon class="settings-icon">group</md-icon>
-      <div class="settings-text">
-        <span class="settings-item-title">Team Members</span>
-        <span class="settings-item-desc">Manage access and roles</span>
-      </div>
-      <md-icon class="settings-action">chevron_right</md-icon>
-    </li>
+  <div class="settings-section">
+    <h3 class="section-label">Organisation Settings</h3>
+    <ul class="settings-list">
+      
+      <li id="user-menu-item" class="settings-item">
+        <md-icon class="settings-icon">group</md-icon>
+        <div class="settings-text">
+          <span class="settings-item-title">Team Members</span>
+          <span class="settings-item-desc">Manage access and roles</span>
+        </div>
+        <md-icon class="settings-action">chevron_right</md-icon>
+      </li>
 
-    <li class="settings-item">
-      <md-icon class="settings-icon">water_drop</md-icon>
-      <div class="settings-text">
-        <span class="settings-item-title">Branding</span>
-        <span class="settings-item-desc">Customise logo and colours</span>
-      </div>
-      <md-icon class="settings-action">chevron_right</md-icon>
-    </li>
-  </ul>
-</div>
+      <li class="settings-item">
+        <md-icon class="settings-icon">water_drop</md-icon>
+        <div class="settings-text">
+          <span class="settings-item-title">Branding</span>
+          <span class="settings-item-desc">Customise logo and colours</span>
+        </div>
+        <md-icon class="settings-action">chevron_right</md-icon>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<script type="module">
+    // Navigate from the first menu to secondary pages
+    const userMenuItem = document.querySelector("#user-menu-item");
+    const mainPage = document.querySelector("#settings-main");
+    const userPage = document.querySelector("#settings-user");
+
+    if (userMenuItem && userPage) {
+        userMenuItem.addEventListener("click", () => {
+            mainPage.setAttribute("hidden", "");
+            userPage.removeAttribute("hidden");
+        });
+    }
+</script>
+
+<section id="settings-user" class="settings-page" hidden>
+    <md-icon-button id="settings-user-back" class="popover-back-button">
+        <md-icon>arrow_back</md-icon>
+    </md-icon-button>
+    <ul id="user-list" class="file-list" style="padding: 0;">
+        {% for user in users %}
+            <li id="user-{{ user.id }}" class="menu-item">
+                <md-icon class="file-icon">person</md-icon>
+                <div class="file-info">
+                    <span class="file-name">{{ user.first_name }} {{ user.last_name }}</span>
+                </div>
+            </li>
+            <script type="module">
+                // Navigate from the user menu to the detail page and back to the main page
+                const backButton = document.querySelector("#settings-user-back");
+                const mainPage = document.querySelector("#settings-main");
+                const userPage = document.querySelector("#settings-user");
+                const listItem = document.querySelector("#user-{{ user.id }}");
+                const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
+                console.debug(backButton, mainPage, userPage, listItem, detailPage);
+
+                if (backButton && mainPage && userPage) {
+                    backButton.addEventListener("click", () => {
+                        mainPage.removeAttribute("hidden");
+                        userPage.setAttribute("hidden", "");
+                    });
+
+                }
+
+                if (listItem && userPage && detailPage) {
+                    listItem.addEventListener("click", (e) => {
+                        userPage.setAttribute("hidden", "");
+                        detailPage.removeAttribute("hidden");
+                    });
+                }
+
+            </script>
+        {% endfor %}
+    </ul>
+</section>
+
+{% for user in users %}
+    <section id="settings-user-detail-{{ user.id }}" class="settings-page" hidden>
+        <md-icon-button id="settings-user-detail-{{ user.id }}-back" class="popover-back-button">
+            <md-icon>arrow_back</md-icon>
+        </md-icon-button>
+        <div class="file-details-container">
+            <h3 class="file-detail-name">{{ user.first_name }} {{ user.last_name }}</h3>
+        
+            <div class="file-details-grid">
+                <div class="file-detail-item">
+                    <span class="file-detail-label">File Size</span>
+                    <span class="file-detail-value">{{ user.first_name }} {{ user.last_name }}</span>
+                </div>
+          
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Upload Date</span>
+                    <span class="file-detail-value">March 8, 2026 at 7:34 PM</span>
+                </div>
+              
+                <div class="file-detail-item">
+                    <span class="file-detail-label">Files Created</span>
+                    <span class="file-detail-value badge">{{ user.file_count }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script type="module">
+        const backButton = document.querySelector("#settings-user-detail-{{ user.id }}-back");
+        const userPage = document.querySelector("#settings-user");
+        const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
+
+        if (backButton && userPage && detailPage) {
+            backButton.addEventListener("click", () => {
+                userPage.removeAttribute("hidden");
+                detailPage.setAttribute("hidden", "");
+            });
+        }
+    </script>
+{% endfor %}

@@ -63,6 +63,11 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--dropspot-hover);
+    cursor: pointer;
+  }
 }
 
 /* Item Icons & Text */
@@ -101,4 +106,18 @@
 /* Chevron/Action Icon */
 .settings-action {
   color: var(--dropspot-grey-dark);
+}
+
+/*
+ * Pages
+ */
+
+.settings-page {
+    display: flex;
+    flex-flow: column;
+    padding: 0 1rem;
+
+    &[hidden] {
+        display: none;
+    }
 }

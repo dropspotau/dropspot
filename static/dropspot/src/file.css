@@ -47,15 +47,6 @@
     }
 }
 
-#file-detail {
-    display: flex;
-    padding: 0 1rem;
-
-    &[hidden] {
-        display: none;
-    }
-}
-
 /* Files popover */
 .file-empty-state {
   display: flex;
