@@ -34,9 +34,9 @@ export class LoginButtonElement extends LitElement {
     } catch (e) {
       user = await create_user_js(
         "alec@dropspot.au",
-        "Password",
         "Alec",
         "Bassingthwaighte",
+        "Password",
       );
     } finally {
       this.isSubmitting = false;

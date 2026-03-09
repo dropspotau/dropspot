@@ -61,6 +61,10 @@ pub async fn handle_create_user(
 ) -> impl IntoResponse {
     let pool = state.get_pool();
 
+    if let Ok(existing) = get_user_by_email(pool, &payload.email).await {
+        return Json(ApiUser::from(existing)).into_response();
+    }
+
     let Ok(password_hash) = hash_password(&payload.password) else {
         let api_error: ApiError = LoginError::CreateUserPasswordError.into();
         return api_error.into_response();

@@ -80,9 +80,9 @@ pub async fn login(email: String, password: String) -> Result<User, UserError> {
 #[wasm_bindgen]
 pub async fn create_user_js(
     email: String,
-    password: String,
     first_name: String,
     last_name: String,
+    password: String,
 ) -> Result<User, JsError> {
     let user = create_user(email, password, first_name, last_name).await;
 
