@@ -1,5 +1,5 @@
 import { html, css, LitElement } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 
 @customElement("dropspot-popover")
@@ -18,12 +18,19 @@ export class PopoverElement extends LitElement {
     .popover[popover] {
       /* https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/anchor */
       inset: auto;
-      left: calc(anchor(right) + 1rem);
       align-self: anchor-center;
       opacity: 0;
       transition:
         opacity 0.2s ease-in-out,
         display 0.2s linear;
+
+      &[alignment="left"] {
+        right: calc(anchor(left) + 1rem);
+      }
+
+      &[alignment="right"] {
+        left: calc(anchor(right) + 1rem);
+      }
 
       &:popover-open {
         opacity: 1;
@@ -32,6 +39,9 @@ export class PopoverElement extends LitElement {
   `;
 
   private popoverRef: Ref<HTMLDivElement> = createRef();
+
+  @property()
+  private alignment: "left" | "right" = "right";
 
   connectedCallback() {
     super.connectedCallback();
@@ -55,7 +65,12 @@ export class PopoverElement extends LitElement {
 
   render() {
     return html`
-      <div class="popover" popover="manual" ${ref(this.popoverRef)}>
+      <div
+        class="popover"
+        alignment="${this.alignment}"
+        popover="manual"
+        ${ref(this.popoverRef)}
+      >
         <slot></slot>
       </div>
     `;

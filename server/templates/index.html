@@ -16,7 +16,7 @@
             <md-icon-button id="settings-popover-toggle" class="md-icon-button-white">
                 <md-icon>settings</md-icon>
             </md-icon-button>
-            <dropspot-popover id="settings-popover">
+            <dropspot-popover id="settings-popover" alignment="left">
                 <section class="settings">
                     <h3 class="no-margin" style="align-self: center;">Settings</h3>
                     <div class="settings-loader">
@@ -30,7 +30,7 @@
             <md-icon-button id="files-popover-toggle" class="md-icon-button-white">
                 <md-icon>list</md-icon>
             </md-icon-button>
-            <dropspot-popover id="files-popover">
+            <dropspot-popover id="files-popover" alignment="right">
                 <section class="file-menu">
                     <h3 class="no-margin" style="align-self: center;">Files</h3>
                     <div class="file-menu-wrapper" hx-get="/app/files" hx-trigger="load, file-upload from:body, file-download from:body, file-delete from:body" hx-swap="innerHTML">
