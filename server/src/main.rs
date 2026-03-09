@@ -1,3 +1,4 @@
+mod auth;
 mod db;
 mod handlers;
 mod state;
@@ -21,7 +22,7 @@ use uuid::Uuid;
 
 use crate::db::connect;
 use crate::handlers::{
-    handle_delete_file, handle_file_download, handle_file_request_download,
+    handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_files, handle_get_file, handle_header,
     handle_index, handle_list_files, handle_login, handle_settings,
 };
@@ -209,12 +210,13 @@ async fn main() -> Result<(), ()> {
                         "/api/download/{download_id}/download",
                         get(handle_file_download),
                     )
+                    .route("/api/user/login", post(handle_login))
+                    .route("/api/user/create", post(handle_create_user))
                     .route("/app", get(handle_index))
                     .route("/app/header", get(handle_header))
                     .route("/app/files", get(handle_files))
                     .route("/app/files/{id}/delete", delete(handle_delete_file))
                     .route("/app/settings", get(handle_settings))
-                    .route("/app/login", post(handle_login))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(shared_state);
