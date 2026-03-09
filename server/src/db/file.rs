@@ -4,12 +4,8 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use super::types::Id;
 use super::upload::create_upload;
-
-/// Used in queries that just return an ID
-struct Id {
-    id: Uuid,
-}
 
 pub struct File {
     pub id: Uuid,

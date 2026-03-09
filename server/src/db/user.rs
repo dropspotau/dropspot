@@ -2,6 +2,10 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::db::organisation::get_organisation;
+
+use super::types::Id;
+
 pub struct User {
     pub id: Uuid,
     pub first_name: String,
@@ -53,4 +57,35 @@ pub async fn get_user_by_id(pool: &PgPool, id: &Uuid) -> Result<User, sqlx::Erro
     )
     .fetch_one(pool)
     .await
+}
+
+pub async fn create_user(
+    pool: &PgPool,
+    first_name: &str,
+    last_name: &str,
+    email: &str,
+) -> Result<User, sqlx::Error> {
+    let organisation = get_organisation(pool).await?;
+
+    let id = sqlx::query_as!(
+        Id,
+        r#"
+            with inserted_user as (
+                insert into users (first_name, last_name, email)
+                values ($1, $2, $3)
+                returning id
+            )
+            insert into member (organisation_id, user_id)
+            values ($4, (select id from inserted_user))
+            returning user_id id
+        "#,
+        first_name,
+        last_name,
+        email,
+        &organisation.id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    get_user_by_id(pool, &id.id).await
 }

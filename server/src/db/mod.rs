@@ -1,6 +1,8 @@
 mod connect;
 mod download;
 mod file;
+mod organisation;
+mod types;
 mod upload;
 mod user;
 
