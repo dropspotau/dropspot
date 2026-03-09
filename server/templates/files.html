@@ -42,11 +42,11 @@
                     if (listItem) {
                         listItem.addEventListener("click", (e) => {
                             e.stopPropagation();
-
                             const { target, currentTarget } = e;
-                            const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
+                            const isButtonClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
+                            const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}-menu`) || target.closest(`#file-actions-{{ file.id }}-menu`) !== null);
 
-                            if (isMenuClick) {
+                            if (isButtonClick || isMenuClick) {
                                 return;
                             }
 
@@ -79,8 +79,6 @@
                             if (detailRemainingDownloads) {
                                 detailRemainingDownloads.textContent = `{{ file.get_remaining_downloads() }}`;
                             }
-
-                            console.debug(fileList);
 
                             fileList.setAttribute("hidden", "");
                         });

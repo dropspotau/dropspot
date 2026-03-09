@@ -3,7 +3,8 @@ use std::sync::Arc;
 use askama::Template;
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
+    http::HeaderValue,
+    response::{IntoResponse, Response},
 };
 use uuid::Uuid;
 
@@ -45,19 +46,32 @@ struct DeleteFileTemplate {
 pub async fn handle_delete_file(
     State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>,
-) -> impl IntoResponse {
+) -> Response {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &id).await else {
         let template = DeleteFileTemplate { deleted: false };
-        return HtmlTemplate(template);
+        let response = HtmlTemplate(template).into_response();
+
+        return response;
     };
 
     if let Err(_e) = delete_files(pool, &[file.id]).await {
         let template = DeleteFileTemplate { deleted: false };
-        return HtmlTemplate(template);
+        let response = HtmlTemplate(template).into_response();
+
+        return response;
+    }
+
+    if file.delete_file().is_err() {
+        eprintln!("Failed to delete file: {}", file.id);
     }
 
     let template = DeleteFileTemplate { deleted: true };
-    HtmlTemplate(template)
+    let mut response = HtmlTemplate(template).into_response();
+
+    let headers = response.headers_mut();
+    headers.insert("HX-Trigger", HeaderValue::from_str("file-deleted").unwrap());
+
+    response
 }

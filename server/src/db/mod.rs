@@ -4,6 +4,6 @@ mod file;
 mod upload;
 
 pub use connect::connect;
-pub use download::{Download, create_download, get_download_by_id, get_downloads};
+pub use download::{Download, create_download, get_download_by_id};
 pub use file::{File, create_file, delete_files, get_expired_files, get_file_by_id, get_files};
-pub use upload::{create_upload, finish_upload, get_upload_by_file_id, get_uploads, start_upload};
+pub use upload::{finish_upload, get_upload_by_file_id, start_upload};
