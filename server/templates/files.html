@@ -8,126 +8,124 @@
 {% endif %}
 
 {% if !is_empty %}
-    <div class="file-menu-container">
-        <ul id="file-list" class="file-list">
-        {% for file in files %}
-            <li id="file-{{ file.id }}" class="file-item">
-                <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
-                <div class="file-info">
-                    <span class="file-name">{{ file.name }}</span>
-                    <span class="file-size">{{ file.get_formatted_size() }}</span>
-                </div>
-                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
-                    <md-icon>more_vert</md-icon>
-                </md-icon-button>
-                <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
-                    <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
-                        <div slot="headline" class="menu-item text-danger">
-                            <md-icon>delete</md-icon>
-                            <span>Delete</span></div>
-                    </md-menu-item>
-                </md-menu>
-                <script type="module">
-                    const fileList = document.querySelector("#file-list");
-                    const listItem = document.querySelector(`#file-{{ file.id }}`);
-                    const button = document.querySelector(`#file-actions-{{ file.id }}`);
-                    const menu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
+    <ul id="file-list" class="file-list">
+    {% for file in files %}
+        <li id="file-{{ file.id }}" class="file-item">
+            <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
+            <div class="file-info">
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-size">{{ file.get_formatted_size() }}</span>
+            </div>
+            <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
+                <md-icon>more_vert</md-icon>
+            </md-icon-button>
+            <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
+                <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
+                    <div slot="headline" class="menu-item text-danger">
+                        <md-icon>delete</md-icon>
+                        <span>Delete</span></div>
+                </md-menu-item>
+            </md-menu>
+            <script type="module">
+                const fileList = document.querySelector("#file-list");
+                const listItem = document.querySelector(`#file-{{ file.id }}`);
+                const button = document.querySelector(`#file-actions-{{ file.id }}`);
+                const menu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
 
-                    if (button && menu) {
-                        button.addEventListener("click", () => {
-                            menu.open = !menu.open;
-                        });
-                    }
+                if (button && menu) {
+                    button.addEventListener("click", () => {
+                        menu.open = !menu.open;
+                    });
+                }
 
-                    if (listItem) {
-                        listItem.addEventListener("click", (e) => {
-                            e.stopPropagation();
-                            const { target, currentTarget } = e;
-                            const isButtonClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
-                            const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}-menu`) || target.closest(`#file-actions-{{ file.id }}-menu`) !== null);
+                if (listItem) {
+                    listItem.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        const { target, currentTarget } = e;
+                        const isButtonClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
+                        const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}-menu`) || target.closest(`#file-actions-{{ file.id }}-menu`) !== null);
 
-                            if (isButtonClick || isMenuClick) {
-                                return;
-                            }
+                        if (isButtonClick || isMenuClick) {
+                            return;
+                        }
 
-                            const detail = document.querySelector("#file-detail");
-                            if (detail) {
-                                detail.removeAttribute("hidden");
-                            }
+                        const detail = document.querySelector("#file-detail");
+                        if (detail) {
+                            detail.removeAttribute("hidden");
+                        }
 
-                            const detailName = document.querySelector("#file-detail-name");
-                            if (detailName) {
-                                detailName.textContent = `{{ file.name }}`;
-                            }
+                        const detailName = document.querySelector("#file-detail-name");
+                        if (detailName) {
+                            detailName.textContent = `{{ file.name }}`;
+                        }
 
-                            const detailSize = document.querySelector("#file-detail-size");
-                            if (detailSize) {
-                                detailSize.textContent = `{{ file.get_formatted_size() }}`;
-                            }
+                        const detailSize = document.querySelector("#file-detail-size");
+                        if (detailSize) {
+                            detailSize.textContent = `{{ file.get_formatted_size() }}`;
+                        }
 
-                            const detailUploadedBy = document.querySelector("#file-detail-uploaded-by");
-                            if (detailUploadedBy) {
-                                detailUploadedBy.textContent = "Oscar Webber";
-                            }
+                        const detailUploadedBy = document.querySelector("#file-detail-uploaded-by");
+                        if (detailUploadedBy) {
+                            detailUploadedBy.textContent = "Oscar Webber";
+                        }
 
-                            const detailUploadAt = document.querySelector("#file-detail-upload-at");
-                            if (detailUploadAt) {
-                                detailUploadAt.textContent = "March 8, 2026 at 7:34 PM";
-                            }
+                        const detailUploadAt = document.querySelector("#file-detail-upload-at");
+                        if (detailUploadAt) {
+                            detailUploadAt.textContent = "March 8, 2026 at 7:34 PM";
+                        }
 
-                            const detailRemainingDownloads = document.querySelector("#file-detail-remaining-downloads");
-                            if (detailRemainingDownloads) {
-                                detailRemainingDownloads.textContent = `{{ file.get_remaining_downloads() }}`;
-                            }
+                        const detailRemainingDownloads = document.querySelector("#file-detail-remaining-downloads");
+                        if (detailRemainingDownloads) {
+                            detailRemainingDownloads.textContent = `{{ file.get_remaining_downloads() }}`;
+                        }
 
-                            fileList.setAttribute("hidden", "");
-                        });
-                    }
-                </script>
-            </li>
-        {% endfor %}
-      </ul>
-      <section id="file-detail" hidden>
-          <md-icon-button id="file-back" class="popover-back-button">
-              <md-icon>arrow_back</md-icon>
-          </md-icon-button>
-        <div class="file-details-container">
-            <h3 class="file-detail-name">4c8513462e4170776e3bb5fbd70a6776.mp4</h3>
-          
-            <div class="file-details-grid">
-                <div class="file-detail-item">
-                    <span class="file-detail-label">File Size</span>
-                    <span id="file-detail-size" class="file-detail-value">24.8 MB</span>
-                </div>
+                        fileList.setAttribute("hidden", "");
+                    });
+                }
+            </script>
+        </li>
+    {% endfor %}
+  </ul>
+  <section id="file-detail" hidden>
+      <md-icon-button id="file-back" class="popover-back-button">
+          <md-icon>arrow_back</md-icon>
+      </md-icon-button>
+      <div class="file-details-container">
+          <h3 class="file-detail-name">4c8513462e4170776e3bb5fbd70a6776.mp4</h3>
+      
+          <div class="file-details-grid">
+              <div class="file-detail-item">
+                  <span class="file-detail-label">File Size</span>
+                  <span id="file-detail-size" class="file-detail-value">24.8 MB</span>
+              </div>
+        
+              <div class="file-detail-item">
+                  <span class="file-detail-label">Uploaded By</span>
+                  <span id="file-detail-uploaded-by" class="file-detail-value">Alex Johnson</span>
+              </div>
             
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Uploaded By</span>
-                    <span id="file-detail-uploaded-by" class="file-detail-value">Alex Johnson</span>
-                </div>
-                
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Upload Date</span>
-                    <span id="file-detail-uploaded-at" class="file-detail-value">March 8, 2026 at 7:34 PM</span>
-                </div>
-                
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Downloads Remaining</span>
-                    <span id="file-detail-remaining-downloads" class="file-detail-value badge">5</span>
-                </div>
+              <div class="file-detail-item">
+                  <span class="file-detail-label">Upload Date</span>
+                  <span id="file-detail-uploaded-at" class="file-detail-value">March 8, 2026 at 7:34 PM</span>
+              </div>
+            
+              <div class="file-detail-item">
+                  <span class="file-detail-label">Downloads Remaining</span>
+                  <span id="file-detail-remaining-downloads" class="file-detail-value badge">5</span>
+              </div>
           </div>
-        </div>
-      </section>
-      <script type="module">
-          const backButton = document.querySelector("#file-back");
-          const fileList = document.querySelector("#file-list");
-          const detail = document.querySelector("#file-detail");
+      </div>
+  </section>
+  <script type="module">
+      const backButton = document.querySelector("#file-back");
+      const fileList = document.querySelector("#file-list");
+      const detail = document.querySelector("#file-detail");
 
-          if (backButton && fileList && detail) {
-              backButton.addEventListener("click", () => {
-                  detail.setAttribute("hidden", "");
-                  fileList.removeAttribute("hidden");
-              });
-          }
-      </script>
-  </div>
+      if (backButton && fileList && detail) {
+          backButton.addEventListener("click", () => {
+              detail.setAttribute("hidden", "");
+              fileList.removeAttribute("hidden");
+          });
+      }
+  </script>
 {% endif %}

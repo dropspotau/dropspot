@@ -71,7 +71,7 @@ pub async fn handle_delete_file(
     let mut response = HtmlTemplate(template).into_response();
 
     let headers = response.headers_mut();
-    headers.insert("HX-Trigger", HeaderValue::from_str("file-deleted").unwrap());
+    headers.insert("HX-Trigger", HeaderValue::from_str("file-delete").unwrap());
 
     response
 }

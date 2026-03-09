@@ -21,6 +21,12 @@
     }
 }
 
+.file-menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .file-loader {
     display: flex;
     place-items: center;
