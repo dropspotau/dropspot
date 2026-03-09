@@ -61,6 +61,10 @@ impl File {
     pub fn get_remaining_downloads(&self) -> i32 {
         self.max_downloads - self.download_count
     }
+
+    pub fn get_extension(&self) -> String {
+        self.name.split('.').last().unwrap_or("txt").to_string()
+    }
 }
 
 pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {

@@ -122,7 +122,7 @@ export class FilePreviewElement extends LitElement {
   }
 }
 
-type PreviewType = "image" | "video" | "audio" | "text";
+export type PreviewType = "image" | "video" | "audio" | "text";
 
 const getFilePreviewType = (fileName: string): PreviewType | null => {
   const extension = fileName.split(".").pop();

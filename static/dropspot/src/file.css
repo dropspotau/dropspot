@@ -83,7 +83,7 @@
   display: flex;
   align-items: center;
   padding: 1rem 1.5rem;
-  gap: 1.25rem;
+  gap: 1rem;
   color: var(--dropspot-primary); /* Material Blue Text */
   border-radius: 0.5rem;
   transition: background-color 0.2s ease;
@@ -113,12 +113,11 @@
   display: flex;
   flex: 1;
   place-items: center;
-  place-content: space-between;
+  justify-content: space-between;
   gap: 0.5rem;
 }
 
 .file-name {
-  font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -127,10 +126,8 @@
 }
 
 .file-size {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 400;
-  color: #1976d2; /* Slightly lighter blue for secondary text */
-  opacity: 0.85;
   flex: 0 0 fit-content;
 }
 

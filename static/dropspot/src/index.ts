@@ -18,6 +18,7 @@ import "./uploads.css";
 import "./utils.css";
 
 import "./copy-button";
+import "./file-icon";
 import "./file-preview";
 import "./modal";
 import "./my-element";
