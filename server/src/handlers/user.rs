@@ -4,6 +4,11 @@ use axum::{
     extract::{Json, State},
     response::IntoResponse,
 };
+use base64::{
+    Engine,
+    alphabet::STANDARD,
+    engine::{GeneralPurpose, general_purpose::NO_PAD},
+};
 use dropspot_core::user::{CreateUserPayload, LoginPayload, User as ApiUser};
 use reqwest::StatusCode;
 use thiserror::Error;
@@ -61,12 +66,15 @@ pub async fn handle_create_user(
         return api_error.into_response();
     };
 
+    let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
+    let password_base64 = engine.encode(password_hash);
+
     let user = create_user(
         pool,
         &payload.first_name,
         &payload.last_name,
         &payload.email,
-        &password_hash,
+        &password_base64,
     )
     .await
     .unwrap();
@@ -87,14 +95,29 @@ pub async fn handle_login(
     };
 
     let user = user.unwrap();
-    let password = get_user_password(pool, &user.id).await;
+    let password_base64 = get_user_password(pool, &user.id).await;
 
-    if let Err(e) = password {
+    println!("password_base64: {password_base64:?}");
+
+    if let Err(e) = password_base64 {
         let api_error: ApiError = LoginError::UserLookupError(e).into();
         return api_error.into_response();
     };
 
-    let matches = match verify_password(&payload.password, &password.unwrap()) {
+    let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
+    let Ok(password) = engine.decode(password_base64.unwrap()) else {
+        eprintln!("Could not decode");
+        let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
+        return api_error.into_response();
+    };
+
+    let Ok(password) = str::from_utf8(&password) else {
+        eprintln!("Could not decode 2");
+        let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
+        return api_error.into_response();
+    };
+
+    let matches = match verify_password(&payload.password, password) {
         Ok(matches) => matches,
         Err(_) => false,
     };

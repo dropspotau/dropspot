@@ -21,6 +21,7 @@ import "./utils.css";
 import "./copy-button";
 import "./file-icon";
 import "./file-preview";
+import "./login-button";
 import "./modal";
 import "./my-element";
 import "./popover";

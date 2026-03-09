@@ -38,7 +38,7 @@ pub async fn create_user(
     last_name: String,
 ) -> Result<User, UserError> {
     let user = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/user/create"))
+        .post(format!("{ENDPOINT}/api/user/create"))
         .header("Content-Type", "application/json")
         .json(&CreateUserPayload {
             first_name,
@@ -64,7 +64,7 @@ pub struct LoginPayload {
 
 pub async fn login(email: String, password: String) -> Result<User, UserError> {
     let user = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/user/login"))
+        .post(format!("{ENDPOINT}/api/user/login"))
         .header("Content-Type", "application/json")
         .json(&LoginPayload { email, password })
         .send()

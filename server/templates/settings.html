@@ -81,7 +81,6 @@
                 const userPage = document.querySelector("#settings-user");
                 const listItem = document.querySelector("#user-{{ user.id }}");
                 const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
-                console.debug(backButton, mainPage, userPage, listItem, detailPage);
 
                 if (backButton && mainPage && userPage) {
                     backButton.addEventListener("click", () => {
