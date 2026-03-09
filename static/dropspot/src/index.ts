@@ -8,6 +8,7 @@ import "@material/web/menu/menu-item.js";
 import htmx from "htmx.org";
 import init from "dropspot-core";
 
+import "./header.css";
 import "./index.css";
 import "./file.css";
 import "./menu.css";

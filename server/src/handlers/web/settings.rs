@@ -1,15 +1,10 @@
 use std::sync::Arc;
 
 use askama::Template;
-use axum::{
-    extract::{Path, State},
-    http::HeaderValue,
-    response::{IntoResponse, Response},
-};
-use uuid::Uuid;
+use axum::{extract::State, response::IntoResponse};
 
 use crate::{
-    db::{File, User, delete_files, get_file_by_id, get_files, get_users},
+    db::{User, get_users},
     state::AppState,
 };
 

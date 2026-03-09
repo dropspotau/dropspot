@@ -23,7 +23,7 @@ use crate::db::connect;
 use crate::handlers::{
     handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_files, handle_get_file, handle_header,
-    handle_index, handle_list_files, handle_settings,
+    handle_index, handle_list_files, handle_login, handle_settings,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -214,6 +214,7 @@ async fn main() -> Result<(), ()> {
                     .route("/app/files", get(handle_files))
                     .route("/app/files/{id}/delete", delete(handle_delete_file))
                     .route("/app/settings", get(handle_settings))
+                    .route("/app/login", post(handle_login))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(shared_state);

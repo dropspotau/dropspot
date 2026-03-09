@@ -1,0 +1,28 @@
+.header {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    width: 92%;
+    padding: 1rem;
+}
+
+.login-form {
+    display: contents;
+
+    md-circular-progress {
+        display: none;
+    }
+
+    &.htmx-request {
+        md-circular-progress {
+            display: block;
+        }
+    }
+}
+
+.login-button-contents {
+    display: flex;
+    flex-flow: row;
+    place-items: center;
+    gap: 0.5rem;
+}

@@ -10,7 +10,7 @@ pub struct Organisation {
     pub created_at: DateTime<Utc>,
 }
 
-const DEFAULT_ORGANISATION_NAME: &str = "Default";
+pub const DEFAULT_ORGANISATION_NAME: &str = "Default";
 
 // TODO(alec): Whenever we handle multiple organisations, we'll need to retrieve them by ID
 pub async fn get_organisation(pool: &PgPool) -> Result<Organisation, sqlx::Error> {

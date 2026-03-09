@@ -9,7 +9,7 @@
     <script type="module" src="/static/dropspot/dist/index.js"></script>
 </head>
 <body>
-    <header hx-get="/app/header" hx-trigger="load" hx-target="this" hx-swap="outerHTML">Loading...</header>
+    <header class="header" hx-get="/app/header" hx-trigger="load" hx-target="this" hx-swap="innerHTML">Loading...</header>
     <main>
         <input type="file" id="file-input" class="file-upload">
         <section class="upload-area">
