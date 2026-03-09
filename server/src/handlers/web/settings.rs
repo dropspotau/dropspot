@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use askama::Template;
 use axum::{extract::State, response::IntoResponse};
 
@@ -17,10 +15,7 @@ struct SettingsTemplate {
     users: Vec<User>,
 }
 
-pub async fn handle_settings(
-    State(state): State<Arc<AppState>>,
-    user: AuthUser,
-) -> impl IntoResponse {
+pub async fn handle_settings(State(state): State<AppState>, user: AuthUser) -> impl IntoResponse {
     let pool = state.get_pool();
     let users = get_users(pool).await.unwrap();
 

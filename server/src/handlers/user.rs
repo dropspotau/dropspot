@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Json, State},
     response::IntoResponse,
@@ -56,7 +54,7 @@ impl From<User> for ApiUser {
 }
 
 pub async fn handle_create_user(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Json(payload): Json<CreateUserPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();
@@ -87,7 +85,7 @@ pub async fn handle_create_user(
 }
 
 pub async fn handle_login(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Json(payload): Json<LoginPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();

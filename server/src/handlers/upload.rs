@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     body::Body,
     extract::{Json, Path, State},
@@ -50,7 +48,7 @@ impl Into<ApiError> for FileUploadError {
 }
 
 pub async fn handle_file_request_upload(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
     let file = create_file(state.get_pool(), &payload.name, &payload.name, payload.size)
@@ -67,7 +65,7 @@ pub async fn handle_file_request_upload(
 }
 
 pub async fn handle_file_upload(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Path(file_id): Path<Uuid>,
     body: Body,
 ) -> Response {

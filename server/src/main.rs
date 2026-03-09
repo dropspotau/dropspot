@@ -185,7 +185,7 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
-                let state = AppState::new(pool);
+                let state = AppState::new(Arc::new(pool));
                 watch_for_files(state).await;
             }
             ServerCommands::Run => {
@@ -193,8 +193,7 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
-                let state = AppState::new(pool);
-                let shared_state = Arc::new(state);
+                let state = AppState::new(Arc::new(pool));
                 let serve_dir = ServeDir::new("static")
                     .not_found_service(ServeFile::new("static/not_found.html"));
 
@@ -220,7 +219,7 @@ async fn main() -> Result<(), ()> {
                     .route("/app/settings", get(handle_settings))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
-                    .with_state(shared_state);
+                    .with_state(state);
 
                 println!("Listening on port 8000");
                 let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();

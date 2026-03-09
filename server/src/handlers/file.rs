@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
@@ -42,7 +40,7 @@ impl From<File> for ApiFile {
     }
 }
 
-pub async fn handle_list_files(State(state): State<Arc<AppState>>) -> Response {
+pub async fn handle_list_files(State(state): State<AppState>) -> Response {
     let pool = state.get_pool();
     let files = get_files(&pool).await;
 
@@ -60,7 +58,7 @@ pub async fn handle_list_files(State(state): State<Arc<AppState>>) -> Response {
     Json(files).into_response()
 }
 
-pub async fn handle_get_file(State(state): State<Arc<AppState>>, Path(id): Path<Uuid>) -> Response {
+pub async fn handle_get_file(State(state): State<AppState>, Path(id): Path<Uuid>) -> Response {
     let pool = state.get_pool();
     let file = get_file_by_id(&pool, &id)
         .await

@@ -1,11 +1,9 @@
 // src/middleware/auth.rs
 // JWT authentication extractor
 
-use std::sync::Arc;
-
 use axum::{
     RequestPartsExt,
-    extract::{FromRequestParts, State},
+    extract::FromRequestParts,
     http::{StatusCode, request::Parts},
 };
 use axum_extra::{
@@ -33,12 +31,12 @@ impl From<AccessClaims> for AuthUser {
     }
 }
 
-impl FromRequestParts<Arc<AppState>> for AuthUser {
+impl FromRequestParts<AppState> for AuthUser {
     type Rejection = ApiError;
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<AppState>,
+        state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         // Extract Authorization header
         let Ok(TypedHeader(Authorization(bearer))) =
@@ -72,7 +70,7 @@ impl FromRequestParts<AppState> for OptionalAuthUser {
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<AppState>,
+        state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         match AuthUser::from_request_parts(parts, state).await {
             Ok(user) => Ok(OptionalAuthUser(Some(user))),

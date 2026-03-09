@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use askama::Template;
 use axum::{
     extract::{Path, State},
@@ -22,7 +20,7 @@ struct FilesTemplate {
     is_empty: bool,
 }
 
-pub async fn handle_files(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+pub async fn handle_files(State(state): State<AppState>) -> impl IntoResponse {
     let pool = state.get_pool();
     let files = match get_files(pool).await {
         Ok(files) => files,
@@ -43,10 +41,7 @@ struct DeleteFileTemplate {
     deleted: bool,
 }
 
-pub async fn handle_delete_file(
-    State(state): State<Arc<AppState>>,
-    Path(id): Path<Uuid>,
-) -> Response {
+pub async fn handle_delete_file(State(state): State<AppState>, Path(id): Path<Uuid>) -> Response {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &id).await else {

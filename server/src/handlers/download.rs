@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     body::Body,
     extract::{Json, Path, State},
@@ -55,7 +53,7 @@ impl From<Download> for ApiDownload {
 }
 
 pub async fn handle_file_request_download(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Path(file_id): Path<Uuid>,
 ) -> Response {
     let pool = state.get_pool();
@@ -86,7 +84,7 @@ pub async fn handle_file_request_download(
 }
 
 pub async fn handle_file_download(
-    State(state): State<Arc<AppState>>,
+    State(state): State<AppState>,
     Path(download_id): Path<Uuid>,
 ) -> Result<Response, StatusCode> {
     let pool = state.get_pool();
