@@ -62,6 +62,17 @@ impl File {
     pub fn get_extension(&self) -> String {
         self.name.split('.').last().unwrap_or("txt").to_string()
     }
+
+    // Deletes the actual file
+    pub fn delete_file(&self) -> Result<(), ()> {
+        let path = self.get_path();
+
+        // TODO(alec): Handle different providers: filesystem, S3, GCP bucket etc.
+        match std::fs::remove_file(path) {
+            Ok(_) => Ok(()),
+            Err(_e) => Err(()),
+        }
+    }
 }
 
 pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {

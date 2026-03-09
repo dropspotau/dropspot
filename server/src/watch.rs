@@ -16,11 +16,12 @@ pub async fn watch_for_files(state: AppState) {
             continue;
         };
 
-        let expired_files = expired_files
-            .unwrap()
-            .into_iter()
-            .map(|file| file.id)
-            .collect::<Vec<_>>();
-        println!("{expired_files:?}");
+        let expired_files = expired_files.unwrap().into_iter().collect::<Vec<_>>();
+
+        for file in expired_files {
+            if file.delete_file().is_err() {
+                eprintln!("Failed to delete file: {}", file.id);
+            }
+        }
     }
 }
