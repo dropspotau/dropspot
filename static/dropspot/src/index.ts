@@ -18,6 +18,7 @@ import "./upload-circle.css";
 import "./uploads.css";
 import "./utils.css";
 
+import "./auth";
 import "./copy-button";
 import "./file-icon";
 import "./file-preview";

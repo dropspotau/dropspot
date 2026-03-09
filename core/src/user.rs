@@ -24,7 +24,8 @@ pub struct User {
 }
 
 /// Token pair returned to client
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct TokenPair {
     pub access_token: String,
     pub refresh_token: String,
