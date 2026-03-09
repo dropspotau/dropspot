@@ -16,6 +16,7 @@ pub struct File {
     pub id: Uuid,
     pub name: String,
     pub size: i64,
+    pub remaining_downloads: i32,
 }
 
 pub async fn list_files() -> Result<Vec<File>, reqwest::Error> {

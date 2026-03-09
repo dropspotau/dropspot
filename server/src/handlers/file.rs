@@ -35,8 +35,9 @@ impl From<File> for ApiFile {
     fn from(file: File) -> Self {
         Self {
             id: file.id,
-            name: file.name,
+            name: file.name.clone(),
             size: file.size,
+            remaining_downloads: file.get_remaining_downloads(),
         }
     }
 }
@@ -72,4 +73,3 @@ pub async fn handle_get_file(State(state): State<Arc<AppState>>, Path(id): Path<
 
     Json(file.unwrap()).into_response()
 }
-

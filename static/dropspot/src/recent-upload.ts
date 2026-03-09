@@ -48,7 +48,6 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     }
 
     const fileContents = new Uint8Array(await file.arrayBuffer());
-
     const result = await upload_js(file.name, fileContents);
     addRecentUpload(result);
 
@@ -64,8 +63,13 @@ export type FileUploadEvent = CustomEvent<{
   upload: UploadResult;
 }>;
 
+export type FileDownloadEvent = CustomEvent<{
+  file: File;
+}>;
+
 declare global {
   interface DocumentEventMap {
     "file-upload": FileUploadEvent;
+    "file-download": FileDownloadEvent;
   }
 }

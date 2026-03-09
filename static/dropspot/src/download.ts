@@ -81,6 +81,9 @@ const initialiseDownload = async (): Promise<void> => {
             encryption,
           )) as Uint8Array<ArrayBuffer>;
           bufferFileMap.set(file.id, buffer);
+          document.dispatchEvent(
+            new CustomEvent("file-download", { detail: { file } }),
+          );
         } catch (e) {
           console.error(e);
           button.removeAttribute("is-downloading");
