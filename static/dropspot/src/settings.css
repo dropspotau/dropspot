@@ -1,10 +1,30 @@
 .settings {
+    --menu-padding: 1rem;
+    --menu-height: 32dvh;
+    --menu-width: 16dvw;
+
+    position: relative;
     display: flex;
     flex-flow: column;
-    padding: 1rem;
+    padding: var(--menu-padding);
     gap: 1rem;
-    min-height: 24dvh;
-    min-width: 12dvw;
+    height: var(--menu-height);
+    width: var(--menu-width);
+
+    /* Material Design Shadow */
+    border-radius: 12px;
+    overflow: hidden;
+
+    @media (max-width: 480px) {
+        --menu-height: 80dvh;
+        --menu-width: 100dvh;
+    }
+}
+
+.settings-menu-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .settings-loader {

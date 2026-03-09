@@ -19,8 +19,10 @@
             <dropspot-popover id="settings-popover" alignment="left">
                 <section class="settings">
                     <h3 class="no-margin" style="align-self: center;">Settings</h3>
-                    <div class="settings-loader">
-                        <md-circular-progress indeterminate></md-circular-progress>
+                    <div class="settings-menu-wrapper" hx-get="/app/settings" hx-trigger="load, file-upload from:body, file-download from:body, file-delete from:body" hx-swap="innerHTML">
+                        <div class="settings-loader">
+                            <md-circular-progress indeterminate></md-circular-progress>
+                        </div>
                     </div>
                 </section>
             </dropspot-popover>
