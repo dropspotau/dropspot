@@ -12,6 +12,7 @@ rust-version = "1.93.0"
 aes-gcm = { version = "0.10.3", features = ["std", "stream"] , workspace = true }
 askama = { version = "0.15.4", workspace = true }
 axum = { version = "0.8.8", workspace = true }
+axum-extra = { version = "0.12.5", features = ["typed-header"], workspace = true }
 base64 = { version = "0.22.1", workspace = true }
 bytes = { version = "1.11.0", features = ["serde"] , workspace = true }
 chrono = { version = "0.4.42", features = ["serde"] , workspace = true }

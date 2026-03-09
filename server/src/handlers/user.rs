@@ -14,11 +14,11 @@ use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
-    auth::hash_password,
-    db::{User, create_user},
+    auth::password::{hash_password, verify_password},
+    db::{User, create_user, get_user_by_email, get_user_password},
+    state::AppState,
+    types::ApiError,
 };
-use crate::{auth::verify_password, db::get_user_password, types::ApiError};
-use crate::{db::get_user_by_email, state::AppState};
 
 #[derive(Error, Debug)]
 pub enum LoginError {

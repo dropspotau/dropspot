@@ -1,6 +1,7 @@
 mod auth;
 mod db;
 mod handlers;
+mod middleware;
 mod state;
 mod types;
 mod watch;
