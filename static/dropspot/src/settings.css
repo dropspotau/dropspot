@@ -34,3 +34,71 @@
     flex: 1;
     width: 100%;
 }
+
+.section-label {
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding: 0 12px;
+}
+
+/* List Items */
+.settings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Item Icons & Text */
+.settings-icon {
+  --md-icon-size: 2rem;
+  color: var(--dropspot-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e6f4ff; /* Light blue background for the icon */
+  padding: 0.625rem;
+  border-radius: 8px;
+
+  &:hover {
+    background-color: var(--dropspot-hover);
+  }
+}
+
+.settings-text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 0.25rem;
+}
+
+.settings-item-title {
+  font-weight: 600;
+  color: #333;
+}
+
+.settings-item-desc {
+  font-size: 13px;
+  color: var(--dropspot-teal-dark);
+}
+
+/* Chevron/Action Icon */
+.settings-action {
+  color: var(--dropspot-grey-dark);
+}
