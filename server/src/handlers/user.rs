@@ -7,7 +7,7 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::user::{CreateUserPayload, LoginPayload, User as ApiUser};
+use dropspot_core::user::{CreateUserPayload, LoginPayload, LoginResult, User as ApiUser};
 use reqwest::StatusCode;
 use thiserror::Error;
 
@@ -81,7 +81,17 @@ pub async fn handle_create_user(
     .await
     .unwrap();
 
-    Json(ApiUser::from(user)).into_response()
+    // Generate tokens
+    let tokens = state
+        .get_token_service()
+        .generate_token_pair(user.id, user.email.clone())
+        .unwrap();
+
+    Json(LoginResult {
+        user: ApiUser::from(user),
+        tokens,
+    })
+    .into_response()
 }
 
 pub async fn handle_login(
@@ -98,8 +108,6 @@ pub async fn handle_login(
 
     let user = user.unwrap();
     let password_base64 = get_user_password(pool, &user.id).await;
-
-    println!("password_base64: {password_base64:?}");
 
     if let Err(e) = password_base64 {
         let api_error: ApiError = LoginError::UserLookupError(e).into();
@@ -129,5 +137,15 @@ pub async fn handle_login(
         return api_error.into_response();
     }
 
-    Json(ApiUser::from(user)).into_response()
+    // Generate tokens
+    let tokens = state
+        .get_token_service()
+        .generate_token_pair(user.id, user.email.clone())
+        .unwrap();
+
+    Json(LoginResult {
+        user: ApiUser::from(user),
+        tokens,
+    })
+    .into_response()
 }

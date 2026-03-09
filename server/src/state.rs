@@ -12,7 +12,7 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(pool: Arc<PgPool>) -> Self {
-        let token_service = TokenService::new("".to_owned(), "".to_owned(), 59, i32::MAX as i64);
+        let token_service = TokenService::new("".to_owned(), "".to_owned(), 59, 600000);
         Self {
             pool,
             token_service,

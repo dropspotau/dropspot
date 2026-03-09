@@ -1,4 +1,4 @@
-import { create_user_js, login_js, type User } from "dropspot-core";
+import { create_user_js, login_js, type LoginResult } from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
@@ -27,12 +27,12 @@ export class LoginButtonElement extends LitElement {
 
   private handleClick = async (): Promise<void> => {
     this.isSubmitting = true;
-    let user: User | null = null;
+    let result: LoginResult | null = null;
 
     try {
-      user = await login_js("alec@dropspot.au", "Password");
+      result = await login_js("alec@dropspot.au", "Password");
     } catch (e) {
-      user = await create_user_js(
+      result = await create_user_js(
         "alec@dropspot.au",
         "Alec",
         "Bassingthwaighte",
@@ -42,7 +42,7 @@ export class LoginButtonElement extends LitElement {
       this.isSubmitting = false;
     }
 
-    console.debug("Logged in as user", user);
+    console.debug("Logged in as user", result);
   };
 
   render() {

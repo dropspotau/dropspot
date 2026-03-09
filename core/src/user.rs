@@ -24,7 +24,7 @@ pub struct User {
 }
 
 /// Token pair returned to client
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TokenPair {
     pub access_token: String,
     pub refresh_token: String,
@@ -40,13 +40,20 @@ pub struct CreateUserPayload {
     pub password: String,
 }
 
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct LoginResult {
+    pub user: User,
+    pub tokens: TokenPair,
+}
+
 pub async fn create_user(
     email: String,
     password: String,
     first_name: String,
     last_name: String,
-) -> Result<User, UserError> {
-    let user = reqwest::Client::new()
+) -> Result<LoginResult, UserError> {
+    let result = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/create"))
         .header("Content-Type", "application/json")
         .json(&CreateUserPayload {
@@ -58,11 +65,11 @@ pub async fn create_user(
         .send()
         .await
         .map_err(UserError::CreateError)?
-        .json::<User>()
+        .json::<LoginResult>()
         .await
         .map_err(UserError::CreateError)?;
 
-    Ok(user)
+    Ok(result)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -71,19 +78,19 @@ pub struct LoginPayload {
     pub password: String,
 }
 
-pub async fn login(email: String, password: String) -> Result<User, UserError> {
-    let user = reqwest::Client::new()
+pub async fn login(email: String, password: String) -> Result<LoginResult, UserError> {
+    let result = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/login"))
         .header("Content-Type", "application/json")
         .json(&LoginPayload { email, password })
         .send()
         .await
         .map_err(UserError::LoginError)?
-        .json::<User>()
+        .json::<LoginResult>()
         .await
         .map_err(UserError::LoginError)?;
 
-    Ok(user)
+    Ok(result)
 }
 
 #[wasm_bindgen]
@@ -92,25 +99,25 @@ pub async fn create_user_js(
     first_name: String,
     last_name: String,
     password: String,
-) -> Result<User, JsError> {
-    let user = create_user(email, password, first_name, last_name).await;
+) -> Result<LoginResult, JsError> {
+    let result = create_user(email, password, first_name, last_name).await;
 
-    if let Err(e) = user {
+    if let Err(e) = result {
         return Err(JsError::new(&format!("{e:?}")));
     };
 
-    let user = user.unwrap();
+    let user = result.unwrap();
     Ok(user)
 }
 
 #[wasm_bindgen]
-pub async fn login_js(email: String, password: String) -> Result<User, JsError> {
-    let user = login(email, password).await;
+pub async fn login_js(email: String, password: String) -> Result<LoginResult, JsError> {
+    let result = login(email, password).await;
 
-    if let Err(e) = user {
+    if let Err(e) = result {
         return Err(JsError::new(&format!("{e:?}")));
     };
 
-    let user = user.unwrap();
+    let user = result.unwrap();
     Ok(user)
 }
