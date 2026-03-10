@@ -28,7 +28,7 @@ pub async fn get_users(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
               count(file.id)::int "file_count!"
             from users
             left join file
-            on file.uploaded_by_id = users.id
+            on file.created_by_id = users.id
             group by users.id
             order by users.created_at asc
         "#
@@ -50,7 +50,7 @@ pub async fn get_user_by_id(pool: &PgPool, id: &Uuid) -> Result<User, sqlx::Erro
               count(file.id)::int "file_count!"
             from users
             left join file
-            on file.uploaded_by_id = users.id
+            on file.created_by_id = users.id
             group by users.id
             having users.id = $1
             order by users.created_at asc
@@ -75,7 +75,7 @@ pub async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<User, sqlx:
               count(file.id)::int "file_count!"
             from users
             left join file
-            on file.uploaded_by_id = users.id
+            on file.created_by_id = users.id
             group by users.id
             having users.email = $1
             order by users.created_at asc

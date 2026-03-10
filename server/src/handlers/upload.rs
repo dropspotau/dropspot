@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
+        User, create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
         start_upload,
     },
     state::AppState,
@@ -49,12 +49,19 @@ impl Into<ApiError> for FileUploadError {
 
 pub async fn handle_file_request_upload(
     State(state): State<AppState>,
+    user: Option<User>,
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
-    let file = create_file(state.get_pool(), &payload.name, &payload.name, payload.size)
-        .await
-        .map(ApiFile::from)
-        .map_err(FileUploadError::FileDatabaseCreateError);
+    let file = create_file(
+        state.get_pool(),
+        &payload.name,
+        &payload.name,
+        payload.size,
+        user.map(|u| u.id),
+    )
+    .await
+    .map(ApiFile::from)
+    .map_err(FileUploadError::FileDatabaseCreateError);
 
     if let Err(e) = file {
         let api_error: ApiError = e.into();

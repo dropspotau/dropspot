@@ -10,28 +10,13 @@ use axum_extra::{
     TypedHeader,
     headers::{Authorization, authorization::Bearer},
 };
-use uuid::Uuid;
 
-use crate::state::AppState;
-use crate::{auth::claims::AccessClaims, types::ApiError};
+use crate::{db::User, state::AppState};
+use crate::{db::get_user_by_id, types::ApiError};
 
 /// Authenticated user information extracted from JWT
-#[derive(Debug, Clone)]
-pub struct AuthUser {
-    pub id: Uuid,
-    pub email: String,
-}
 
-impl From<AccessClaims> for AuthUser {
-    fn from(claims: AccessClaims) -> Self {
-        Self {
-            id: claims.sub,
-            email: claims.email,
-        }
-    }
-}
-
-impl FromRequestParts<AppState> for AuthUser {
+impl FromRequestParts<AppState> for User {
     type Rejection = ApiError;
 
     async fn from_request_parts(
@@ -58,23 +43,30 @@ impl FromRequestParts<AppState> for AuthUser {
                 status: StatusCode::UNAUTHORIZED,
             })?;
 
-        Ok(AuthUser::from(claims))
+        let user_id = claims.sub;
+
+        let Ok(user) = get_user_by_id(state.get_pool(), &user_id).await else {
+            let api_error = ApiError {
+                message: "Unauthorised".to_string(),
+                status: StatusCode::UNAUTHORIZED,
+            };
+            return Err(api_error);
+        };
+
+        Ok(user)
     }
 }
 
-/// Optional authentication - doesn't fail if no token provided
-pub struct OptionalAuthUser(pub Option<AuthUser>);
-
-impl FromRequestParts<AppState> for OptionalAuthUser {
+impl FromRequestParts<AppState> for Option<User> {
     type Rejection = ApiError;
 
     async fn from_request_parts(
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        match AuthUser::from_request_parts(parts, state).await {
-            Ok(user) => Ok(OptionalAuthUser(Some(user))),
-            Err(_) => Ok(OptionalAuthUser(None)),
+        match User::from_request_parts(parts, state).await {
+            Ok(user) => Ok(Some(user)),
+            Err(_) => Ok(None),
         }
     }
 }

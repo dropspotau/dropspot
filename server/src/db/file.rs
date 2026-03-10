@@ -13,6 +13,8 @@ pub struct File {
     pub path: PathBuf,
     pub size: i64,
     pub created_at: DateTime<Utc>,
+    pub created_by_id: Option<Uuid>,
+    pub created_by_name: Option<String>,
     pub expires_at: DateTime<Utc>,
     pub max_downloads: i32,
     pub download_count: i32,
@@ -81,13 +83,17 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               file.path,
               file.size,
               file.created_at,
+              users.id created_by_id,
+              users.email created_by_name,
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
-            group by file.id
+            left join users
+            on users.id = file.created_by_id
+            group by file.id, users.id
             having file.max_downloads >= count(download.id) and now() < file.expires_at
             order by file.created_at asc
         "#
@@ -106,13 +112,17 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               file.path,
               file.size,
               file.created_at,
+              users.id created_by_id,
+              users.email created_by_name,
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
-            group by file.id
+            left join users
+            on users.id = file.created_by_id
+            group by file.id, users.id
             having file.max_downloads < count(download.id) or now() > file.expires_at
             order by file.created_at asc
         "#
@@ -131,13 +141,17 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               file.path,
               file.size,
               file.created_at,
+              users.id created_by_id,
+              users.email created_by_name,
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
             from file
             left join download
             on download.file_id = file.id
-            group by file.id
+            left join users
+            on users.id = file.created_by_id
+            group by file.id, users.id
             having file.id = $1 and file.max_downloads >= count(download.id) and now() < file.expires_at
             limit 1
         "#,
@@ -152,6 +166,7 @@ pub async fn create_file(
     name: &str,
     path: &str,
     size: i64,
+    created_by_id: Option<Uuid>,
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(60);
@@ -160,14 +175,15 @@ pub async fn create_file(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into file (name, path, size, created_at, expires_at, max_downloads)
-            values ($1, $2, $3, $4, $5, $6)
+            insert into file (name, path, size, created_at, created_by_id, expires_at, max_downloads)
+            values ($1, $2, $3, $4, $5, $6, $7)
             returning id
         "#,
         name,
         path,
         size,
         created_at,
+        created_by_id,
         expires_at,
         max_downloads
     )

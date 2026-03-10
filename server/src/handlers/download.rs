@@ -3,15 +3,15 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
+use dropspot_core::download::Download as ApiDownload;
 use reqwest::StatusCode;
 use thiserror::Error;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use crate::db::{Download, create_download, get_download_by_id, get_file_by_id};
+use crate::db::{Download, User, create_download, get_download_by_id, get_file_by_id};
 use crate::state::AppState;
 use crate::types::ApiError;
-use dropspot_core::download::Download as ApiDownload;
 
 #[derive(Error, Debug)]
 pub enum FileDownloadError {
@@ -55,6 +55,7 @@ impl From<Download> for ApiDownload {
 pub async fn handle_file_request_download(
     State(state): State<AppState>,
     Path(file_id): Path<Uuid>,
+    user: Option<User>,
 ) -> Response {
     let pool = state.get_pool();
 
@@ -70,7 +71,7 @@ pub async fn handle_file_request_download(
         return api_error.into_response();
     }
 
-    let download = create_download(pool, &file.id)
+    let download = create_download(pool, &file.id, user.map(|u| u.id))
         .await
         .map(|download| ApiDownload::from(download));
 
@@ -86,6 +87,7 @@ pub async fn handle_file_request_download(
 pub async fn handle_file_download(
     State(state): State<AppState>,
     Path(download_id): Path<Uuid>,
+    user: Option<User>,
 ) -> Result<Response, StatusCode> {
     let pool = state.get_pool();
 
@@ -97,13 +99,19 @@ pub async fn handle_file_download(
         return Err(StatusCode::NOT_FOUND);
     }
 
+    let is_same_user = user.map(|u| u.id) == download.created_by_id;
+
+    if !is_same_user {
+        return Err(StatusCode::FORBIDDEN);
+    }
+
     let Ok(file) = get_file_by_id(pool, &download.file_id).await else {
         return Err(StatusCode::NOT_FOUND);
     };
 
     let file_path = file.get_path();
     let Ok(io_file) = tokio::fs::File::open(file_path).await else {
-        let error = FileDownloadError::FileOpenError;
+        let _error = FileDownloadError::FileOpenError;
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     };
 

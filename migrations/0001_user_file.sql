@@ -1,0 +1,57 @@
+create extension if not exists "uuid-ossp";
+
+create table users (
+    id uuid primary key default uuid_generate_v4(),
+    first_name text not null,
+    last_name text not null,
+    email text not null,
+    password text not null,
+    created_at timestamptz not null default now()
+);
+
+create table organisation (
+    id uuid primary key default uuid_generate_v4(),
+    name text not null,
+    created_at timestamptz not null default now()
+);
+
+create table member (
+    id uuid primary key default uuid_generate_v4(),
+    organisation_id uuid not null references organisation on delete cascade,
+    user_id uuid not null references users on delete cascade,
+    created_at timestamptz not null default now(),
+
+    unique (organisation_id, user_id)
+);
+
+create table file (
+    id uuid primary key default uuid_generate_v4(),
+    name text not null,
+    path varchar(1028) not null,
+    size bigint not null,
+    created_at timestamptz not null,
+    created_by_id uuid references users (id) on delete set null,
+    expires_at timestamptz not null,
+    max_downloads int not null,
+    has_uploaded boolean not null default false
+);
+
+-- 1-1 table recording how a file was uploaded. A file can only be uploaded by one person
+create table upload (
+    id uuid primary key default uuid_generate_v4(),
+    file_id uuid references file on delete cascade not null unique,
+    created_at timestamptz not null,
+    expires_at timestamptz not null,
+    upload_started_at timestamptz,
+    upload_finished_at timestamptz,
+    has_uploaded boolean not null generated always as (upload_finished_at is not null) stored
+);
+
+-- But a file can be downloaded by multiple people
+create table download (
+    id uuid primary key default uuid_generate_v4(),
+    file_id uuid references file on delete cascade not null,
+    created_at timestamptz not null,
+    created_by_id uuid references users (id) on delete set null,
+    expires_at timestamptz not null
+);
