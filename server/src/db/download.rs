@@ -2,6 +2,8 @@ use chrono::{DateTime, Duration, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use super::types::Id;
+
 /// A download attempt for a file
 pub struct Download {
     pub id: Uuid,
@@ -22,7 +24,13 @@ pub async fn get_downloads(pool: &PgPool) -> Result<Vec<Download>, sqlx::Error> 
     sqlx::query_as!(
         Download,
         r#"
-            select download.id, download.file_id, download.created_at, users.id created_by_id, users.email created_by_name, download.expires_at
+            select 
+                download.id,
+                download.file_id,
+                download.created_at,
+                users.id "created_by_id?",
+                users.email "created_by_name?",
+                download.expires_at
             from download
             left join users
             on users.id = download.created_by_id
@@ -36,7 +44,13 @@ pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sq
     sqlx::query_as!(
         Download,
         r#"
-            select download.id, download.file_id, download.created_at, users.id created_by_id, users.email created_by_name, download.expires_at
+            select 
+                download.id,
+                download.file_id,
+                download.created_at,
+                users.id "created_by_id?",
+                users.email "created_by_name?",
+                download.expires_at
             from download
             left join users
             on users.id = download.created_by_id
@@ -57,20 +71,12 @@ pub async fn create_download(
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
 
-    sqlx::query_as!(
-        Download,
+    let id = sqlx::query_as!(
+        Id,
         r#"
-            with inserted_download as (
-                insert into download (file_id, created_at, created_by_id, expires_at)
-                values ($1, $2, $3, $4)
-                returning id, file_id, created_at, created_by_id, expires_at
-            )
-            select download.id, download.file_id, download.created_at, users.id created_by_id, users.email created_by_name, download.expires_at
-            from download
-            left join users
-            on users.id = download.created_by_id
-            where download.id = (select id from inserted_download limit 1)
-            limit 1
+            insert into download (file_id, created_at, created_by_id, expires_at)
+            values ($1, $2, $3, $4)
+            returning id
         "#,
         file_id,
         created_at,
@@ -78,5 +84,7 @@ pub async fn create_download(
         expires_at
     )
     .fetch_one(pool)
-    .await
+    .await?;
+
+    get_download_by_id(pool, &id.id).await
 }
