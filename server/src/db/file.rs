@@ -83,8 +83,8 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               file.path,
               file.size,
               file.created_at,
-              users.id created_by_id,
-              users.email created_by_name,
+              users.id "created_by_id?",
+              users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
@@ -112,8 +112,8 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               file.path,
               file.size,
               file.created_at,
-              users.id created_by_id,
-              users.email created_by_name,
+              users.id "created_by_id?",
+              users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
@@ -141,8 +141,8 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               file.path,
               file.size,
               file.created_at,
-              users.id created_by_id,
-              users.email created_by_name,
+              users.id "created_by_id?",
+              users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
