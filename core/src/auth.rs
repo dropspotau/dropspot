@@ -14,7 +14,7 @@ pub fn get_auth_headers(auth: Option<&Authentication>) -> HeaderMap {
     if let Some(ref auth) = auth {
         headers.insert(
             "Authorization",
-            format!("Token {}", auth.token).parse().unwrap(),
+            format!("Bearer {}", auth.token).parse().unwrap(),
         );
     }
 
