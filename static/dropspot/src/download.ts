@@ -5,6 +5,7 @@ import {
   type Link,
   type File,
 } from "dropspot-core";
+import { getAuth } from "./auth";
 
 export const download = (name: string, blobUrl: string) => {
   const link = document.createElement("a");
@@ -70,6 +71,7 @@ const initialiseDownload = async (): Promise<void> => {
   if (button) {
     button.addEventListener("click", async () => {
       let buffer: Uint8Array<ArrayBuffer>;
+      const auth = getAuth();
 
       if (bufferFileMap.has(file.id)) {
         buffer = bufferFileMap.get(file.id)!;
@@ -79,6 +81,7 @@ const initialiseDownload = async (): Promise<void> => {
           buffer = (await download_js(
             file.id,
             encryption,
+            auth,
           )) as Uint8Array<ArrayBuffer>;
           bufferFileMap.set(file.id, buffer);
           document.dispatchEvent(

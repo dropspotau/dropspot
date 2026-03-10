@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
+use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::encryption::{DecryptionError, Encryption, decrypt_file};
 
@@ -31,10 +32,13 @@ pub async fn download(
     file_id: Uuid,
     encryption: &Encryption,
     writer: impl Write,
+    auth: Option<Authentication>,
 ) -> Result<(), DownloadError> {
     // Request a download URL
+    let headers = get_auth_headers(auth.as_ref());
     let download = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file/{file_id}/download"))
+        .headers(headers)
         .send()
         .await
         .map_err(DownloadError::RequestError)?
@@ -43,9 +47,11 @@ pub async fn download(
         .map_err(DownloadError::RequestError)?;
 
     // Actually download the file
+    let headers = get_auth_headers(auth.as_ref());
     let download_id = download.id;
     let mut stream = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/download/{download_id}/download"))
+        .headers(headers)
         .send()
         .await
         .map_err(DownloadError::RequestError)?
@@ -82,13 +88,17 @@ pub async fn download(
 
 // #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub async fn download_js(file_id: String, encryption: Encryption) -> Result<Vec<u8>, JsError> {
+pub async fn download_js(
+    file_id: String,
+    encryption: Encryption,
+    auth: Option<Authentication>,
+) -> Result<Vec<u8>, JsError> {
     let file_id = Uuid::parse_str(&file_id)
         .map_err(|err| JsError::new(&format!("Invalid passed to download_js: {err}")))?;
     let mut buffer = Vec::<u8>::new();
     let writer = BufWriter::new(&mut buffer);
 
-    let download = download(file_id, &encryption, writer).await;
+    let download = download(file_id, &encryption, writer, auth).await;
 
     if let Err(e) = download {
         return Err(JsError::new(&format!("{e:?}")));

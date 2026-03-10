@@ -1,3 +1,4 @@
+pub(crate) mod auth;
 mod constants;
 pub mod download;
 pub mod encryption;

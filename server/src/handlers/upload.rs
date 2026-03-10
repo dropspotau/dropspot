@@ -74,6 +74,7 @@ pub async fn handle_file_request_upload(
 pub async fn handle_file_upload(
     State(state): State<AppState>,
     Path(file_id): Path<Uuid>,
+    user: Option<User>,
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
@@ -94,6 +95,13 @@ pub async fn handle_file_upload(
     let mut writer = BufWriter::new(io_file);
 
     let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
+        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        return api_error.into_response();
+    };
+
+    let is_same_user = file.created_by_id == user.map(|u| u.id);
+
+    if !is_same_user {
         let api_error: ApiError = FileUploadError::UploadNotFound.into();
         return api_error.into_response();
     };

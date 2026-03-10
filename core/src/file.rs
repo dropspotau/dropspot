@@ -8,7 +8,11 @@ use tsify::Tsify;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
-use crate::{constants::ENDPOINT, encryption::Encryption};
+use crate::{
+    auth::{Authentication, get_auth_headers},
+    constants::ENDPOINT,
+    encryption::Encryption,
+};
 
 #[derive(Serialize, Deserialize, Tsify, Debug)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -19,9 +23,13 @@ pub struct File {
     pub remaining_downloads: i32,
 }
 
-pub async fn list_files() -> Result<Vec<File>, reqwest::Error> {
+pub async fn list_files(auth: Option<Authentication>) -> Result<Vec<File>, reqwest::Error> {
+    let mut headers = get_auth_headers(auth.as_ref());
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
     let files = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file"))
+        .headers(headers)
         .send()
         .await?
         .error_for_status()?
@@ -31,9 +39,13 @@ pub async fn list_files() -> Result<Vec<File>, reqwest::Error> {
     Ok(files)
 }
 
-pub async fn get_file(id: &Uuid) -> Result<File, reqwest::Error> {
+pub async fn get_file(id: &Uuid, auth: Option<Authentication>) -> Result<File, reqwest::Error> {
+    let mut headers = get_auth_headers(auth.as_ref());
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
     let file = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file/{id}"))
+        .headers(headers)
         .send()
         .await?
         .error_for_status()?
@@ -91,9 +103,9 @@ pub fn parse_link_js(link: &str) -> Result<Link, JsError> {
 }
 
 #[wasm_bindgen]
-pub async fn get_file_js(file_id: String) -> Result<File, JsError> {
+pub async fn get_file_js(file_id: String, auth: Option<Authentication>) -> Result<File, JsError> {
     let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
-    get_file(&file_id)
+    get_file(&file_id, auth)
         .await
         .map_err(|e| JsError::new(&format!("{e}")))
 }

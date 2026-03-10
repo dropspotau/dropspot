@@ -1,4 +1,5 @@
 import { upload_js, create_link_js, type UploadResult } from "dropspot-core";
+import { getAuth } from "./auth";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -48,7 +49,8 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     }
 
     const fileContents = new Uint8Array(await file.arrayBuffer());
-    const result = await upload_js(file.name, fileContents);
+    const auth = getAuth();
+    const result = await upload_js(file.name, fileContents, auth);
     addRecentUpload(result);
 
     const event: FileUploadEvent = new CustomEvent("file-upload", {

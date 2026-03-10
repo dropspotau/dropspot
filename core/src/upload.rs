@@ -1,9 +1,11 @@
 use std::io::{BufReader, BufWriter};
 
+use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
+use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
 use crate::file::File;
@@ -30,7 +32,11 @@ pub struct UploadResult {
     pub encryption: Encryption,
 }
 
-pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, UploadError> {
+pub async fn upload(
+    name: String,
+    contents: Vec<u8>,
+    auth: Option<Authentication>,
+) -> Result<UploadResult, UploadError> {
     let size = contents.len();
     let reader = BufReader::new(contents.as_slice());
     let mut encrypted_contents = Vec::<u8>::new();
@@ -38,10 +44,13 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
 
     let encryption = encrypt_file(reader, writer).map_err(|e| UploadError::EncryptionError(e))?;
 
+    let mut headers = get_auth_headers(auth.as_ref());
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
     // Request an upload
     let file = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/upload"))
-        .header("Content-Type", "application/json")
+        .headers(headers)
         .json(&CreateFileBody {
             name,
             size: size as i64,
@@ -54,9 +63,12 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
         .map_err(|e| UploadError::RequestError(e))?;
 
     // Upload the file body
+    let mut headers = get_auth_headers(auth.as_ref());
+    headers.insert("Content-Type", "application/octet-stream".parse().unwrap());
+
     let file_stream = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/upload/{}/upload", file.id))
-        .header("Content-Type", "application/octet-stream")
+        .headers(headers)
         .body(encrypted_contents)
         .send()
         .await
@@ -71,8 +83,12 @@ pub async fn upload(name: String, contents: Vec<u8>) -> Result<UploadResult, Upl
 
 #[wasm_bindgen]
 #[cfg(target_arch = "wasm32")]
-pub async fn upload_js(name: String, contents: Vec<u8>) -> Result<UploadResult, JsError> {
-    let upload = upload(name, contents).await;
+pub async fn upload_js(
+    name: String,
+    contents: Vec<u8>,
+    auth: Option<Authentication>,
+) -> Result<UploadResult, JsError> {
+    let upload = upload(name, contents, auth).await;
 
     if let Err(e) = upload {
         return Err(JsError::new(&format!("{e:?}")));
