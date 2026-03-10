@@ -1,3 +1,7 @@
+{% if let Some(name) = name %}
+    <h3 class="no-margin">{{ name }}</h3>
+{% else %}
+    <h3 class="no-margin">DropSpot</h3>
+{% endif %}
 <div></div>
-<h3>DropSpot</h3>
 <login-button></login-button>

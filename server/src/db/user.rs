@@ -15,6 +15,20 @@ pub struct User {
     pub file_count: i32,
 }
 
+impl User {
+    pub fn get_name(&self) -> String {
+        if !self.first_name.is_empty() && !self.last_name.is_empty() {
+            return format!("{} {}", self.first_name, self.last_name);
+        }
+
+        if !self.first_name.is_empty() {
+            return self.first_name.clone();
+        }
+
+        self.email.clone()
+    }
+}
+
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
     sqlx::query_as!(
         User,
