@@ -1,5 +1,8 @@
 use askama::Template;
-use axum::{extract::State, response::IntoResponse};
+use axum::{
+    extract::State,
+    response::{IntoResponse, Response},
+};
 
 use crate::{
     db::{User, get_users},
@@ -14,10 +17,19 @@ struct SettingsTemplate {
     users: Vec<User>,
 }
 
-pub async fn handle_settings(State(state): State<AppState>, user: User) -> impl IntoResponse {
+#[derive(Template)]
+#[template(path = "settings_unauthed.html")]
+struct SettingsUnAuthedTemplate {}
+
+pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) -> Response {
+    if user.is_none() {
+        let template = SettingsUnAuthedTemplate {};
+        return HtmlTemplate(template).into_response();
+    }
+
     let pool = state.get_pool();
     let users = get_users(pool).await.unwrap();
 
     let template = SettingsTemplate { users };
-    HtmlTemplate(template)
+    HtmlTemplate(template).into_response()
 }

@@ -7,22 +7,13 @@ use super::template::HtmlTemplate;
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct IndexTemplate {}
-
-pub async fn handle_index() -> impl IntoResponse {
-    let template = IndexTemplate {};
-    HtmlTemplate(template)
+struct IndexTemplate {
+    is_logged_in: bool,
 }
 
-#[derive(Template)]
-#[template(path = "header.html")]
-struct HeaderTemplate {
-    name: Option<String>,
-}
+pub async fn handle_index(user: Option<User>) -> impl IntoResponse {
+    let is_logged_in = user.is_some();
 
-pub async fn handle_header(user: Option<User>) -> impl IntoResponse {
-    let name = user.map(|u| u.get_name());
-
-    let template = HeaderTemplate { name };
+    let template = IndexTemplate { is_logged_in };
     HtmlTemplate(template)
 }

@@ -61,6 +61,12 @@ impl File {
         self.name.split('.').last().unwrap_or("txt").to_string()
     }
 
+    pub fn get_creator_name(&self) -> String {
+        self.created_by_name
+            .clone()
+            .unwrap_or("Unknown".to_string())
+    }
+
     // Deletes the actual file
     pub fn delete_file(&self) -> Result<(), ()> {
         let path = self.get_path();

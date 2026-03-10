@@ -7,7 +7,7 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    db::{File, delete_files, get_file_by_id, get_files},
+    db::{File, User, delete_files, get_file_by_id, get_files},
     state::AppState,
 };
 
@@ -20,7 +20,15 @@ struct FilesTemplate {
     is_empty: bool,
 }
 
-pub async fn handle_files(State(state): State<AppState>) -> impl IntoResponse {
+#[derive(Template)]
+#[template(path = "files_unauthed.html")]
+struct FilesUnAuthedTemplate {}
+
+pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> Response {
+    if user.is_none() {
+        let template = FilesUnAuthedTemplate {};
+        return HtmlTemplate(template).into_response();
+    }
     let pool = state.get_pool();
     let files = match get_files(pool).await {
         Ok(files) => files,
@@ -32,7 +40,7 @@ pub async fn handle_files(State(state): State<AppState>) -> impl IntoResponse {
     let is_empty = files.is_empty();
 
     let template = FilesTemplate { files, is_empty };
-    HtmlTemplate(template)
+    HtmlTemplate(template).into_response()
 }
 
 #[derive(Template)]
@@ -41,7 +49,11 @@ struct DeleteFileTemplate {
     deleted: bool,
 }
 
-pub async fn handle_delete_file(State(state): State<AppState>, Path(id): Path<Uuid>) -> Response {
+pub async fn handle_delete_file(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    user: User,
+) -> Response {
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &id).await else {
@@ -50,6 +62,16 @@ pub async fn handle_delete_file(State(state): State<AppState>, Path(id): Path<Uu
 
         return response;
     };
+
+    if let Some(ref user_id) = file.created_by_id
+        && user_id == &user.id
+    {
+        // Only uploaders can delete their files
+        let template = DeleteFileTemplate { deleted: false };
+        let response = HtmlTemplate(template).into_response();
+
+        return response;
+    }
 
     if let Err(_e) = delete_files(pool, &[file.id]).await {
         let template = DeleteFileTemplate { deleted: false };

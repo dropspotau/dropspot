@@ -66,7 +66,7 @@
 
                         const detailUploadedBy = document.querySelector("#file-detail-uploaded-by");
                         if (detailUploadedBy) {
-                            detailUploadedBy.textContent = "Oscar Webber";
+                            detailUploadedBy.textContent = `{{ file.get_creator_name() }}`;
                         }
 
                         const detailUploadAt = document.querySelector("#file-detail-upload-at");
@@ -96,22 +96,22 @@
           <div class="file-details-grid">
               <div class="file-detail-item">
                   <span class="file-detail-label">File Size</span>
-                  <span id="file-detail-size" class="file-detail-value">24.8 MB</span>
+                  <span id="file-detail-size" class="file-detail-value"></span>
               </div>
         
               <div class="file-detail-item">
                   <span class="file-detail-label">Uploaded By</span>
-                  <span id="file-detail-uploaded-by" class="file-detail-value">Alex Johnson</span>
+                  <span id="file-detail-uploaded-by" class="file-detail-value"></span>
               </div>
             
               <div class="file-detail-item">
                   <span class="file-detail-label">Upload Date</span>
-                  <span id="file-detail-uploaded-at" class="file-detail-value">March 8, 2026 at 7:34 PM</span>
+                  <span id="file-detail-uploaded-at" class="file-detail-value"></span>
               </div>
             
               <div class="file-detail-item">
                   <span class="file-detail-label">Downloads Remaining</span>
-                  <span id="file-detail-remaining-downloads" class="file-detail-value badge">5</span>
+                  <span id="file-detail-remaining-downloads" class="file-detail-value badge"></span>
               </div>
           </div>
       </div>
