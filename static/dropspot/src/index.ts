@@ -6,7 +6,6 @@ import "@material/web/progress/circular-progress.js";
 import "@material/web/menu/menu.js";
 import "@material/web/menu/menu-item.js";
 import "@material/web/textfield/filled-text-field.js";
-import htmx from "htmx.org";
 import init from "dropspot-core";
 
 import "./header.css";
@@ -19,7 +18,7 @@ import "./upload-circle.css";
 import "./uploads.css";
 import "./utils.css";
 
-import "./auth";
+import { loginAtStartup } from "./auth";
 import "./copy-button";
 import "./file-icon";
 import "./file-preview";
@@ -29,9 +28,6 @@ import "./my-element";
 import "./popover";
 import "./recent-upload";
 import "./toast";
-import { loginAtStartup } from "./auth";
-
-console.debug(htmx);
 
 init().then(() => {
   console.log("DropSpot initialised");
