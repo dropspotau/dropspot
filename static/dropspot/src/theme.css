@@ -63,4 +63,5 @@
 
   /** Material Web */
   --md-sys-color-primary: var(--dropspot-primary);
+  --md-sys-color-error: var(--dropspot-danger);
 }

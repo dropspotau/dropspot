@@ -5,6 +5,7 @@ import "@material/web/iconbutton/icon-button.js";
 import "@material/web/progress/circular-progress.js";
 import "@material/web/menu/menu.js";
 import "@material/web/menu/menu-item.js";
+import "@material/web/textfield/filled-text-field.js";
 import htmx from "htmx.org";
 import init from "dropspot-core";
 

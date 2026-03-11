@@ -30,4 +30,9 @@
         --md-icon-button-hover-icon-color: #FFFFFF;
         --md-icon-button-pressed-icon-color: #FFFFFF;
     }
+
+    md-filled-text-field {
+        --md-filled-field-container-color: #FFFFFF;
+        --md-filled-field-disabled-container-color: #FFFFFF;
+    }
 }
