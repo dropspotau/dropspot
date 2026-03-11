@@ -3,7 +3,7 @@
     <h3 class="section-label">Settings</h3>
     <ul class="settings-list">
       
-      <li class="settings-item">
+      <li id="limits-menu-item" class="settings-item">
         <md-icon class="settings-icon">av_timer</md-icon>
         <div class="settings-text">
           <span class="settings-item-title">Default Expiry</span>
@@ -50,9 +50,19 @@
 
 <script type="module">
     // Navigate from the first menu to secondary pages
+    const limitsMenuItem = document.querySelector("#limits-menu-item");
     const userMenuItem = document.querySelector("#user-menu-item");
     const mainPage = document.querySelector("#settings-main");
+    const limitsPage = document.querySelector("#settings-limits");
     const userPage = document.querySelector("#settings-user");
+
+    if (limitsMenuItem && limitsPage) {
+        limitsMenuItem.addEventListener("click", () => {
+            mainPage.setAttribute("hidden", "");
+            limitsPage.removeAttribute("hidden");
+        });
+    }
+
 
     if (userMenuItem && userPage) {
         userMenuItem.addEventListener("click", () => {
@@ -141,3 +151,36 @@
         }
     </script>
 {% endfor %}
+
+<section id="settings-limits" class="settings-page" hidden>
+    <md-icon-button id="settings-limits-back" class="popover-back-button">
+        <md-icon>arrow_back</md-icon>
+    </md-icon-button>
+    <div class="file-details-container">
+        <h3 class="file-detail-name">File Settings</h3>
+    
+        <div class="file-details-grid">
+            <div class="file-detail-item">
+                <span class="file-detail-label">File Expiry</span>
+                <span class="file-detail-value">Files expire after 1 hour</span>
+            </div>
+      
+            <div class="file-detail-item">
+                <span class="file-detail-label">Download Limit</span>
+                <span class="file-detail-value">Files can be downloaded 10 times</span>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        const backButton = document.querySelector("#settings-limits-back");
+        const mainPage = document.querySelector("#settings-main");
+        const limitsPage = document.querySelector("#settings-limits");
+
+        if (backButton && mainPage && limitsPage) {
+            backButton.addEventListener("click", () => {
+                mainPage.removeAttribute("hidden");
+                limitsPage.setAttribute("hidden", "");
+            });
+        }
+    </script>
+</section>
