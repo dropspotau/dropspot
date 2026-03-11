@@ -73,7 +73,8 @@ pub async fn create_user(
     Ok(result)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct LoginPayload {
     pub email: String,
     pub password: String,
@@ -84,6 +85,27 @@ pub async fn login(email: String, password: String) -> Result<LoginResult, UserE
         .post(format!("{ENDPOINT}/api/user/login"))
         .header("Content-Type", "application/json")
         .json(&LoginPayload { email, password })
+        .send()
+        .await
+        .map_err(UserError::LoginError)?
+        .json::<LoginResult>()
+        .await
+        .map_err(UserError::LoginError)?;
+
+    Ok(result)
+}
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct AccessTokenRequest {
+    pub refresh_token: String,
+}
+
+pub async fn refresh_tokens(refresh_token: String) -> Result<LoginResult, UserError> {
+    let result = reqwest::Client::new()
+        .post(format!("{ENDPOINT}/api/user/refresh"))
+        .header("Content-Type", "application/json")
+        .json(&AccessTokenRequest { refresh_token })
         .send()
         .await
         .map_err(UserError::LoginError)?
@@ -114,6 +136,18 @@ pub async fn create_user_js(
 #[wasm_bindgen]
 pub async fn login_js(email: String, password: String) -> Result<LoginResult, JsError> {
     let result = login(email, password).await;
+
+    if let Err(e) = result {
+        return Err(JsError::new(&format!("{e:?}")));
+    };
+
+    let user = result.unwrap();
+    Ok(user)
+}
+
+#[wasm_bindgen]
+pub async fn refresh_tokens_js(refresh_token: String) -> Result<LoginResult, JsError> {
+    let result = refresh_tokens(refresh_token).await;
 
     if let Err(e) = result {
         return Err(JsError::new(&format!("{e:?}")));

@@ -28,11 +28,13 @@ import "./my-element";
 import "./popover";
 import "./recent-upload";
 import "./toast";
+import { loginAtStartup } from "./auth";
 
 console.debug(htmx);
 
 init().then(() => {
   console.log("DropSpot initialised");
+  loginAtStartup();
 });
 
 const settingsDialogButton = document.querySelector("#settings-popover-toggle");

@@ -49,7 +49,7 @@ impl TokenService {
     }
 
     /// Generate access token
-    pub fn generate_access_token(
+    fn generate_access_token(
         &self,
         user_id: Uuid,
         email: String,
@@ -60,7 +60,7 @@ impl TokenService {
     }
 
     /// Generate refresh token
-    pub fn generate_refresh_token(&self, user_id: Uuid) -> Result<String, TokenError> {
+    fn generate_refresh_token(&self, user_id: Uuid) -> Result<String, TokenError> {
         let claims = RefreshClaims::new(user_id, self.refresh_token_ttl);
 
         encode(&Header::default(), &claims, &self.encoding_key).map_err(TokenError::EncodingFailed)

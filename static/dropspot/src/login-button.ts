@@ -1,12 +1,7 @@
-import {
-  create_user_js,
-  login_js,
-  type LoginResult,
-  type User,
-} from "dropspot-core";
+import { create_user_js, login_js, type LoginResult } from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { setTokens } from "./auth";
+import { setTokens, type LoginEvent } from "./auth";
 
 @customElement("login-button")
 export class LoginButtonElement extends LitElement {
@@ -50,12 +45,11 @@ export class LoginButtonElement extends LitElement {
 
     if (result) {
       setTokens(result.tokens);
-      this.dispatchEvent(
-        new CustomEvent("login", {
-          detail: { user: result.user },
-          bubbles: true,
-        }),
-      );
+      const event: LoginEvent = new CustomEvent("login", {
+        detail: { user: result.user },
+        bubbles: true,
+      });
+      this.dispatchEvent(event);
     }
   };
 
@@ -75,14 +69,8 @@ export class LoginButtonElement extends LitElement {
   }
 }
 
-type LoginEvent = CustomEvent<{ user: User }>;
-
 declare global {
   interface HTMLElementTagNameMap {
     "login-button": LoginButtonElement;
-  }
-
-  interface DocumentEventMap {
-    login: LoginEvent;
   }
 }

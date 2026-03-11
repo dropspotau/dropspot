@@ -24,8 +24,8 @@ use uuid::Uuid;
 use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
-    handle_file_request_upload, handle_file_upload, handle_files, handle_get_file, handle_header,
-    handle_index, handle_list_files, handle_login, handle_settings,
+    handle_file_request_upload, handle_file_upload, handle_files, handle_refresh_tokens,
+    handle_get_file, handle_header, handle_index, handle_list_files, handle_login, handle_settings,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -212,6 +212,7 @@ async fn main() -> Result<(), ()> {
                     )
                     .route("/api/user/login", post(handle_login))
                     .route("/api/user/create", post(handle_create_user))
+                    .route("/api/user/refresh", post(handle_refresh_tokens))
                     .route("/app", get(handle_index))
                     .route("/app/header", get(handle_header))
                     .route("/app/files", get(handle_files))

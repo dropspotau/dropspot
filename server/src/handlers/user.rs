@@ -7,13 +7,15 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::user::{CreateUserPayload, LoginPayload, LoginResult, User as ApiUser};
+use dropspot_core::user::{
+    AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser,
+};
 use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
     auth::password::{hash_password, verify_password},
-    db::{User, create_user, get_user_by_email, get_user_password},
+    db::{User, create_user, get_user_by_email, get_user_by_id, get_user_password},
     state::AppState,
     types::ApiError,
 };
@@ -28,6 +30,9 @@ pub enum LoginError {
 
     #[error("Could not find user")]
     UserLookupError(sqlx::Error),
+
+    #[error("User not found")]
+    UserNotFound,
 
     #[error("Passwords do not match")]
     PasswordMismatch,
@@ -86,6 +91,41 @@ pub async fn handle_create_user(
         .get_token_service()
         .generate_token_pair(user.id, user.email.clone())
         .unwrap();
+
+    Json(LoginResult {
+        user: ApiUser::from(user),
+        tokens,
+    })
+    .into_response()
+}
+
+pub async fn handle_refresh_tokens(
+    State(state): State<AppState>,
+    Json(payload): Json<AccessTokenRequest>,
+) -> impl IntoResponse {
+    let pool = state.get_pool();
+    let token_service = state.get_token_service();
+    let claims = token_service.validate_refresh_token(&payload.refresh_token);
+
+    if let Err(e) = claims {
+        eprintln!("Could not decode refresh token: {e:?}");
+        let api_error: ApiError = LoginError::UserNotFound.into();
+        return api_error.into_response();
+    };
+
+    let claims = claims.unwrap();
+    let user_id = &claims.sub;
+
+    let Ok(user) = get_user_by_id(pool, user_id).await else {
+        let api_error: ApiError = LoginError::UserNotFound.into();
+        return api_error.into_response();
+    };
+
+    let Ok(tokens) = token_service.generate_token_pair(user.id.clone(), user.email.clone()) else {
+        eprintln!("Could not generate access token");
+        let api_error: ApiError = LoginError::UserNotFound.into();
+        return api_error.into_response();
+    };
 
     Json(LoginResult {
         user: ApiUser::from(user),
