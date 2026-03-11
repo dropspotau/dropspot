@@ -200,6 +200,16 @@
   font-weight: 600;
 }
 
+.file-detail-value-row {
+  display: flex;
+  place-items: center;
+  gap: 1rem;
+
+  &:has(.settings-field-update-result) {
+      justify-items: space-between;
+  };
+}
+
 .file-detail-value {
   font-size: 16px;
   color: #333;

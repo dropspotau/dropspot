@@ -11,7 +11,7 @@ use std::io::{BufWriter, Read};
 use std::sync::Arc;
 
 use axum::Router;
-use axum::routing::{delete, get, post};
+use axum::routing::{delete, get, patch, post};
 use base64::alphabet::URL_SAFE;
 use base64::engine::GeneralPurpose;
 use base64::engine::general_purpose::NO_PAD;
@@ -24,8 +24,9 @@ use uuid::Uuid;
 use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
-    handle_file_request_upload, handle_file_upload, handle_files, handle_refresh_tokens,
-    handle_get_file, handle_header, handle_index, handle_list_files, handle_login, handle_settings,
+    handle_file_request_upload, handle_file_upload, handle_files, handle_get_file, handle_header,
+    handle_index, handle_list_files, handle_login, handle_refresh_tokens, handle_settings,
+    handle_update_settings,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -218,6 +219,7 @@ async fn main() -> Result<(), ()> {
                     .route("/app/files", get(handle_files))
                     .route("/app/files/{id}/delete", delete(handle_delete_file))
                     .route("/app/settings", get(handle_settings))
+                    .route("/app/settings/update", patch(handle_update_settings))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(state);

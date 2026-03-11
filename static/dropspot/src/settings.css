@@ -108,6 +108,16 @@
   color: var(--dropspot-grey-dark);
 }
 
+.settings-field-update-input {
+    flex: 0 0 64%;
+}
+
+.settings-field-update-result {
+    display: flex;
+    flex: 0 0 2rem;
+    height: 2rem;
+}
+
 /*
  * Pages
  */

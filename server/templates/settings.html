@@ -162,24 +162,44 @@
         <div class="file-details-grid">
             <div class="file-detail-item">
                 <span class="file-detail-label">File Expiry</span>
-                <md-filled-text-field type="number" 
-                                      label="Expire after" 
-                                      value="{{ file_expiry_minutes }}" 
-                                      min="1" 
-                                      max="60" 
-                                      suffix-text="minutes">
-                </md-filled-text-field>
+                <div class="file-detail-value-row">
+                    <md-filled-text-field type="number" 
+                                          name="file_expiry_minutes"
+                                          label="Expire after" 
+                                          value="{{ file_expiry_minutes }}" 
+                                          min="1" 
+                                          max="60" 
+                                          pattern="\d+"
+                                          suffix-text="minutes"
+                                          hx-patch="/app/settings/update"
+                                          hx-trigger="input"
+                                          hx-target="#expiry-limit-result"
+                                          hx-swap="innerHTML"
+                                          class="settings-field-update-input">
+                    </md-filled-text-field>
+                    <div id="expiry-limit-result" class="settings-field-update-result"></div>
+                </div>
             </div>
       
             <div class="file-detail-item">
                 <span class="file-detail-label">Download Limit</span>
-                <md-filled-text-field type="number" 
-                                      label="Downloadable" 
-                                      value="{{ download_limit }}" 
-                                      min="1" 
-                                      max="100" 
-                                      suffix-text="times">
-                </md-filled-text-field>
+                <div class="file-detail-value-row">
+                    <md-filled-text-field type="number" 
+                                          name="download_limit"
+                                          label="Downloadable" 
+                                          value="{{ download_limit }}" 
+                                          min="1" 
+                                          max="100" 
+                                          pattern="\d+"
+                                          suffix-text="times"
+                                          hx-patch="/app/settings/update"
+                                          hx-trigger="input"
+                                          hx-target="#download-limit-result"
+                                          hx-swap="innerHTML"
+                                          class="settings-field-update-input">
+                    </md-filled-text-field>
+                    <div id="download-limit-result" class="settings-field-update-result"></div>
+                </div>
             </div>
         </div>
     </div>
