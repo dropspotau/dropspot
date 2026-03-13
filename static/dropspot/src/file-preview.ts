@@ -94,8 +94,8 @@ export class FilePreviewElement extends LitElement {
 
     return html`
       <dropspot-modal
-        open="${this.isModalOpen}"
-        .onClose="${() => {
+        .open="${this.isModalOpen}"
+        @close="${() => {
           this.isModalOpen = false;
         }}"
       >

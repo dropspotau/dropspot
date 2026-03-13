@@ -23,26 +23,17 @@ impl FromRequestParts<AppState> for User {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let mut access_token: Option<String> = None;
-
         // Try and get the access token from the Authorization header
-        if let Ok(TypedHeader(Authorization(bearer))) =
+        let access_token = if let Ok(TypedHeader(Authorization(bearer))) =
             parts.extract::<TypedHeader<Authorization<Bearer>>>().await
         {
-            access_token = Some(bearer.token().to_string());
-        }
-
-        // Check cookies in the case of a browser request as a fallback. This lets authorisation
-        // possibly be known on the first request
-        if access_token.is_none() {
-            let cookies = parts.headers.typed_get::<Cookie>();
-
-            if let Some(cookies) = cookies {
-                access_token = cookies.get("access_token").map(|t| t.to_string());
-            }
-        }
-
-        if access_token.is_none() {
+            // Standard request, where the access token is in the Authorization header
+            Some(bearer.token().to_string())
+        } else if let Some(cookies) = parts.headers.typed_get::<Cookie>() {
+            // Check cookies in the case of a browser request as a fallback. This lets authorisation
+            // possibly be known on the first request
+            cookies.get("access_token").map(|t| t.to_string())
+        } else {
             // There's still no access token, so the user can't be authenticated
             let api_error = ApiError {
                 message: "Unauthorised".to_string(),
@@ -50,14 +41,12 @@ impl FromRequestParts<AppState> for User {
             };
 
             return Err(api_error);
-        }
-
-        let access_token = access_token.unwrap();
+        };
 
         // Validate token
         let claims = state
             .get_token_service()
-            .validate_access_token(&access_token)
+            .validate_access_token(&access_token.unwrap())
             .map_err(|_| ApiError {
                 message: "Unauthorised".to_string(),
                 status: StatusCode::UNAUTHORIZED,
