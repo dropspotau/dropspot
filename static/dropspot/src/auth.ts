@@ -9,9 +9,12 @@ import htmx from "htmx.org";
 const LOCALSTORAGE_KEY = "dropspot-auth";
 let tokens: TokenPair | null = null;
 
-export const setTokens = (newTokens: TokenPair): void => {
+export const setTokens = async (newTokens: TokenPair): Promise<void> => {
   tokens = newTokens;
   localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(newTokens));
+
+  // Set in cookie storage too
+  await cookieStore.set("access_token", newTokens.access_token);
 };
 
 export const getAuth = (): Authentication | null => {
