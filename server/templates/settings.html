@@ -113,12 +113,47 @@
 </section>
 
 {% for user in users %}
+    {% let is_current_user = user.id == current_user_id %}
     <section id="settings-user-detail-{{ user.id }}" class="settings-page" hidden>
         <md-icon-button id="settings-user-detail-{{ user.id }}-back" class="popover-back-button">
             <md-icon>arrow_back</md-icon>
         </md-icon-button>
         <div class="file-details-container">
-            <h3 class="file-detail-name">{{ user.first_name }} {{ user.last_name }}</h3>
+            {% if is_current_user %}
+                <div class="file-detail-item">
+                    <span class="file-detail-label">File Expiry</span>
+                    <div class="file-detail-value-row">
+                    <md-filled-text-field type="text" 
+                                          name="first_name"
+                                          label="First name" 
+                                          value="{{ user.first_name }}" 
+                                          pattern="\W+"
+                                          hx-patch="/app/settings/update/user"
+                                          hx-trigger="input"
+                                          hx-target="#user-name-result"
+                                          hx-swap="innerHTML"
+                                          hx-vals='{"user_id": "{{ user.id }}"}'
+                                          class="settings-field-update-input"
+                                          style="flex: 1;">
+                    </md-filled-text-field>
+                    <md-filled-text-field type="text" 
+                                          name="last_name"
+                                          label="Last name" 
+                                          value="{{ user.last_name }}" 
+                                          pattern="\W+"
+                                          hx-patch="/app/settings/update/user"
+                                          hx-trigger="input"
+                                          hx-target="#user-name-result"
+                                          hx-swap="innerHTML"
+                                          hx-vals='{"user_id": "{{ user.id }}"}'
+                                          class="settings-field-update-input"
+                                          style="flex: 1;">
+                    </md-filled-text-field>
+                    <div id="user-name-result" class="settings-field-update-result"></div>
+                </div>
+            {% else %}
+                <h3 class="file-detail-name">{{ user.first_name }} {{ user.last_name }}</h3>
+            {% endif %}
         
             <div class="file-details-grid">
                 <div class="file-detail-item">

@@ -2,9 +2,11 @@ use askama::Template;
 use axum::{
     Form,
     extract::State,
+    http::StatusCode,
     response::{IntoResponse, Response},
 };
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
     db::{User, get_users},
@@ -19,6 +21,7 @@ struct SettingsTemplate {
     users: Vec<User>,
     file_expiry_minutes: i32,
     download_limit: i32,
+    current_user_id: Uuid,
 }
 
 #[derive(Template)]
@@ -36,11 +39,13 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
 
     let file_expiry_minutes = 60;
     let download_limit = 100;
+    let current_user = user.unwrap();
 
     let template = SettingsTemplate {
         users,
         file_expiry_minutes,
         download_limit,
+        current_user_id: current_user.id,
     };
     HtmlTemplate(template).into_response()
 }
@@ -71,5 +76,49 @@ pub async fn handle_update_settings(
     }
 
     let template = UpdateSettingsTemplate { success: true };
+    HtmlTemplate(template).into_response()
+}
+
+#[derive(Template)]
+#[template(path = "settings_user_update.html")]
+struct UpdateUserTemplate {
+    // The updated value
+    success: bool,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateUserPayload {
+    user_id: Uuid,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    email: Option<String>,
+}
+
+pub async fn handle_update_user(
+    State(state): State<AppState>,
+    user: User,
+    Form(payload): Form<UpdateUserPayload>,
+) -> Response {
+    let is_same_user = payload.user_id == user.id;
+
+    // TOOD(alec): Admins should be able to update other users, not just themselves
+    if !is_same_user {
+        let template = UpdateUserTemplate { success: false };
+        return (StatusCode::UNAUTHORIZED, HtmlTemplate(template)).into_response();
+    }
+
+    if let Some(first_name) = payload.first_name {
+        println!("first name: {first_name}");
+    }
+
+    if let Some(last_name) = payload.last_name {
+        println!("last name: {last_name}");
+    }
+
+    if let Some(email) = payload.email {
+        println!("email: {email}");
+    }
+
+    let template = UpdateUserTemplate { success: true };
     HtmlTemplate(template).into_response()
 }
