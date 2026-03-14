@@ -48,10 +48,10 @@ export const loginAtStartup = async (): Promise<void> => {
   const loginResult = await refresh_tokens_js(parsedCachedTokens.refresh_token);
   setTokens(loginResult.tokens);
 
-  const event: LoginEvent = new CustomEvent("login", {
-    detail: { user: loginResult.user },
-  });
-  document.body.dispatchEvent(event); // Dispatch at the body level rather than document so that HTMX hx-trigger hears it
+  // const event: LoginEvent = new CustomEvent("login", {
+  //   detail: { user: loginResult.user },
+  // });
+  // document.body.dispatchEvent(event); // Dispatch at the body level rather than document so that HTMX hx-trigger hears it
 };
 
 htmx.on("htmx:config:request", (event) => {
