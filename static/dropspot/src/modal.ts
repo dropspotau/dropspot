@@ -42,7 +42,7 @@ export class ModalElement extends LitElement {
     }
   }
 
-  private handleClose = (event: CloseEvent): void => {
+  private handleClose = (): void => {
     // Dispatch another event up so parent elements know that the modal should be closed
     this.dispatchEvent(new Event("close"));
   };
