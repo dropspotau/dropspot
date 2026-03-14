@@ -68,6 +68,11 @@
     background-color: var(--dropspot-hover);
     cursor: pointer;
   }
+
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 /* Item Icons & Text */
