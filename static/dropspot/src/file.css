@@ -109,10 +109,11 @@
 /* File Information */
 .file-info {
   display: flex;
-  flex: 1;
+  flex-shrink: 1; /* Shrink enough to let other elements appear */
   place-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0; /* Allows it to actually shrink */
 }
 
 .file-name {
@@ -131,6 +132,7 @@
 
 /* Three-Dot Menu Button */
 .file-action {
+  flex-shrink: 0; /* Should always be visible at full size */
   border-radius: 50%;
   border: none;
   background: transparent;
