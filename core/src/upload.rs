@@ -1,6 +1,5 @@
 use std::io::{BufReader, BufWriter};
 
-use reqwest::header::HeaderMap;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
