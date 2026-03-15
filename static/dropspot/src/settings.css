@@ -119,6 +119,8 @@
 
 .settings-field-update-result {
     display: flex;
+    place-items: center;
+    justify-content: center;;
     flex: 0 0 2rem;
     height: 2rem;
 }

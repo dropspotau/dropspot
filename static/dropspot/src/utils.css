@@ -35,4 +35,12 @@
         --md-filled-field-container-color: #FFFFFF;
         --md-filled-field-disabled-container-color: #FFFFFF;
     }
+
+    .icon-success {
+        color: var(--dropspot-success);
+    }
+
+    .icon-danger {
+        color: var(--dropspot-danger);
+    }
 }

@@ -164,3 +164,29 @@ pub async fn create_user(
 
     get_user_by_id(pool, &id.id).await
 }
+
+pub async fn update_user_name(
+    pool: &PgPool,
+    id: &Uuid,
+    first_name: &str,
+    last_name: &str,
+    email: &str,
+) -> Result<User, sqlx::Error> {
+    let id = sqlx::query_as!(
+        Id,
+        r#"
+            update users
+            set first_name = $2, last_name = $3, email = $4
+            where id = $1
+            returning id
+        "#,
+        id,
+        first_name,
+        last_name,
+        email,
+    )
+    .fetch_one(pool)
+    .await?;
+
+    get_user_by_id(pool, &id.id).await
+}

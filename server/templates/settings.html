@@ -113,7 +113,7 @@
 </section>
 
 {% for user in users %}
-    {% let is_current_user = user.id == current_user_id %}
+    {% let is_current_user = user.id != current_user_id %}
     <section id="settings-user-detail-{{ user.id }}" class="settings-page" hidden>
         <md-icon-button id="settings-user-detail-{{ user.id }}-back" class="popover-back-button">
             <md-icon>arrow_back</md-icon>
@@ -121,48 +121,71 @@
         <div class="file-details-container">
             {% if is_current_user %}
                 <div class="file-detail-item">
-                    <span class="file-detail-label">File Expiry</span>
+                    <span class="file-detail-label">Name</span>
                     <div class="file-detail-value-row">
-                    <md-filled-text-field type="text" 
-                                          name="first_name"
-                                          label="First name" 
-                                          value="{{ user.first_name }}" 
-                                          pattern="\W+"
-                                          hx-patch="/app/settings/update/user/{{ user.id }}"
-                                          hx-trigger="input"
-                                          hx-target="#user-first-name-result"
-                                          hx-swap="innerHTML"
-                                          class="settings-field-update-input"
-                                          style="flex: 1;">
-                    </md-filled-text-field>
-                    <div id="user-first-name-result" class="settings-field-update-result"></div>
-                    <md-filled-text-field type="text" 
-                                          name="last_name"
-                                          label="Last name" 
-                                          value="{{ user.last_name }}" 
-                                          pattern="\W+"
-                                          hx-patch="/app/settings/update/user/{{ user.id }}"
-                                          hx-trigger="input"
-                                          hx-target="#user-last-name-result"
-                                          hx-swap="innerHTML"
-                                          class="settings-field-update-input"
-                                          style="flex: 1;">
-                    </md-filled-text-field>
-                    <div id="user-last-name-result" class="settings-field-update-result"></div>
+                        <div style="display: flex; place-items: center; gap: 0.25rem";>
+                            <md-filled-text-field type="text" 
+                                                  name="first_name"
+                                                  label="First name" 
+                                                  value="{{ user.first_name }}" 
+                                                  pattern="\W+"
+                                                  hx-patch="/app/settings/update/user/{{ user.id }}"
+                                                  hx-trigger="input"
+                                                  hx-target="#user-first-name-result"
+                                                  hx-swap="innerHTML"
+                                                  class="settings-field-update-input"
+                                                  style="flex: 1;">
+                            </md-filled-text-field>
+                            <div id="user-first-name-result" class="settings-field-update-result"></div>
+                        </div>
+                        <div style="display: flex; place-items: center; gap: 0.25rem";>
+                            <md-filled-text-field type="text" 
+                                                  name="last_name"
+                                                  label="Last name" 
+                                                  value="{{ user.last_name }}" 
+                                                  pattern="\W+"
+                                                  hx-patch="/app/settings/update/user/{{ user.id }}"
+                                                  hx-trigger="input"
+                                                  hx-target="#user-last-name-result"
+                                                  hx-swap="innerHTML"
+                                                  class="settings-field-update-input"
+                                                  style="flex: 1;">
+                            </md-filled-text-field>
+                            <div id="user-last-name-result" class="settings-field-update-result"></div>
+                        </div>
+                    </div>
                 </div>
             {% else %}
-                <h3 class="file-detail-name">{{ user.first_name }} {{ user.last_name }}</h3>
+                <h3 class="file-detail-name no-margin">{{ user.get_name() }}</h3>
             {% endif %}
         
             <div class="file-details-grid">
                 <div class="file-detail-item">
-                    <span class="file-detail-label">File Size</span>
-                    <span class="file-detail-value">{{ user.first_name }} {{ user.last_name }}</span>
+                    {% if is_current_user %}
+                        <span class="file-detail-label">Email</span>
+                        <div class="file-detail-value-row">
+                            <md-filled-text-field type="email" 
+                                                  name="email"
+                                                  label="Email" 
+                                                  value="{{ user.email }}" 
+                                                  pattern="\W+"
+                                                  hx-patch="/app/settings/update/user/{{ user.id }}"
+                                                  hx-trigger="input"
+                                                  hx-target="#user-email-result"
+                                                  hx-swap="innerHTML"
+                                                  class="settings-field-update-input"
+                                                  style="flex: 1;">
+                            </md-filled-text-field>
+                            <div id="user-email-result" class="settings-field-update-result"></div>
+                        </div>
+                    {% else %}
+                        <span class="file-detail-label">Email</span>
+                        <span class="file-detail-value">{{ user.email }}</span>
+                    {% endif %}
                 </div>
-          
                 <div class="file-detail-item">
-                    <span class="file-detail-label">Upload Date</span>
-                    <span class="file-detail-value">March 8, 2026 at 7:34 PM</span>
+                    <span class="file-detail-label">Joined At</span>
+                    <span class="file-detail-value">{{ user.created_at }}</span>
                 </div>
               
                 <div class="file-detail-item">

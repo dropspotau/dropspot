@@ -9,7 +9,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db::{User, get_users},
+    db::{User, get_users, update_user_name},
     state::AppState,
 };
 
@@ -107,16 +107,16 @@ pub async fn handle_update_user(
         return (StatusCode::UNAUTHORIZED, HtmlTemplate(template)).into_response();
     }
 
-    if let Some(first_name) = payload.first_name {
-        println!("first name: {first_name}");
-    }
+    let pool = state.get_pool();
 
-    if let Some(last_name) = payload.last_name {
-        println!("last name: {last_name}");
-    }
+    let first_name = payload.first_name.unwrap_or(user.first_name.clone());
+    let last_name = payload.last_name.unwrap_or(user.last_name.clone());
+    let email = payload.email.unwrap_or(user.email.clone());
 
-    if let Some(email) = payload.email {
-        println!("email: {email}");
+    if let Err(e) = update_user_name(pool, &id, &first_name, &last_name, &email).await {
+        eprintln!("Failed to update user: {e}");
+        let template = UpdateUserTemplate { success: false };
+        return (StatusCode::INTERNAL_SERVER_ERROR, HtmlTemplate(template)).into_response();
     }
 
     let template = UpdateUserTemplate { success: true };

@@ -209,8 +209,13 @@
   gap: 1rem;
 
   &:has(.settings-field-update-result) {
-      justify-items: space-between;
+      justify-content: space-between;
   };
+}
+
+.file-detail-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .file-detail-value {
