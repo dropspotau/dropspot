@@ -40,5 +40,9 @@ pub fn get_adapter(adapter_type: &AdapterType) -> impl Adapter + use<> {
     use super::local::LocalAdapter;
     println!("Getting adapter for file: {adapter_type:?}");
 
-    LocalAdapter {}
+    match adapter_type {
+        AdapterType::Local => LocalAdapter {},
+        AdapterType::S3 => S3Adapter {},
+        AdapterType::GCP => GCPAdapter {},
+    }
 }
