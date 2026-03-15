@@ -2,8 +2,13 @@ use dropspot_core::adapter::AdapterType as ApiAdapterType;
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use tokio::io::{BufReader, BufWriter};
+use async_trait::async_trait;
 
-use crate::db::File;
+use crate::{adapter::s3::S3Adapter, db::File};
+
+use super::gcp::GcpAdapter;
+use super::local::LocalAdapter;
+use super::s3::S3Adapter;
 
 #[derive(Type, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[sqlx(type_name = "adapter", rename_all = "lowercase")]
@@ -24,25 +29,22 @@ impl From<ApiAdapterType> for AdapterType {
 }
 
 // Implmented to handle where a file is uploaded to
-pub trait Adapter {
-    fn get_upload_writer(
+#[async_trait]
+pub trait Adapter: Sync + Send {
+    async fn get_upload_writer(
         &self,
         file: &File,
-    ) -> impl Future<Output = Result<BufWriter<tokio::fs::File>, ()>> + Send;
+    ) -> Result<BufWriter<tokio::fs::File>>;
 
-    fn get_download_reader(
+    async fn get_download_reader(
         &self,
         file: &File,
-    ) -> impl Future<Output = Result<BufReader<tokio::fs::File>, ()>> + Send;
-}
+    ) -> Result<BufReader<tokio::fs::File>, ()>;
 
-pub fn get_adapter(adapter_type: &AdapterType) -> impl Adapter + use<> {
-    use super::local::LocalAdapter;
-    println!("Getting adapter for file: {adapter_type:?}");
-
+pub fn get_adapter(adapter_type: &AdapterType) -> Box<dyn Adapter> {
     match adapter_type {
-        AdapterType::Local => LocalAdapter {},
-        AdapterType::S3 => S3Adapter {},
-        AdapterType::GCP => GCPAdapter {},
+        AdapterType::Local => Box::new(LocalAdapter {}.into()),
+        AdapterType::S3 => Box::new(S3Adapter {}.into()),
+        AdapterType::GCP => Box::new(GcpAdapter {}.into()),
     }
 }
