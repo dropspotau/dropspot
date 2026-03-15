@@ -2,7 +2,6 @@ use axum::{
     body::Body,
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
-    debug_handler
 };
 use dropspot_core::file::File as ApiFile;
 use dropspot_core::upload::CreateFileBody;
@@ -73,7 +72,6 @@ pub async fn handle_file_request_upload(
     return Json(file.unwrap()).into_response();
 }
 
-#[debug_handler]
 pub async fn handle_file_upload(
     State(state): State<AppState>,
     user: Option<User>,
