@@ -1,7 +1,7 @@
 use askama::Template;
 use axum::{
     Form,
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
@@ -88,7 +88,6 @@ struct UpdateUserTemplate {
 
 #[derive(Deserialize)]
 pub struct UpdateUserPayload {
-    user_id: Uuid,
     first_name: Option<String>,
     last_name: Option<String>,
     email: Option<String>,
@@ -97,9 +96,10 @@ pub struct UpdateUserPayload {
 pub async fn handle_update_user(
     State(state): State<AppState>,
     user: User,
+    Path(id): Path<Uuid>,
     Form(payload): Form<UpdateUserPayload>,
 ) -> Response {
-    let is_same_user = payload.user_id == user.id;
+    let is_same_user = id == user.id;
 
     // TOOD(alec): Admins should be able to update other users, not just themselves
     if !is_same_user {

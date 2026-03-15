@@ -220,7 +220,7 @@ async fn main() -> Result<(), ()> {
                     .route("/app/files/{id}/delete", delete(handle_delete_file))
                     .route("/app/settings", get(handle_settings))
                     .route("/app/settings/update", patch(handle_update_settings))
-                    .route("/app/settings/update/user", patch(handle_update_user))
+                    .route("/app/settings/update/user/{id}", patch(handle_update_user))
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(state);

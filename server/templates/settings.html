@@ -128,28 +128,27 @@
                                           label="First name" 
                                           value="{{ user.first_name }}" 
                                           pattern="\W+"
-                                          hx-patch="/app/settings/update/user"
+                                          hx-patch="/app/settings/update/user/{{ user.id }}"
                                           hx-trigger="input"
-                                          hx-target="#user-name-result"
+                                          hx-target="#user-first-name-result"
                                           hx-swap="innerHTML"
-                                          hx-vals='{"user_id": "{{ user.id }}"}'
                                           class="settings-field-update-input"
                                           style="flex: 1;">
                     </md-filled-text-field>
+                    <div id="user-first-name-result" class="settings-field-update-result"></div>
                     <md-filled-text-field type="text" 
                                           name="last_name"
                                           label="Last name" 
                                           value="{{ user.last_name }}" 
                                           pattern="\W+"
-                                          hx-patch="/app/settings/update/user"
+                                          hx-patch="/app/settings/update/user/{{ user.id }}"
                                           hx-trigger="input"
-                                          hx-target="#user-name-result"
+                                          hx-target="#user-last-name-result"
                                           hx-swap="innerHTML"
-                                          hx-vals='{"user_id": "{{ user.id }}"}'
                                           class="settings-field-update-input"
                                           style="flex: 1;">
                     </md-filled-text-field>
-                    <div id="user-name-result" class="settings-field-update-result"></div>
+                    <div id="user-last-name-result" class="settings-field-update-result"></div>
                 </div>
             {% else %}
                 <h3 class="file-detail-name">{{ user.first_name }} {{ user.last_name }}</h3>
