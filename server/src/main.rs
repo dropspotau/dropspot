@@ -1,3 +1,4 @@
+mod adapter;
 mod auth;
 mod db;
 mod handlers;

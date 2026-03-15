@@ -8,10 +8,11 @@ use dropspot_core::upload::CreateFileBody;
 use futures_util::StreamExt;
 use reqwest::StatusCode;
 use thiserror::Error;
-use tokio::io::{AsyncWriteExt, BufWriter};
+use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 use crate::{
+    adapter::{Adapter, get_adapter},
     db::{
         User, create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
         start_upload,
@@ -85,14 +86,18 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
+    let mut reader_stream = body.into_data_stream();
+
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
-    let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
+    let adapter = get_adapter(&file);
+
+    let Ok(writer) = adapter.get_upload_writer(&file).await else {
         let api_error: ApiError = FileUploadError::FileCreateError.into();
         return api_error.into_response();
     };
 
-    let mut reader_stream = body.into_data_stream();
-    let mut writer = BufWriter::new(io_file);
+    tokio::pin!(writer);
+    // let mut writer = pin_mut!(writer);
 
     let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
         let api_error: ApiError = FileUploadError::UploadNotFound.into();
