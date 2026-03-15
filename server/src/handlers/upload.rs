@@ -2,6 +2,7 @@ use axum::{
     body::Body,
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
+    debug_handler
 };
 use dropspot_core::file::File as ApiFile;
 use dropspot_core::upload::CreateFileBody;
@@ -72,10 +73,11 @@ pub async fn handle_file_request_upload(
     return Json(file.unwrap()).into_response();
 }
 
+#[debug_handler]
 pub async fn handle_file_upload(
     State(state): State<AppState>,
-    Path(file_id): Path<Uuid>,
     user: Option<User>,
+    Path(file_id): Path<Uuid>,
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
@@ -91,13 +93,10 @@ pub async fn handle_file_upload(
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
     let adapter = get_adapter(&file);
 
-    let Ok(writer) = adapter.get_upload_writer(&file).await else {
+    let Ok(mut writer) = adapter.get_upload_writer(&file).await else {
         let api_error: ApiError = FileUploadError::FileCreateError.into();
         return api_error.into_response();
     };
-
-    tokio::pin!(writer);
-    // let mut writer = pin_mut!(writer);
 
     let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
         let api_error: ApiError = FileUploadError::UploadNotFound.into();
@@ -157,6 +156,6 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    let api_file: ApiFile = file.into();
+    let api_file: ApiFile = file.clone().into();
     Json(api_file).into_response()
 }

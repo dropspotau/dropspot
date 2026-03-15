@@ -7,6 +7,7 @@ use uuid::Uuid;
 use super::types::Id;
 use super::upload::create_upload;
 
+#[derive(Clone)]
 pub struct File {
     pub id: Uuid,
     pub name: String,
