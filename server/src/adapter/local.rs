@@ -1,4 +1,4 @@
-use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter};
+use tokio::io::{BufReader, BufWriter};
 
 use crate::{adapter::Adapter, db::File};
 
@@ -18,11 +18,16 @@ impl Adapter for LocalAdapter {
         }
     }
 
-    async fn get_download_reader(&self, file: &File) -> Result<impl AsyncReadExt, ()> {
-        let Ok(io_file) = tokio::fs::File::open(file.get_path()).await else {
-            return Err(());
-        };
+    fn get_download_reader(
+        &self,
+        file: &File,
+    ) -> impl Future<Output = Result<BufReader<tokio::fs::File>, ()>> + Send {
+        async {
+            let Ok(io_file) = tokio::fs::File::open(file.get_path()).await else {
+                return Err(());
+            };
 
-        Ok(BufReader::new(io_file))
+            Ok(BufReader::new(io_file))
+        }
     }
 }

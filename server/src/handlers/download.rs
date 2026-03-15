@@ -9,9 +9,12 @@ use thiserror::Error;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use crate::db::{Download, User, create_download, get_download_by_id, get_file_by_id};
-use crate::state::AppState;
 use crate::types::ApiError;
+use crate::{adapter::Adapter, state::AppState};
+use crate::{
+    adapter::get_adapter,
+    db::{Download, User, create_download, get_download_by_id, get_file_by_id},
+};
 
 #[derive(Error, Debug)]
 pub enum FileDownloadError {
@@ -109,13 +112,13 @@ pub async fn handle_file_download(
         return Err(StatusCode::NOT_FOUND);
     };
 
-    let file_path = file.get_path();
-    let Ok(io_file) = tokio::fs::File::open(file_path).await else {
+    let adapter = get_adapter(&file);
+    let Ok(reader) = adapter.get_download_reader(&file).await else {
         let _error = FileDownloadError::FileOpenError;
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     };
 
-    let reader_stream = ReaderStream::new(io_file);
+    let reader_stream = ReaderStream::new(reader);
     let body = Body::from_stream(reader_stream);
 
     // Pretend that this would get a download URL link from S3 or Cloud Storage

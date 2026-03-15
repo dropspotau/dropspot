@@ -1,4 +1,4 @@
-use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
+use tokio::io::{BufReader, BufWriter};
 
 use crate::db::File;
 
@@ -8,7 +8,11 @@ pub trait Adapter {
         &self,
         file: &File,
     ) -> impl Future<Output = Result<BufWriter<tokio::fs::File>, ()>> + Send;
-    async fn get_download_reader(&self, file: &File) -> Result<impl AsyncReadExt, ()>;
+
+    fn get_download_reader(
+        &self,
+        file: &File,
+    ) -> impl Future<Output = Result<BufReader<tokio::fs::File>, ()>> + Send;
 }
 
 pub fn get_adapter(file: &File) -> impl Adapter + use<> {
