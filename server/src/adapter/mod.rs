@@ -1,4 +1,4 @@
 mod adapter;
 mod local;
 
-pub use adapter::{Adapter, get_adapter};
+pub use adapter::{Adapter, AdapterType, get_adapter};

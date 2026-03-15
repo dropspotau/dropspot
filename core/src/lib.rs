@@ -1,3 +1,4 @@
+pub mod adapter;
 pub(crate) mod auth;
 mod constants;
 pub mod download;

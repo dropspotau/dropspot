@@ -24,6 +24,8 @@ create table member (
     unique (organisation_id, user_id)
 );
 
+create type adapter as enum ('local', 's3', 'gcp');
+
 create table file (
     id uuid primary key default uuid_generate_v4(),
     name text not null,
@@ -33,8 +35,10 @@ create table file (
     created_by_id uuid references users (id) on delete set null,
     expires_at timestamptz not null,
     max_downloads int not null,
-    has_uploaded boolean not null default false
+    has_uploaded boolean not null default false,
+    adapter adapter not null
 );
+
 
 -- 1-1 table recording how a file was uploaded. A file can only be uploaded by one person
 create table upload (
@@ -47,6 +51,7 @@ create table upload (
     has_uploaded boolean not null generated always as (upload_finished_at is not null) stored
 );
 
+
 -- But a file can be downloaded by multiple people
 create table download (
     id uuid primary key default uuid_generate_v4(),
@@ -55,3 +60,14 @@ create table download (
     created_by_id uuid references users (id) on delete set null,
     expires_at timestamptz not null
 );
+
+--
+-- Indexes
+--
+
+create index idx_member_organisation_id on member (organisation_id);
+create index idx_member_user_id on member (user_id);
+create index idx_file_created_by_id on file (created_by_id);
+create index idx_upload_file_id on upload (file_id);
+create index idx_download_file_id on download (file_id);
+create index idx_download_created_by_id on download (created_by_id);

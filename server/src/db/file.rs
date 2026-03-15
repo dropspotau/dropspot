@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use super::types::Id;
 use super::upload::create_upload;
+use crate::adapter::AdapterType;
 
 #[derive(Clone)]
 pub struct File {
@@ -13,6 +14,7 @@ pub struct File {
     pub name: String,
     pub path: PathBuf,
     pub size: i64,
+    pub adapter: AdapterType,
     pub created_at: DateTime<Utc>,
     pub created_by_id: Option<Uuid>,
     pub created_by_name: Option<String>,
@@ -89,6 +91,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               file.name,
               file.path,
               file.size,
+              file.adapter as "adapter: AdapterType",
               file.created_at,
               users.id "created_by_id?",
               users.email "created_by_name?",
@@ -118,6 +121,7 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               file.name,
               file.path,
               file.size,
+              file.adapter as "adapter: AdapterType",
               file.created_at,
               users.id "created_by_id?",
               users.email "created_by_name?",
@@ -147,6 +151,7 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               file.name,
               file.path,
               file.size,
+              file.adapter as "adapter: AdapterType",
               file.created_at,
               users.id "created_by_id?",
               users.email "created_by_name?",
@@ -174,6 +179,7 @@ pub async fn create_file(
     path: &str,
     size: i64,
     created_by_id: Option<Uuid>,
+    adapter: &AdapterType,
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(60);
@@ -182,13 +188,14 @@ pub async fn create_file(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into file (name, path, size, created_at, created_by_id, expires_at, max_downloads)
-            values ($1, $2, $3, $4, $5, $6, $7)
+            insert into file (name, path, size, adapter, created_at, created_by_id, expires_at, max_downloads)
+            values ($1, $2, $3, $4, $5, $6, $7, $8)
             returning id
         "#,
         name,
         path,
         size,
+        adapter as _,
         created_at,
         created_by_id,
         expires_at,

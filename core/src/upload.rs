@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
+use crate::adapter::AdapterType;
 use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
@@ -22,6 +23,7 @@ pub enum UploadError {
 pub struct CreateFileBody {
     pub name: String,
     pub size: i64,
+    pub adapter: AdapterType,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
@@ -35,6 +37,7 @@ pub async fn upload(
     name: String,
     contents: Vec<u8>,
     auth: Option<Authentication>,
+    adapter: AdapterType,
 ) -> Result<UploadResult, UploadError> {
     let size = contents.len();
     let reader = BufReader::new(contents.as_slice());
@@ -53,6 +56,7 @@ pub async fn upload(
         .json(&CreateFileBody {
             name,
             size: size as i64,
+            adapter,
         })
         .send()
         .await
@@ -81,13 +85,14 @@ pub async fn upload(
 }
 
 #[wasm_bindgen]
-#[cfg(target_arch = "wasm32")]
+// #[cfg(target_arch = "wasm32")]
 pub async fn upload_js(
     name: String,
     contents: Vec<u8>,
     auth: Option<Authentication>,
+    adapter: AdapterType,
 ) -> Result<UploadResult, JsError> {
-    let upload = upload(name, contents, auth).await;
+    let upload = upload(name, contents, auth, adapter).await;
 
     if let Err(e) = upload {
         return Err(JsError::new(&format!("{e:?}")));

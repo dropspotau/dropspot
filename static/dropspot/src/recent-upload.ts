@@ -50,7 +50,7 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
 
     const fileContents = new Uint8Array(await file.arrayBuffer());
     const auth = getAuth();
-    const result = await upload_js(file.name, fileContents, auth);
+    const result = await upload_js(file.name, fileContents, auth, "local");
     addRecentUpload(result);
 
     const event: FileUploadEvent = new CustomEvent("file-upload", {

@@ -18,6 +18,7 @@ use base64::engine::GeneralPurpose;
 use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
+use dropspot_core::adapter::AdapterType;
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
@@ -102,7 +103,7 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 }
 
-                let upload = upload(file_name.clone(), buffer, None).await;
+                let upload = upload(file_name.clone(), buffer, None, AdapterType::Local).await;
 
                 if let Err(e) = upload {
                     eprintln!("Failed to upload file: {e:?}");

@@ -1,0 +1,11 @@
+use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[serde(rename_all = "lowercase")]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum AdapterType {
+    Local,
+    S3,
+    GCP,
+}

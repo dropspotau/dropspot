@@ -112,7 +112,7 @@ pub async fn handle_file_download(
         return Err(StatusCode::NOT_FOUND);
     };
 
-    let adapter = get_adapter(&file);
+    let adapter = get_adapter(&file.adapter);
     let Ok(reader) = adapter.get_download_reader(&file).await else {
         let _error = FileDownloadError::FileOpenError;
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
