@@ -24,7 +24,7 @@ create table member (
     unique (organisation_id, user_id)
 );
 
-create type adapter as enum ('local', 's3', 'gcp');
+create type storage as enum ('local', 's3', 'gcp');
 
 create table file (
     id uuid primary key default uuid_generate_v4(),
@@ -36,7 +36,7 @@ create table file (
     expires_at timestamptz not null,
     max_downloads int not null,
     has_uploaded boolean not null default false,
-    adapter adapter not null
+    storage storage not null
 );
 
 

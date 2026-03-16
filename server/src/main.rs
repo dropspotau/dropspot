@@ -1,9 +1,9 @@
-mod adapter;
 mod auth;
 mod db;
 mod handlers;
 mod middleware;
 mod state;
+mod storage;
 mod types;
 mod watch;
 
@@ -18,7 +18,7 @@ use base64::engine::GeneralPurpose;
 use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
-use dropspot_core::adapter::AdapterType;
+use dropspot_core::storage::StorageType;
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
@@ -103,7 +103,7 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 }
 
-                let upload = upload(file_name.clone(), buffer, None, AdapterType::Local).await;
+                let upload = upload(file_name.clone(), buffer, None, StorageType::Local).await;
 
                 if let Err(e) = upload {
                     eprintln!("Failed to upload file: {e:?}");

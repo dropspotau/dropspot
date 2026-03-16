@@ -9,11 +9,11 @@ use thiserror::Error;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use crate::types::ApiError;
-use crate::{adapter::Adapter, state::AppState};
+use crate::db::{Download, User, create_download, get_download_by_id, get_file_by_id};
 use crate::{
-    adapter::get_adapter,
-    db::{Download, User, create_download, get_download_by_id, get_file_by_id},
+    state::AppState,
+    storage::{Storage, get_storage},
+    types::ApiError,
 };
 
 #[derive(Error, Debug)]
@@ -112,8 +112,8 @@ pub async fn handle_file_download(
         return Err(StatusCode::NOT_FOUND);
     };
 
-    let adapter = get_adapter(&file.adapter);
-    let Ok(reader) = adapter.get_download_reader(&file).await else {
+    let storage = get_storage(&file.storage);
+    let Ok(reader) = storage.get_download_reader(&file).await else {
         let _error = FileDownloadError::FileOpenError;
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     };

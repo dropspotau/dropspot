@@ -12,12 +12,12 @@ use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 use crate::{
-    adapter::{Adapter, AdapterType, get_adapter},
     db::{
         User, create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
         start_upload,
     },
     state::AppState,
+    storage::{Storage, StorageType, get_storage},
     types::ApiError,
 };
 
@@ -59,7 +59,7 @@ pub async fn handle_file_request_upload(
         &payload.name,
         payload.size,
         user.map(|u| u.id),
-        &AdapterType::from(payload.adapter),
+        &StorageType::from(payload.storage),
     )
     .await
     .map(ApiFile::from)
@@ -90,9 +90,9 @@ pub async fn handle_file_upload(
     let mut reader_stream = body.into_data_stream();
 
     // TODO(alec): Create file providers to upload to AWS, GCP etc.
-    let adapter = get_adapter(&file.adapter);
+    let storage = get_storage(&file.storage);
 
-    let Ok(mut writer) = adapter.get_upload_writer(&file).await else {
+    let Ok(mut writer) = storage.get_upload_writer(&file).await else {
         let api_error: ApiError = FileUploadError::FileCreateError.into();
         return api_error.into_response();
     };
