@@ -24,7 +24,7 @@ create table member (
     unique (organisation_id, user_id)
 );
 
-create type storage as enum ('local', 's3', 'gcp');
+create type storage as enum ('local', 's3', 'gcs');
 
 create table file (
     id uuid primary key default uuid_generate_v4(),

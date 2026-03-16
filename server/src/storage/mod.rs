@@ -1,4 +1,4 @@
-mod gcp;
+mod gcs;
 mod local;
 mod s3;
 mod storage;

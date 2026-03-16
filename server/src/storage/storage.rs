@@ -6,7 +6,7 @@ use tokio::io::{BufReader, BufWriter};
 
 use crate::db::File;
 
-use super::gcp::GcpStorage;
+use super::gcs::GcsStorage;
 use super::local::LocalStorage;
 use super::s3::S3Storage;
 
@@ -15,7 +15,7 @@ use super::s3::S3Storage;
 pub enum StorageType {
     Local,
     S3,
-    GCP,
+    GCS,
 }
 
 impl From<ApiStorageType> for StorageType {
@@ -23,7 +23,7 @@ impl From<ApiStorageType> for StorageType {
         match storage_type {
             ApiStorageType::Local => StorageType::Local,
             ApiStorageType::S3 => StorageType::S3,
-            ApiStorageType::GCP => StorageType::GCP,
+            ApiStorageType::GCS => StorageType::GCS,
         }
     }
 }
@@ -40,6 +40,6 @@ pub fn get_storage(storage_type: &StorageType) -> Box<dyn Storage> {
     match storage_type {
         StorageType::Local => Box::new(LocalStorage {}),
         StorageType::S3 => Box::new(S3Storage {}),
-        StorageType::GCP => Box::new(GcpStorage {}),
+        StorageType::GCS => Box::new(GcsStorage {}),
     }
 }

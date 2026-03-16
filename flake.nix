@@ -22,6 +22,11 @@
           };
         };
 
+        # Google Cloud to test bucket uploads
+        gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
+          gke-gcloud-auth-plugin
+        ]);
+
         rust = with pkgs; (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml);
         rustDeps = with pkgs; [
           rust
@@ -39,6 +44,7 @@
         deps = with pkgs; [
           psql
           direnv
+          gdk
         ] ++ rustDeps ++ editorDeps;
       in
       {

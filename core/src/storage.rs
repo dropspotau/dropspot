@@ -7,5 +7,5 @@ use tsify::Tsify;
 pub enum StorageType {
     Local,
     S3,
-    GCP,
+    GCS,
 }
