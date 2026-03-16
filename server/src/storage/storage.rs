@@ -38,8 +38,8 @@ pub trait Storage: Sync + Send {
 
 pub fn get_storage(storage_type: &StorageType) -> Box<dyn Storage> {
     match storage_type {
-        StorageType::Local => Box::new(LocalStorage {}.into()),
-        StorageType::S3 => Box::new(S3Storage {}.into()),
-        StorageType::GCP => Box::new(GcpStorage {}.into()),
+        StorageType::Local => Box::new(LocalStorage {}),
+        StorageType::S3 => Box::new(S3Storage {}),
+        StorageType::GCP => Box::new(GcpStorage {}),
     }
 }
