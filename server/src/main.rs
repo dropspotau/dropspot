@@ -103,7 +103,7 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 }
 
-                let upload = upload(file_name.clone(), buffer, None, StorageType::Local).await;
+                let upload = upload(file_name.clone(), buffer, None, StorageType::GCS).await;
 
                 if let Err(e) = upload {
                     eprintln!("Failed to upload file: {e:?}");

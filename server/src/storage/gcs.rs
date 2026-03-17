@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use google_cloud_storage::client::{Storage as GoogleCloudStorage, StorageControl};
-use tokio::io::{BufReader, BufWriter};
+use google_cloud_storage::client::Storage as GoogleCloudStorage;
+use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
@@ -8,26 +8,48 @@ pub struct GcsStorage {}
 
 #[async_trait]
 impl Storage for GcsStorage {
-    async fn get_upload_writer(&self, file: &File) -> Result<BufWriter<tokio::fs::File>, ()> {
+    async fn get_upload_writer(
+        &self,
+        file: &File,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
         let Ok(client) = GoogleCloudStorage::builder().build().await else {
             return Err(());
         };
 
-        let control = StorageControl::builder().build().await?;
+        let bucket_name = "dropspot-upload-files".to_owned();
+        let artifact_path = format!("projects/_/buckets/{bucket_name}");
+        // let gcs_writer = GcsWriter {
+        //     client,
+        //     bucket_name: bucket_name,
+        //     object_name: file.id.to_string(),
+        //     buffer: vec![],
+        //     max_buffer_size: 0,
+        // };
 
-        let bucket_name = "dropspot-upload-filese";
-        let path = file.get_path();
+        println!("artifact_path: {artifact_path}");
 
         let object = client
-            .write_object(bucket_name, file.id, b"")
+            .write_object(&artifact_path, file.id, "file contents")
             .send_buffered()
-            .await?;
+            .await;
+
+        if let Err(e) = object {
+            eprintln!("Error writing to GCS bucket artifact: {e}");
+            return Err(());
+        }
+
         println!("object successfully uploaded {object:?}");
 
-        Err(())
+        let buffer = vec![];
+        let writer = BufWriter::new(buffer);
+
+        Ok(Box::new(writer))
     }
 
-    async fn get_download_reader(&self, file: &File) -> Result<BufReader<tokio::fs::File>, ()> {
+    async fn get_download_reader(
+        &self,
+        file: &File,
+    ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()> {
         todo!("Implement GCP adapter writer")
     }
 }

@@ -27,6 +27,11 @@
           gke-gcloud-auth-plugin
         ]);
 
+        gcloud-login = pkgs.writeShellScriptBin "glogin" ''
+          unset GOOGLE_APPLICATION_CREDENTIALS # Remove in case it tries to set service account details
+          gcloud auth application-default login
+        '';
+
         rust = with pkgs; (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml);
         rustDeps = with pkgs; [
           rust
@@ -45,6 +50,7 @@
           psql
           direnv
           gdk
+          gcloud-login
         ] ++ rustDeps ++ editorDeps;
       in
       {
