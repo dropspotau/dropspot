@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use google_cloud_storage::client::Storage as GoogleCloudStorage;
-use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
+use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
@@ -50,6 +50,36 @@ impl Storage for GcsStorage {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()> {
-        todo!("Implement GCP adapter writer")
+        let Ok(client) = GoogleCloudStorage::builder().build().await else {
+            return Err(());
+        };
+
+        let bucket_name = "dropspot-upload-files".to_owned();
+        let artifact_path = format!("projects/_/buckets/{bucket_name}");
+
+        println!("artifact_path: {artifact_path}");
+
+        let reader = client.read_object(&artifact_path, file.id).send().await;
+
+        if let Err(e) = reader {
+            eprintln!("Error reading from GCS bucket artifact: {e}");
+            return Err(());
+        }
+
+        let mut reader = reader.unwrap();
+        let mut buffer = Vec::<u8>::with_capacity(file.size as usize);
+
+        while let Some(chunk) = reader.next().await {
+            if let Err(e) = chunk {
+                eprintln!("Error reading from GCS bucket artifact: {e}");
+                return Err(());
+            }
+
+            buffer.extend_from_slice(&chunk.unwrap());
+        }
+
+        let buf_reader = BufReader::new(buffer.as_slice());
+
+        Ok(Box::new(buf_reader))
     }
 }
