@@ -1,6 +1,8 @@
+use std::io::Cursor;
+
 use async_trait::async_trait;
 use google_cloud_storage::client::Storage as GoogleCloudStorage;
-use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
+use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
@@ -66,6 +68,8 @@ impl Storage for GcsStorage {
             return Err(());
         }
 
+        // TODO(alec): Figure out a better way than reading the entre file into memory
+        // This exists because ReadObjectResponse does not implement AsyncRead
         let mut reader = reader.unwrap();
         let mut buffer = Vec::<u8>::with_capacity(file.size as usize);
 
@@ -78,8 +82,6 @@ impl Storage for GcsStorage {
             buffer.extend_from_slice(&chunk.unwrap());
         }
 
-        let buf_reader = BufReader::new(buffer.as_slice());
-
-        Ok(Box::new(buf_reader))
+        Ok(Box::new(Cursor::new(buffer)))
     }
 }
