@@ -18,6 +18,10 @@ impl Storage for S3Storage {
         Ok(Box::new(BufWriter::new(io_file)))
     }
 
+    async fn finish_upload(&self, _file: &File) -> Result<(), ()> {
+        todo!("S3 uploads don't work yet")
+    }
+
     async fn get_download_reader(
         &self,
         file: &File,

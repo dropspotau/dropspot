@@ -150,6 +150,12 @@ pub async fn handle_file_upload(
         }
     }
 
+    if let Err(e) = storage.finish_upload(&file).await {
+        eprintln!("Error finishing upload: {e:?}");
+        let api_error: ApiError = FileUploadError::FileWriteError.into();
+        return api_error.into_response();
+    };
+
     if let Err(e) = finish_upload(pool, &upload.id).await {
         let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
         return api_error.into_response();

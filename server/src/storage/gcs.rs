@@ -1,4 +1,4 @@
-use std::io::Cursor;
+use std::{io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use google_cloud_storage::client::Storage as GoogleCloudStorage;
@@ -12,26 +12,37 @@ pub struct GcsStorage {}
 impl Storage for GcsStorage {
     async fn get_upload_writer(
         &self,
-        file: &File,
+        _file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
+        let Ok(io_file) = tokio::fs::File::create("upload").await else {
+            eprintln!("Could not create GCS writer file");
+            return Err(());
+        };
+
+        Ok(Box::new(BufWriter::new(io_file)))
+    }
+
+    async fn finish_upload(&self, file: &File) -> Result<(), ()> {
         let Ok(client) = GoogleCloudStorage::builder().build().await else {
             return Err(());
         };
 
         let bucket_name = "dropspot-upload-files".to_owned();
         let artifact_path = format!("projects/_/buckets/{bucket_name}");
-        // let gcs_writer = GcsWriter {
-        //     client,
-        //     bucket_name: bucket_name,
-        //     object_name: file.id.to_string(),
-        //     buffer: vec![],
-        //     max_buffer_size: 0,
-        // };
 
         println!("artifact_path: {artifact_path}");
 
+        let Ok(io_file) = tokio::fs::File::open("upload").await else {
+            return Err(());
+        };
+
         let object = client
-            .write_object(&artifact_path, file.id, "file contents")
+            .write_object(
+                &artifact_path,
+                file.id,
+                // bytes::Bytes::copy_from_slice(&buffer),
+                io_file,
+            )
             .send_buffered()
             .await;
 
@@ -42,10 +53,7 @@ impl Storage for GcsStorage {
 
         println!("object successfully uploaded {object:?}");
 
-        let buffer = vec![];
-        let writer = BufWriter::new(buffer);
-
-        Ok(Box::new(writer))
+        Ok(())
     }
 
     async fn get_download_reader(

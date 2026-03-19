@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use dropspot_core::storage::StorageType as ApiStorageType;
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
-use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::db::File;
 
@@ -35,6 +35,8 @@ pub trait Storage: Sync + Send {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()>;
+
+    async fn finish_upload(&self, file: &File) -> Result<(), ()>;
 
     async fn get_download_reader(
         &self,

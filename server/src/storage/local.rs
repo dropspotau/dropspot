@@ -18,6 +18,11 @@ impl Storage for LocalStorage {
         Ok(Box::new(BufWriter::new(io_file)))
     }
 
+    async fn finish_upload(&self, _file: &File) -> Result<(), ()> {
+        // Do nothing, the writer writes to the file automatically
+        Ok(())
+    }
+
     async fn get_download_reader(
         &self,
         file: &File,
