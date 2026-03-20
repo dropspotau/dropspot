@@ -1,32 +1,27 @@
-use std::{io::Cursor, sync::Arc};
+use std::{env::temp_dir, io::Cursor};
 
 use async_trait::async_trait;
 use google_cloud_storage::client::Storage as GoogleCloudStorage;
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
-pub struct GcsStorage {
-    buffer: Vec<u8>,
-    writer: Arc<Cursor<Vec<u8>>>,
-}
-
-impl GcsStorage {
-    pub fn new() -> Self {
-        let writer = Arc::new(Cursor::new(Vec::<u8>::new()));
-
-        Self { writer }
-    }
-}
+pub struct GcsStorage {}
 
 #[async_trait]
 impl Storage for GcsStorage {
     async fn get_upload_writer(
         &self,
-        _file: &File,
+        file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
-        let cursor = Cursor::new(self.buffer.clone());
-        Ok(Box::new(self.writer.clone()))
+        let temp_dir = temp_dir();
+
+        let Ok(file) = tokio::fs::File::create(temp_dir.join(file.id.to_string())).await else {
+            eprintln!("Failed to create temporary GCS upload file");
+            return Err(());
+        };
+
+        Ok(Box::new(BufWriter::new(file)))
     }
 
     async fn finish_upload(&self, file: &File) -> Result<(), ()> {
@@ -37,16 +32,16 @@ impl Storage for GcsStorage {
         let bucket_name = "dropspot-upload-files".to_owned();
         let artifact_path = format!("projects/_/buckets/{bucket_name}");
 
-        println!("artifact_path: {artifact_path}");
+        // TODO(alec): Can temp_dir give different results on different calls?
+        let temp_dir = temp_dir();
 
-        let stream = self.writer.get_ref();
+        let Ok(temp_file) = tokio::fs::File::open(temp_dir.join(file.id.to_string())).await else {
+            eprintln!("Failed to create temporary GCS upload file");
+            return Err(());
+        };
 
         let object = client
-            .write_object(
-                &artifact_path,
-                file.id,
-                bytes::Bytes::copy_from_slice(stream),
-            )
+            .write_object(&artifact_path, file.id, temp_file)
             .send_buffered()
             .await;
 
@@ -70,9 +65,6 @@ impl Storage for GcsStorage {
 
         let bucket_name = "dropspot-upload-files".to_owned();
         let artifact_path = format!("projects/_/buckets/{bucket_name}");
-
-        println!("artifact_path: {artifact_path}");
-
         let reader = client.read_object(&artifact_path, file.id).send().await;
 
         if let Err(e) = reader {
