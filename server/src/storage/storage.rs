@@ -48,6 +48,6 @@ pub fn get_storage(storage_type: &StorageType) -> Box<dyn Storage> {
     match storage_type {
         StorageType::Local => Box::new(LocalStorage {}),
         StorageType::S3 => Box::new(S3Storage {}),
-        StorageType::GCS => Box::new(GcsStorage {}),
+        StorageType::GCS => Box::new(GcsStorage::new()),
     }
 }

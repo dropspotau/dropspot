@@ -2,11 +2,22 @@ use std::{io::Cursor, sync::Arc};
 
 use async_trait::async_trait;
 use google_cloud_storage::client::Storage as GoogleCloudStorage;
-use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{db::File, storage::Storage};
 
-pub struct GcsStorage {}
+pub struct GcsStorage {
+    buffer: Vec<u8>,
+    writer: Arc<Cursor<Vec<u8>>>,
+}
+
+impl GcsStorage {
+    pub fn new() -> Self {
+        let writer = Arc::new(Cursor::new(Vec::<u8>::new()));
+
+        Self { writer }
+    }
+}
 
 #[async_trait]
 impl Storage for GcsStorage {
@@ -14,12 +25,8 @@ impl Storage for GcsStorage {
         &self,
         _file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
-        let Ok(io_file) = tokio::fs::File::create("upload").await else {
-            eprintln!("Could not create GCS writer file");
-            return Err(());
-        };
-
-        Ok(Box::new(BufWriter::new(io_file)))
+        let cursor = Cursor::new(self.buffer.clone());
+        Ok(Box::new(self.writer.clone()))
     }
 
     async fn finish_upload(&self, file: &File) -> Result<(), ()> {
@@ -32,16 +39,13 @@ impl Storage for GcsStorage {
 
         println!("artifact_path: {artifact_path}");
 
-        let Ok(io_file) = tokio::fs::File::open("upload").await else {
-            return Err(());
-        };
+        let stream = self.writer.get_ref();
 
         let object = client
             .write_object(
                 &artifact_path,
                 file.id,
-                // bytes::Bytes::copy_from_slice(&buffer),
-                io_file,
+                bytes::Bytes::copy_from_slice(stream),
             )
             .send_buffered()
             .await;
