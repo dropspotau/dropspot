@@ -61,9 +61,11 @@
     // Navigate from the first menu to secondary pages
     const limitsMenuItem = document.querySelector("#limits-menu-item");
     const userMenuItem = document.querySelector("#user-menu-item");
+    const integrationsMenuItem = document.querySelector("#integrations-menu-item");
     const mainPage = document.querySelector("#settings-main");
     const limitsPage = document.querySelector("#settings-limits");
     const userPage = document.querySelector("#settings-user");
+    const integrationsPage = document.querySelector("#settings-integrations");
 
     if (limitsMenuItem && limitsPage) {
         limitsMenuItem.addEventListener("click", () => {
@@ -77,6 +79,13 @@
         userMenuItem.addEventListener("click", () => {
             mainPage.setAttribute("hidden", "");
             userPage.removeAttribute("hidden");
+        });
+    }
+
+    if (integrationsMenuItem && integrationsPage) {
+        integrationsMenuItem.addEventListener("click", () => {
+            mainPage.setAttribute("hidden", "");
+            integrationsPage.removeAttribute("hidden");
         });
     }
 </script>
@@ -279,6 +288,35 @@
             backButton.addEventListener("click", () => {
                 mainPage.removeAttribute("hidden");
                 limitsPage.setAttribute("hidden", "");
+            });
+        }
+    </script>
+</section>
+
+<section id="settings-integrations" class="settings-page" hidden>
+    <md-icon-button id="settings-integrations-back" class="popover-back-button">
+        <md-icon>arrow_back</md-icon>
+    </md-icon-button>
+    <div class="file-details-container">
+        <h3 class="file-detail-name">Integrations</h3>
+    
+        <li id="settings-integration-gcs" class="file-item">
+            <md-icon class="file-icon">person</md-icon>
+            <div class="file-info">
+                Google Cloud Storage
+            </div>
+        </li>
+    </div>
+
+    <script type="module">
+        const backButton = document.querySelector("#settings-integrations-back");
+        const mainPage = document.querySelector("#settings-main");
+        const integrationsPage = document.querySelector("#settings-integrations");
+
+        if (backButton && mainPage && integrationsPage) {
+            backButton.addEventListener("click", () => {
+                mainPage.removeAttribute("hidden");
+                integrationsPage.setAttribute("hidden", "");
             });
         }
     </script>
