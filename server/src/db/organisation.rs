@@ -12,8 +12,7 @@ pub struct Organisation {
 
 pub const DEFAULT_ORGANISATION_NAME: &str = "Default";
 
-// TODO(alec): Whenever we handle multiple organisations, we'll need to retrieve them by ID
-pub async fn get_organisation(pool: &PgPool) -> Result<Organisation, sqlx::Error> {
+pub async fn get_default_organisation(pool: &PgPool) -> Result<Organisation, sqlx::Error> {
     sqlx::query_as!(
         Organisation,
         r#"
@@ -23,7 +22,6 @@ pub async fn get_organisation(pool: &PgPool) -> Result<Organisation, sqlx::Error
               organisation.created_at
             from organisation
             where name = $1
-            limit 1
         "#,
         DEFAULT_ORGANISATION_NAME
     )
@@ -31,8 +29,48 @@ pub async fn get_organisation(pool: &PgPool) -> Result<Organisation, sqlx::Error
     .await
 }
 
+pub async fn get_organisation_by_id(pool: &PgPool, id: &Uuid) -> Result<Organisation, sqlx::Error> {
+    sqlx::query_as!(
+        Organisation,
+        r#"
+            select
+              organisation.id,
+              organisation.name,
+              organisation.created_at
+            from organisation
+            where id = $1
+        "#,
+        id
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn get_organisation_for_user(
+    pool: &PgPool,
+    user_id: &Uuid,
+) -> Result<Organisation, sqlx::Error> {
+    sqlx::query_as!(
+        Organisation,
+        r#"
+            select
+              organisation.id,
+              organisation.name,
+              organisation.created_at
+            from organisation
+            left join member
+            on member.organisation_id = organisation.id
+            where member.user_id = $1
+            limit 1
+        "#,
+        user_id
+    )
+    .fetch_one(pool)
+    .await
+}
+
 pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisation, sqlx::Error> {
-    let _id = sqlx::query_as!(
+    let id = sqlx::query_as!(
         Id,
         r#"
             insert into organisation (name)
@@ -44,5 +82,5 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
     .fetch_one(pool)
     .await?;
 
-    get_organisation(pool).await
+    get_organisation_by_id(pool, &id.id).await
 }

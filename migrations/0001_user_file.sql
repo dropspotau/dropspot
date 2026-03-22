@@ -17,7 +17,7 @@ create table organisation (
 
 create table member (
     id uuid primary key default uuid_generate_v4(),
-    organisation_id uuid not null references organisation on delete cascade,
+    organisation_id uuid not null references organisation (id) on delete cascade,
     user_id uuid not null references users on delete cascade,
     created_at timestamptz not null default now(),
 
@@ -43,7 +43,7 @@ create table file (
 -- 1-1 table recording how a file was uploaded. A file can only be uploaded by one person
 create table upload (
     id uuid primary key default uuid_generate_v4(),
-    file_id uuid references file on delete cascade not null unique,
+    file_id uuid references file (id) on delete cascade not null unique,
     created_at timestamptz not null,
     expires_at timestamptz not null,
     upload_started_at timestamptz,
@@ -55,10 +55,17 @@ create table upload (
 -- But a file can be downloaded by multiple people
 create table download (
     id uuid primary key default uuid_generate_v4(),
-    file_id uuid references file on delete cascade not null,
+    file_id uuid references file (id) on delete cascade not null,
     created_at timestamptz not null,
     created_by_id uuid references users (id) on delete set null,
     expires_at timestamptz not null
+);
+
+create table gcs_integration (
+    id uuid primary key default uuid_generate_v4(),
+    organisation_id uuid references organisation (id) on delete cascade not null unique,
+    bucket_name varchar(256) not null,
+    credentials_key_json jsonb -- Can be left out if using IAP authentication
 );
 
 --

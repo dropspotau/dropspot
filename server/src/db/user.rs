@@ -2,7 +2,10 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db::organisation::{DEFAULT_ORGANISATION_NAME, create_organisation, get_organisation};
+use crate::db::organisation::{
+    DEFAULT_ORGANISATION_NAME, create_organisation, get_default_organisation,
+    get_organisation_for_user,
+};
 
 use super::types::Id;
 
@@ -129,7 +132,7 @@ pub async fn create_user(
     email: &str,
     password: &str,
 ) -> Result<User, sqlx::Error> {
-    let mut organisation = get_organisation(pool).await;
+    let mut organisation = get_default_organisation(pool).await;
 
     if organisation.is_err() {
         organisation = create_organisation(pool, DEFAULT_ORGANISATION_NAME).await;
