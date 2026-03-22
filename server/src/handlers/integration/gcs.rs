@@ -1,9 +1,11 @@
 use axum::{Json, extract::State, response::IntoResponse};
+use dropspot_core::integration::gcs::{
+    GcsIntegration as ApiGcsIntegration, UpsertGcsIntegrationPayload,
+};
 use reqwest::StatusCode;
-use serde::Deserialize;
 
 use crate::{
-    db::{User, get_organisation_for_user, upsert_gcs_integration},
+    db::{GcsIntegration, User, get_organisation_for_user, upsert_gcs_integration},
     state::AppState,
     types::ApiError,
 };
@@ -23,9 +25,12 @@ impl Into<ApiError> for IntegrationError {
     }
 }
 
-#[derive(Deserialize)]
-pub struct UpsertGcsIntegrationPayload {
-    bucket_name: String,
+impl From<GcsIntegration> for ApiGcsIntegration {
+    fn from(file: GcsIntegration) -> Self {
+        Self {
+            bucket_name: file.bucket_name,
+        }
+    }
 }
 
 pub async fn handle_upsert_gcs_integration(
@@ -50,5 +55,7 @@ pub async fn handle_upsert_gcs_integration(
         return error.into_response();
     }
 
-    Json(result.unwrap()).into_response()
+    let gcs = ApiGcsIntegration::from(result.unwrap());
+
+    Json(gcs).into_response()
 }

@@ -3,6 +3,7 @@ mod constants;
 pub mod download;
 pub mod encryption;
 pub mod file;
+pub mod integration;
 pub mod storage;
 pub mod upload;
 pub mod user;

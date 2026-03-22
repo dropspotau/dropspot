@@ -216,6 +216,10 @@ async fn main() -> Result<(), ()> {
                     .route("/api/user/login", post(handle_login))
                     .route("/api/user/create", post(handle_create_user))
                     .route("/api/user/refresh", post(handle_refresh_tokens))
+                    .route(
+                        "/api/integrations/gcs/upsert",
+                        patch(handle_upsert_gcs_integration),
+                    )
                     .route("/app", get(handle_index))
                     .route("/app/header", get(handle_header))
                     .route("/app/files", get(handle_files))
@@ -223,10 +227,6 @@ async fn main() -> Result<(), ()> {
                     .route("/app/settings", get(handle_settings))
                     .route("/app/settings/update", patch(handle_update_settings))
                     .route("/app/settings/user/{id}/update", patch(handle_update_user))
-                    .route(
-                        "/app/settings/integrations/gcs",
-                        patch(handle_upsert_gcs_integration),
-                    )
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(state);
