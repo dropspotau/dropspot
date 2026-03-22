@@ -14,7 +14,7 @@ pub struct GcsIntegration {
 pub async fn get_gcs_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
-) -> Result<GcsIntegration, sqlx::Error> {
+) -> Result<Option<GcsIntegration>, sqlx::Error> {
     sqlx::query_as!(
         GcsIntegration,
         r#"
@@ -28,7 +28,7 @@ pub async fn get_gcs_integration(
         "#,
         organisation_id
     )
-    .fetch_one(pool)
+    .fetch_optional(pool)
     .await
 }
 
@@ -41,21 +41,19 @@ pub async fn upsert_gcs_integration(
     organisation_id: &Uuid,
     bucket_name: &str,
 ) -> Result<GcsIntegration, sqlx::Error> {
-    let id = sqlx::query_as!(
-        Id,
+    sqlx::query_as!(
+        GcsIntegration,
         r#"
             insert into gcs_integration (organisation_id, bucket_name)
             values ($1, $2)
             on conflict (organisation_id)
             do update set
                 bucket_name = $2
-            returning id
+            returning id, organisation_id, bucket_name
         "#,
         organisation_id,
         bucket_name,
     )
     .fetch_one(pool)
-    .await?;
-
-    get_gcs_integration(pool, &id.id).await
+    .await
 }

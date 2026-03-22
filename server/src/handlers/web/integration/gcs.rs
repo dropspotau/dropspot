@@ -4,6 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     db::{User, get_organisation_for_user, upsert_gcs_integration},
+    handlers::web::{settings::UpdateSettingsTemplate, template::HtmlTemplate},
     state::AppState,
     types::ApiError,
 };
@@ -51,5 +52,6 @@ pub async fn handle_upsert_gcs_integration(
         return error.into_response();
     }
 
-    Json(result.unwrap()).into_response()
+    let template = UpdateSettingsTemplate { success: true };
+    HtmlTemplate(template).into_response()
 }

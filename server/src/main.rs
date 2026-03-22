@@ -223,7 +223,6 @@ async fn main() -> Result<(), ()> {
                     .route("/app/settings", get(handle_settings))
                     .route("/app/settings/update", patch(handle_update_settings))
                     .route("/app/settings/user/{id}/update", patch(handle_update_user))
-                    .route("/app/settings/user/{id}/update", patch(handle_update_user))
                     .route(
                         "/app/settings/integrations/gcs",
                         patch(handle_upsert_gcs_integration),

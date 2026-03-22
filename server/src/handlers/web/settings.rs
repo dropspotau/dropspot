@@ -9,7 +9,10 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db::{User, get_users, update_user_name},
+    db::{
+        GcsIntegration, User, get_gcs_integration, get_organisation_for_user, get_users,
+        update_user_name,
+    },
     state::AppState,
 };
 
@@ -22,6 +25,8 @@ struct SettingsTemplate {
     file_expiry_minutes: i32,
     download_limit: i32,
     current_user_id: Uuid,
+
+    gcs_integration: Option<GcsIntegration>,
 }
 
 #[derive(Template)]
@@ -41,19 +46,25 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let download_limit = 100;
     let current_user = user.unwrap();
 
+    let organisation = get_organisation_for_user(pool, &current_user.id)
+        .await
+        .unwrap();
+    let gcs_integration = get_gcs_integration(pool, &organisation.id).await.unwrap();
+
     let template = SettingsTemplate {
         users,
         file_expiry_minutes,
         download_limit,
         current_user_id: current_user.id,
+        gcs_integration,
     };
     HtmlTemplate(template).into_response()
 }
 
 #[derive(Template)]
 #[template(path = "settings_update.html")]
-struct UpdateSettingsTemplate {
-    success: bool,
+pub(crate) struct UpdateSettingsTemplate {
+    pub success: bool,
 }
 
 #[derive(Deserialize)]
