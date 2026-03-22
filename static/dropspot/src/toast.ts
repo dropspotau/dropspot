@@ -3,6 +3,8 @@ import { customElement, property } from "lit/decorators.js";
 
 import "./toast.css";
 
+type ToastVariant = "success" | "danger";
+
 @customElement("dropspot-toast")
 export class ToastElement extends LitElement {
   static styles = css`
@@ -34,7 +36,17 @@ export class ToastElement extends LitElement {
   `;
 
   @property()
-  private variant: "success" | "danger" = "success";
+  private variant: ToastVariant = "success";
+
+  static create(message: string, variant: ToastVariant) {
+    const toast = document.createElement("dropspot-toast");
+    toast.setAttribute("variant", variant);
+    toast.textContent = message;
+
+    document.appendChild(toast);
+
+    return toast;
+  }
 
   connectedCallback() {
     super.connectedCallback();

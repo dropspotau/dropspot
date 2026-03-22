@@ -2,6 +2,7 @@ import { create_user_js, login_js, type LoginResult } from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { setTokens, type LoginEvent } from "./auth";
+import { ToastElement } from "./toast";
 
 @customElement("login-button")
 export class LoginButtonElement extends LitElement {
@@ -33,12 +34,19 @@ export class LoginButtonElement extends LitElement {
     try {
       result = await login_js("alec@dropspot.au", "Password");
     } catch (e) {
-      result = await create_user_js(
-        "alec@dropspot.au",
-        "Alec",
-        "Bassingthwaighte",
-        "Password",
-      );
+      try {
+        result = await create_user_js(
+          "alec@dropspot.au",
+          "Alec",
+          "Bassingthwaighte",
+          "Password",
+        );
+      } catch (e) {
+        ToastElement.create(
+          "Sorry, there was an issue logging in. Please try again",
+          "danger",
+        );
+      }
     } finally {
       this.isSubmitting = false;
     }
