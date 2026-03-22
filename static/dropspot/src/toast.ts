@@ -43,7 +43,7 @@ export class ToastElement extends LitElement {
     toast.setAttribute("variant", variant);
     toast.textContent = message;
 
-    document.appendChild(toast);
+    document.body.appendChild(toast);
 
     return toast;
   }

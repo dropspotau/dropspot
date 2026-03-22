@@ -1,5 +1,6 @@
 import { upload_js, create_link_js, type UploadResult } from "dropspot-core";
 import { getAuth } from "./auth";
+import { ToastElement } from "./toast";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -50,7 +51,19 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
 
     const fileContents = new Uint8Array(await file.arrayBuffer());
     const auth = getAuth();
-    const result = await upload_js(file.name, fileContents, auth, "gcs");
+
+    let result: UploadResult;
+
+    try {
+      result = await upload_js(file.name, fileContents, auth, "gcs");
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an issue uploading the file. Please try again.",
+        "danger",
+      );
+      return;
+    }
+
     addRecentUpload(result);
 
     const event: FileUploadEvent = new CustomEvent("file-upload", {
