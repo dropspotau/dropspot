@@ -30,6 +30,10 @@ impl User {
 
         self.email.clone()
     }
+
+    pub fn created_at_slash_date(&self) -> String {
+        format!("{}", self.created_at.format("%d/%m/%Y"))
+    }
 }
 
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {

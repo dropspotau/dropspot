@@ -25,7 +25,6 @@ struct SettingsTemplate {
     file_expiry_minutes: i32,
     download_limit: i32,
     current_user_id: Uuid,
-
     gcs_integration: Option<GcsIntegration>,
 }
 
