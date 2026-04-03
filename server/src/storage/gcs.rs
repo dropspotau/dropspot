@@ -1,12 +1,47 @@
-use std::{env::temp_dir, io::Cursor};
+use std::{
+    env::temp_dir,
+    io::{Cursor, Read},
+};
 
 use async_trait::async_trait;
-use google_cloud_storage::client::Storage as GoogleCloudStorage;
+use bytes::Bytes;
+use google_cloud_storage::{
+    client::Storage as GoogleCloudStorage, streaming_source::StreamingSource,
+};
 use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
 pub struct GcsStorage {}
+
+//
+// TODO(alec): At some point, it'd be nice to make the GCS writer not rely on reading from a temp file for GCS uploads.
+// It's not a HUGE deal, but would be interesting to work on. We'd want to make get_upload_writer
+// return a GcsWriter whose cursor can be written to, but at this point I'm really bikeshedding
+// things so I'll postpone it.
+//
+
+struct GcsWriter {
+    cursor: Cursor<Vec<u8>>,
+}
+
+impl StreamingSource for GcsWriter {
+    type Error = std::convert::Infallible;
+
+    async fn next(&mut self) -> Option<Result<bytes::Bytes, Self::Error>> {
+        let mut buffer = Vec::<u8>::new();
+        let bytes_read = match self.cursor.read(&mut buffer) {
+            Ok(bytes_read) => bytes_read,
+            Err(e) => panic!("Failed to read from GCS writer {e:?}"),
+        };
+
+        if bytes_read == 0 {
+            return None;
+        }
+
+        Some(Ok(Bytes::from_owner(buffer)))
+    }
+}
 
 #[async_trait]
 impl Storage for GcsStorage {
