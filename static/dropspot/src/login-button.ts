@@ -51,7 +51,7 @@ export class LoginButtonElement extends LitElement {
   private isSubmitting: boolean = false;
 
   @state()
-  private isOpen: boolean = true;
+  private isOpen: boolean = false;
 
   @state()
   private isSigningUp: boolean = false;
@@ -79,6 +79,8 @@ export class LoginButtonElement extends LitElement {
     const firstName = formData.get("first_name");
     const lastName = formData.get("last_name");
     const password = formData.get("password");
+
+    console.debug(email, firstName, lastName, password);
 
     const isValid =
       typeof email === "string" &&
@@ -156,15 +158,15 @@ export class LoginButtonElement extends LitElement {
       type="text"
       name="first_name"
       label="First name"
-      pattern="[A-Za-z -]{1,32}"
+      pattern="[A-Za-z]{1,32}"
       required
     >
     </md-filled-text-field>
     <md-filled-text-field
       type="text"
-      name="first_name"
+      name="last_name"
       label="Last name"
-      pattern="[A-Za-z -]{1,32}"
+      pattern="[A-Za-z]{1,32}"
       required
     >
     </md-filled-text-field>
