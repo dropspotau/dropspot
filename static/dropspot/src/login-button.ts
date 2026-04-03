@@ -36,11 +36,13 @@ export class LoginButtonElement extends LitElement {
     .form {
       display: flex;
       flex-flow: column;
+      place-items: center;
       gap: 1rem;
     }
 
     .form-row {
       display: flex;
+      place-items: center;
       gap: 1rem;
     }
   `;
@@ -51,6 +53,9 @@ export class LoginButtonElement extends LitElement {
   @state()
   private isOpen: boolean = true;
 
+  @state()
+  private isSigningUp: boolean = false;
+
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -59,26 +64,51 @@ export class LoginButtonElement extends LitElement {
     }
   }
 
-  private login = async (): Promise<void> => {
-    this.isSubmitting = true;
-    let result: LoginResult | null = null;
+  private handleLogin = async (event: SubmitEvent): Promise<false> => {
+    event.preventDefault();
+    event.stopPropagation();
 
+    const form = event.target;
+
+    if (!(form instanceof HTMLFormElement)) {
+      return false;
+    }
+
+    const formData = new FormData(form);
+    const email = formData.get("email");
+    const firstName = formData.get("first_name");
+    const lastName = formData.get("last_name");
+    const password = formData.get("password");
+
+    const isValid =
+      typeof email === "string" &&
+      (!this.isSigningUp || typeof firstName === "string") &&
+      (!this.isSigningUp || typeof lastName === "string") &&
+      typeof password === "string";
+
+    // Date testing
+    if (!isValid) {
+      return false;
+    }
+
+    this.isSubmitting = true;
+
+    let result: LoginResult | null = null;
     try {
-      result = await login_js("alec@dropspot.au", "Password");
-    } catch (e) {
-      try {
-        result = await create_user_js(
-          "alec@dropspot.au",
-          "Alec",
-          "Bassingthwaighte",
-          "Password",
-        );
-      } catch (e) {
-        ToastElement.create(
-          "Sorry, there was an issue logging in. Please try again",
-          "danger",
-        );
+      if (
+        this.isSigningUp &&
+        typeof firstName === "string" &&
+        typeof lastName === "string"
+      ) {
+        result = await create_user_js(email, firstName, lastName, password);
+      } else {
+        result = await login_js(email, password);
       }
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an issue logging in. Please try again",
+        "danger",
+      );
     } finally {
       this.isSubmitting = false;
     }
@@ -91,6 +121,8 @@ export class LoginButtonElement extends LitElement {
       });
       this.dispatchEvent(event);
     }
+
+    return false;
   };
 
   private handleClick = (): void => {
@@ -101,38 +133,46 @@ export class LoginButtonElement extends LitElement {
     this.isOpen = false;
   };
 
+  private handleToggleSignup = (): void => {
+    this.isSigningUp = !this.isSigningUp;
+  };
+
   private renderSignin = (): TemplateResult<1> => html`
-    <md-filled-text-field
-      type="email"
-      name="email"
-      label="Email"
-      pattern="W+"
-      style="flex: 1;"
-    >
+    <md-filled-text-field type="email" name="email" label="Email">
     </md-filled-text-field>
     <md-filled-text-field
       type="password"
       name="password"
       label="Password"
-      pattern="W+"
+      pattern="[A-Za-z0-9]{8,}"
     >
     </md-filled-text-field>
   `;
 
   private renderSignup = (): TemplateResult<1> => html`
+    <md-filled-text-field type="email" name="email" label="Email" required>
+    </md-filled-text-field>
     <md-filled-text-field
       type="text"
       name="first_name"
       label="First name"
-      pattern="W+"
-      style="flex: 1;"
+      pattern="[A-Za-z -]{1,32}"
+      required
     >
     </md-filled-text-field>
     <md-filled-text-field
       type="text"
       name="first_name"
       label="Last name"
-      pattern="W+"
+      pattern="[A-Za-z -]{1,32}"
+      required
+    >
+    </md-filled-text-field>
+    <md-filled-text-field
+      type="password"
+      name="password"
+      label="Password"
+      pattern="[A-Za-z0-9]{8,}"
     >
     </md-filled-text-field>
   `;
@@ -147,13 +187,28 @@ export class LoginButtonElement extends LitElement {
         .open="${this.isOpen}"
         @close="${this.handleModalClose}"
       >
-        <section class="container">
-          <h3>Sign in</h3>
-          <section class="form">${this.renderSignin()}</section>
+        <form class="container" @submit="${this.handleLogin}">
+          <section class="form">
+            ${this.isSigningUp
+              ? html`
+                  <h3>Sign up</h3>
+                  ${this.renderSignup()}
+                `
+              : html`
+                  <h3>Sign in</h3>
+                  ${this.renderSignin()}
+                `}
+          </section>
           <hr />
-          <h3>Or, sign up</h3>
-          <section class="form">${this.renderSignup()}</section>
-          <md-filled-button class="button-primary" @click="${this.login}">
+          <section class="form-row">
+            <p class="no-margin">
+              <span>Already have an account?</span>
+              <span class="microlink" @click="${this.handleToggleSignup}"
+                >Sign up</span
+              >
+            </p>
+          </section>
+          <md-filled-button class="button-primary" type="submit">
             ${this.isSubmitting
               ? html`<md-circular-progress
                   indeterminate
@@ -165,7 +220,7 @@ export class LoginButtonElement extends LitElement {
                   </div>
                 `}
           </md-filled-button>
-        </section>
+        </form>
       </dropspot-modal>
     `;
   }

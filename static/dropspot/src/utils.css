@@ -51,4 +51,12 @@
     .icon-danger {
         color: var(--dropspot-danger);
     }
+
+    .microlink {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
