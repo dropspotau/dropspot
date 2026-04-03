@@ -9,7 +9,6 @@ import { applyGlobalStyles } from "./style";
 export class LoginControllerElement extends LitElement {
   static styles = css`
     :host {
-      display: contents;
       --md-filled-button-container-color: #ffffff;
       --md-filled-button-label-text-color: var(--dropspot-primary);
       --md-filled-button-hover-label-text-color: var(--dropspot-primary);
@@ -184,11 +183,7 @@ export class LoginControllerElement extends LitElement {
       <md-filled-button class="button-white" @click="${this.handleClick}">
         Login
       </md-filled-button>
-      <dropspot-modal
-        class="container"
-        .open="${this.isOpen}"
-        @close="${this.handleModalClose}"
-      >
+      <dropspot-modal .open="${this.isOpen}" @close="${this.handleModalClose}">
         <form class="container" @submit="${this.handleLogin}">
           <section class="form">
             ${this.isSigningUp

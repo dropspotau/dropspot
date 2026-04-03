@@ -22,7 +22,7 @@ import { loginAtStartup } from "./auth";
 import "./copy-button";
 import "./file-icon";
 import "./file-preview";
-import "./login-button";
+import "./login-controller";
 import "./modal";
 import "./my-element";
 import "./popover";
