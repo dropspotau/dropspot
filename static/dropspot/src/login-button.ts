@@ -5,8 +5,8 @@ import { setTokens, type LoginEvent } from "./auth";
 import { ToastElement } from "./toast";
 import { applyGlobalStyles } from "./style";
 
-@customElement("login-button")
-export class LoginButtonElement extends LitElement {
+@customElement("login-controller")
+export class LoginControllerElement extends LitElement {
   static styles = css`
     :host {
       display: contents;
@@ -230,6 +230,6 @@ export class LoginButtonElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "login-button": LoginButtonElement;
+    "login-controller": LoginControllerElement;
   }
 }
