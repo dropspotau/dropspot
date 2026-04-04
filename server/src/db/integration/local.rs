@@ -7,6 +7,7 @@ pub struct LocalIntegration {
     pub id: Uuid,
     pub organisation_id: Uuid,
     pub upload_path: String,
+    pub is_active: bool,
 }
 
 pub async fn get_local_integration(
@@ -19,7 +20,8 @@ pub async fn get_local_integration(
             select
               id,
               organisation_id,
-              upload_path
+              upload_path,
+              is_active
             from local_integration
             where organisation_id = $1
             limit 1
@@ -47,7 +49,7 @@ pub async fn upsert_local_integration(
             on conflict (organisation_id)
             do update set
                 upload_path = $2
-            returning id, organisation_id, upload_path
+            returning id, organisation_id, upload_path, is_active
         "#,
         organisation_id,
         upload_path,

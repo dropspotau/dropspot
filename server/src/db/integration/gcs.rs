@@ -7,6 +7,7 @@ pub struct GcsIntegration {
     pub id: Uuid,
     pub organisation_id: Uuid,
     pub bucket_name: String,
+    pub is_active: bool,
 }
 
 pub async fn get_gcs_integration(
@@ -19,7 +20,8 @@ pub async fn get_gcs_integration(
             select
               id,
               organisation_id,
-              bucket_name
+              bucket_name,
+              is_active
             from gcs_integration
             where organisation_id = $1
             limit 1
@@ -47,7 +49,7 @@ pub async fn upsert_gcs_integration(
             on conflict (organisation_id)
             do update set
                 bucket_name = $2
-            returning id, organisation_id, bucket_name
+            returning id, organisation_id, bucket_name, is_active
         "#,
         organisation_id,
         bucket_name,
