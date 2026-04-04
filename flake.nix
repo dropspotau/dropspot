@@ -2,7 +2,7 @@
   description = "Dropspot development flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     flake-utils.url  = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -51,6 +51,8 @@
           direnv
           gdk
           gcloud-login
+
+          llama-cpp
         ] ++ rustDeps ++ editorDeps;
       in
       {

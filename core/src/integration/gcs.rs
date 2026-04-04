@@ -11,12 +11,15 @@ use crate::constants::ENDPOINT;
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UpsertGcsIntegrationPayload {
     pub bucket_name: String,
+    pub is_active: bool,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct GcsIntegration {
+    pub slug: String,
     pub bucket_name: String,
+    pub is_active: bool,
 }
 
 pub async fn upsert_gcs_integration(

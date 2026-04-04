@@ -28,7 +28,9 @@ impl Into<ApiError> for IntegrationError {
 impl From<LocalIntegration> for ApiLocalIntegration {
     fn from(integration: LocalIntegration) -> Self {
         Self {
+            slug: "local".to_string(),
             upload_path: integration.upload_path,
+            is_active: integration.is_active,
         }
     }
 }
@@ -47,7 +49,6 @@ pub async fn handle_upsert_local_integration(
     };
 
     let organisation = organisation.unwrap();
-
     let result = upsert_local_integration(&pool, &organisation.id, &payload.upload_path).await;
 
     if let Err(e) = result {
@@ -55,7 +56,7 @@ pub async fn handle_upsert_local_integration(
         return error.into_response();
     }
 
-    let gcs = ApiLocalIntegration::from(result.unwrap());
+    let integration = ApiLocalIntegration::from(result.unwrap());
 
-    Json(gcs).into_response()
+    Json(integration).into_response()
 }

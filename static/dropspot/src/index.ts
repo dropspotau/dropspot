@@ -29,6 +29,9 @@ import "./popover";
 import "./recent-upload";
 import "./toast";
 
+// Import all components
+import "./components";
+
 init().then(() => {
   console.log("DropSpot initialised");
   loginAtStartup();

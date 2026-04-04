@@ -28,7 +28,9 @@ impl Into<ApiError> for IntegrationError {
 impl From<GcsIntegration> for ApiGcsIntegration {
     fn from(integration: GcsIntegration) -> Self {
         Self {
+            slug: "gcs".to_string(),
             bucket_name: integration.bucket_name,
+            is_active: integration.is_active,
         }
     }
 }
@@ -47,7 +49,6 @@ pub async fn handle_upsert_gcs_integration(
     };
 
     let organisation = organisation.unwrap();
-
     let result = upsert_gcs_integration(&pool, &organisation.id, &payload.bucket_name).await;
 
     if let Err(e) = result {
@@ -55,7 +56,7 @@ pub async fn handle_upsert_gcs_integration(
         return error.into_response();
     }
 
-    let gcs = ApiGcsIntegration::from(result.unwrap());
+    let integration = ApiGcsIntegration::from(result.unwrap());
 
-    Json(gcs).into_response()
+    Json(integration).into_response()
 }

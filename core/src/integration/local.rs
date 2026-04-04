@@ -11,12 +11,15 @@ use crate::constants::ENDPOINT;
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UpsertLocalIntegrationPayload {
     pub upload_path: String,
+    pub is_active: bool,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct LocalIntegration {
+    pub slug: String,
     pub upload_path: String,
+    pub is_active: bool,
 }
 
 pub async fn upsert_local_integration(
