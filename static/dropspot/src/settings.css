@@ -133,6 +133,11 @@
     color: var(--dropspot-grey-dark);
 }
 
+.integration-title {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /*
  * Pages
  */

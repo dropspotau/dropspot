@@ -354,8 +354,10 @@
         <md-icon>arrow_back</md-icon>
     </md-icon-button>
     <div class="file-details-container">
-        <md-icon class="integration-icon">storage</md-icon>
-        <h3 class="file-detail-name">Local</h3>
+        <div class="integration-title">
+            <md-icon class="integration-icon">storage</md-icon>
+            <h3 class="file-detail-name no-margin">Local</h3>
+        </div>
 
         {% if let Some(local) = local_integration %}
             <div class="file-details-grid">
@@ -395,7 +397,7 @@
         if (backButton && integrationsPage && localPage) {
             backButton.addEventListener("click", () => {
                 integrationsPage.removeAttribute("hidden");
-                gcsPage.setAttribute("hidden", "");
+                localPage.setAttribute("hidden", "");
             });
         }
 
@@ -411,8 +413,10 @@
         <md-icon>arrow_back</md-icon>
     </md-icon-button>
     <div class="file-details-container">
-        <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
-        <h3 class="file-detail-name">Google Cloud Storage</h3>
+        <div class="integration-title">
+            <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
+            <h3 class="file-detail-name no-margin">Google Cloud Storage</h3>
+        </div>
 
         {% if let Some(gcs) = gcs_integration %}
             <div class="file-details-grid">
