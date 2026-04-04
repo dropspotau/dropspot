@@ -8,18 +8,19 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
+use crate::storage::StorageType;
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UpsertIntegrationPayload {
-    pub upload_path: String,
     pub is_active: bool,
+    pub data: HashMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Integration {
-    pub slug: String,
+    pub slug: StorageType,
     pub upload_path: String,
     pub is_active: bool,
     pub data: HashMap<String, String>,
