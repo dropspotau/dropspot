@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -9,44 +11,45 @@ use crate::constants::ENDPOINT;
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct UpsertGcsIntegrationPayload {
-    pub bucket_name: String,
+pub struct UpsertIntegrationPayload {
+    pub upload_path: String,
     pub is_active: bool,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct GcsIntegration {
+pub struct Integration {
     pub slug: String,
-    pub bucket_name: String,
+    pub upload_path: String,
     pub is_active: bool,
+    pub data: HashMap<String, String>,
 }
 
-pub async fn upsert_gcs_integration(
-    payload: UpsertGcsIntegrationPayload,
+pub async fn upsert_integration(
+    payload: UpsertIntegrationPayload,
     auth: Authentication,
-) -> Result<GcsIntegration, reqwest::Error> {
+) -> Result<Integration, reqwest::Error> {
     let mut headers = get_auth_headers(Some(&auth));
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let result = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/api/integrations/gcs/upsert"))
+        .post(format!("{ENDPOINT}/api/integrations/local/upsert"))
         .headers(headers)
         .json(&payload)
         .send()
         .await?
-        .json::<GcsIntegration>()
+        .json::<Integration>()
         .await?;
 
     Ok(result)
 }
 
 #[wasm_bindgen]
-pub async fn upsert_gcs_integration_js(
-    payload: UpsertGcsIntegrationPayload,
+pub async fn upsert_integration_js(
+    payload: UpsertIntegrationPayload,
     auth: Authentication,
-) -> Result<GcsIntegration, JsError> {
-    upsert_gcs_integration(payload, auth)
+) -> Result<Integration, JsError> {
+    upsert_integration(payload, auth)
         .map_err(|e| JsError::new(&format!("{e}")))
         .await
 }

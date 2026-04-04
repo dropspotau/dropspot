@@ -384,8 +384,8 @@
         {% else %}
             <md-filled-button id="create-local" hx-post="/app/settings/integrations/local/update" hx-vals="{'upload_path': 'files'}">Link File System</md-filled-button>
         {% endif %}
-    
     </div>
+    <dropspot-integration slug="local"></dropspot-integration>    
 
 
     <script type="module">

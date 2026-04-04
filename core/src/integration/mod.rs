@@ -1,2 +1,1 @@
-pub mod gcs;
-pub mod local;
+pub mod integration;
