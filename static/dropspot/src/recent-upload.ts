@@ -55,7 +55,7 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     let result: UploadResult;
 
     try {
-      result = await upload_js(file.name, fileContents, auth, "gcs");
+      result = await upload_js(file.name, fileContents, auth, "local");
     } catch (e) {
       ToastElement.create(
         "Sorry, there was an issue uploading the file. Please try again.",

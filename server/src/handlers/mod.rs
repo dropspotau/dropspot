@@ -7,7 +7,7 @@ mod web;
 
 pub use download::{handle_file_download, handle_file_request_download};
 pub use file::{handle_get_file, handle_list_files};
-pub use integration::handle_upsert_gcs_integration;
+pub use integration::{handle_upsert_gcs_integration, handle_upsert_local_integration};
 pub use upload::{handle_file_request_upload, handle_file_upload};
 pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
 pub use web::file::{handle_delete_file, handle_files};

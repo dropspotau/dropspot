@@ -3,24 +3,24 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct GcsIntegration {
+pub struct LocalIntegration {
     pub id: Uuid,
     pub organisation_id: Uuid,
-    pub bucket_name: String,
+    pub upload_path: String,
 }
 
-pub async fn get_gcs_integration(
+pub async fn get_local_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
-) -> Result<Option<GcsIntegration>, sqlx::Error> {
+) -> Result<Option<LocalIntegration>, sqlx::Error> {
     sqlx::query_as!(
-        GcsIntegration,
+        LocalIntegration,
         r#"
             select
               id,
               organisation_id,
-              bucket_name
-            from gcs_integration
+              upload_path
+            from local_integration
             where organisation_id = $1
             limit 1
         "#,
@@ -34,23 +34,23 @@ struct Password {
     password: String,
 }
 
-pub async fn upsert_gcs_integration(
+pub async fn upsert_local_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
-    bucket_name: &str,
-) -> Result<GcsIntegration, sqlx::Error> {
+    upload_path: &str,
+) -> Result<LocalIntegration, sqlx::Error> {
     sqlx::query_as!(
-        GcsIntegration,
+        LocalIntegration,
         r#"
-            insert into gcs_integration (organisation_id, bucket_name)
+            insert into local_integration (organisation_id, upload_path)
             values ($1, $2)
             on conflict (organisation_id)
             do update set
-                bucket_name = $2
-            returning id, organisation_id, bucket_name
+                upload_path = $2
+            returning id, organisation_id, upload_path
         "#,
         organisation_id,
-        bucket_name,
+        upload_path,
     )
     .fetch_one(pool)
     .await

@@ -29,6 +29,7 @@ use crate::handlers::{
     handle_file_request_upload, handle_file_upload, handle_files, handle_get_file, handle_header,
     handle_index, handle_list_files, handle_login, handle_refresh_tokens, handle_settings,
     handle_update_settings, handle_update_user, handle_upsert_gcs_integration,
+    handle_upsert_local_integration,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -216,6 +217,10 @@ async fn main() -> Result<(), ()> {
                     .route("/api/user/login", post(handle_login))
                     .route("/api/user/create", post(handle_create_user))
                     .route("/api/user/refresh", post(handle_refresh_tokens))
+                    .route(
+                        "/api/integrations/local/upsert",
+                        patch(handle_upsert_local_integration),
+                    )
                     .route(
                         "/api/integrations/gcs/upsert",
                         patch(handle_upsert_gcs_integration),

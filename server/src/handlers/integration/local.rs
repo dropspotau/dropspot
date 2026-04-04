@@ -1,11 +1,11 @@
 use axum::{Json, extract::State, response::IntoResponse};
-use dropspot_core::integration::gcs::{
-    GcsIntegration as ApiGcsIntegration, UpsertGcsIntegrationPayload,
+use dropspot_core::integration::local::{
+    LocalIntegration as ApiLocalIntegration, UpsertLocalIntegrationPayload,
 };
 use reqwest::StatusCode;
 
 use crate::{
-    db::{GcsIntegration, User, get_organisation_for_user, upsert_gcs_integration},
+    db::{LocalIntegration, User, get_organisation_for_user, upsert_local_integration},
     state::AppState,
     types::ApiError,
 };
@@ -25,18 +25,18 @@ impl Into<ApiError> for IntegrationError {
     }
 }
 
-impl From<GcsIntegration> for ApiGcsIntegration {
-    fn from(integration: GcsIntegration) -> Self {
+impl From<LocalIntegration> for ApiLocalIntegration {
+    fn from(integration: LocalIntegration) -> Self {
         Self {
-            bucket_name: integration.bucket_name,
+            upload_path: integration.upload_path,
         }
     }
 }
 
-pub async fn handle_upsert_gcs_integration(
+pub async fn handle_upsert_local_integration(
     State(state): State<AppState>,
     user: User,
-    Json(payload): Json<UpsertGcsIntegrationPayload>,
+    Json(payload): Json<UpsertLocalIntegrationPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();
     let organisation = get_organisation_for_user(pool, &user.id).await;
@@ -48,14 +48,14 @@ pub async fn handle_upsert_gcs_integration(
 
     let organisation = organisation.unwrap();
 
-    let result = upsert_gcs_integration(&pool, &organisation.id, &payload.bucket_name).await;
+    let result = upsert_local_integration(&pool, &organisation.id, &payload.upload_path).await;
 
     if let Err(e) = result {
         let error: ApiError = IntegrationError::RetrievalError(e).into();
         return error.into_response();
     }
 
-    let gcs = ApiGcsIntegration::from(result.unwrap());
+    let gcs = ApiLocalIntegration::from(result.unwrap());
 
     Json(gcs).into_response()
 }
