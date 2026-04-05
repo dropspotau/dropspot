@@ -10,8 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        GcsIntegration, LocalIntegration, User, get_gcs_integration, get_local_integration,
-        get_organisation_for_user, get_users, update_user_name,
+        Integration, User, get_integrations, get_organisation_for_user, get_users, update_user_name,
     },
     state::AppState,
 };
@@ -25,8 +24,7 @@ struct SettingsTemplate {
     file_expiry_minutes: i32,
     download_limit: i32,
     current_user_id: Uuid,
-    local_integration: Option<LocalIntegration>,
-    gcs_integration: Option<GcsIntegration>,
+    integrations: Vec<Integration>,
 }
 
 #[derive(Template)]
@@ -49,16 +47,14 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let organisation = get_organisation_for_user(pool, &current_user.id)
         .await
         .unwrap();
-    let local_integration = get_local_integration(pool, &organisation.id).await.unwrap();
-    let gcs_integration = get_gcs_integration(pool, &organisation.id).await.unwrap();
+    let integrations = get_integrations(pool, &organisation.id).await.unwrap();
 
     let template = SettingsTemplate {
         users,
         file_expiry_minutes,
         download_limit,
         current_user_id: current_user.id,
-        local_integration,
-        gcs_integration,
+        integrations,
     };
     HtmlTemplate(template).into_response()
 }

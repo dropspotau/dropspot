@@ -13,12 +13,11 @@ pub struct Integration {
     pub data: JsonValue,
 }
 
-pub async fn get_integration_by_slug(
+pub async fn get_integrations(
     pool: &PgPool,
     organisation_id: &Uuid,
-    slug: &StorageType,
-) -> Result<Integration, sqlx::Error> {
-    let integrations = sqlx::query_as!(
+) -> Result<Vec<Integration>, sqlx::Error> {
+    sqlx::query_as!(
         Integration,
         r#"
             select
@@ -34,10 +33,32 @@ pub async fn get_integration_by_slug(
         organisation_id
     )
     .fetch_all(pool)
-    .await?;
+    .await
+}
 
-    let integration = integrations.into_iter().find(|i| &i.slug == slug).unwrap();
-    Ok(integration)
+pub async fn get_integration_by_slug(
+    pool: &PgPool,
+    organisation_id: &Uuid,
+    slug: &StorageType,
+) -> Result<Integration, sqlx::Error> {
+    sqlx::query_as!(
+        Integration,
+        r#"
+            select
+              id,
+              slug as "slug: StorageType",
+              organisation_id,
+              is_active,
+              data
+            from integration
+            where organisation_id = $1 and slug = $2::storage
+            limit 1
+        "#,
+        organisation_id,
+        slug as &StorageType // Needed for correct enum typing
+    )
+    .fetch_one(pool)
+    .await
 }
 
 struct Password {
@@ -59,7 +80,7 @@ pub async fn set_integration_status(
             returning id, slug as "slug: StorageType", organisation_id, is_active, data
         "#,
         organisation_id,
-        slug,
+        slug as &StorageType, // Needed for correct enum typing
         is_active,
     )
     .fetch_one(pool)
@@ -76,13 +97,14 @@ pub async fn upsert_integration(
         Integration,
         r#"
             insert into integration (organisation_id, slug, is_active, data)
-            values ($1, $2, $3, $4)
-            on conflict (organisation_id)
+            values ($1, $2, true, $3)
+            on conflict (organisation_id, slug)
             do update set
-                data = $4
+                data = $3
             returning id, slug as "slug: StorageType", organisation_id, is_active, data
         "#,
         organisation_id,
+        slug as &StorageType, // Needed for correct enum typing
         data,
     )
     .fetch_one(pool)

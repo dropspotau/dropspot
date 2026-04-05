@@ -21,7 +21,6 @@ pub struct UpsertIntegrationPayload {
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Integration {
     pub slug: StorageType,
-    pub upload_path: String,
     pub is_active: bool,
     pub data: HashMap<String, String>,
 }
