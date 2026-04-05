@@ -1,4 +1,7 @@
+use reqwest::StatusCode;
 use thiserror::Error;
+
+use crate::types::ApiError;
 
 #[derive(Error, Debug)]
 pub enum DatabaseError {
@@ -7,4 +10,13 @@ pub enum DatabaseError {
 
     #[error("Database error: {0}")]
     ConnectionError(sqlx::Error),
+}
+
+impl Into<ApiError> for DatabaseError {
+    fn into(self) -> ApiError {
+        ApiError {
+            message: self.to_string(),
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
 }

@@ -7,7 +7,6 @@ use dropspot_core::file::File as ApiFile;
 use dropspot_core::upload::CreateFileBody;
 use futures_util::StreamExt;
 use reqwest::StatusCode;
-use thiserror::Error;
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
@@ -17,36 +16,9 @@ use crate::{
         start_upload,
     },
     state::AppState,
-    storage::{Storage, StorageType, get_storage},
+    storage::{StorageType, get_storage},
     types::ApiError,
 };
-
-#[derive(Error, Debug)]
-pub enum FileUploadError {
-    #[error("Upload not found")]
-    UploadNotFound,
-
-    #[error("Could not record upload changes")]
-    UploadDatabaseError(sqlx::Error),
-
-    #[error("Error writing file to database: {0}")]
-    FileDatabaseCreateError(sqlx::Error),
-
-    #[error("Failed to create file")]
-    FileCreateError,
-
-    #[error("Failed to write to file")]
-    FileWriteError,
-}
-
-impl Into<ApiError> for FileUploadError {
-    fn into(self) -> ApiError {
-        ApiError {
-            message: self.to_string(),
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
 
 pub async fn handle_file_request_upload(
     State(state): State<AppState>,
@@ -62,11 +34,10 @@ pub async fn handle_file_request_upload(
         &StorageType::from(payload.storage),
     )
     .await
-    .map(ApiFile::from)
-    .map_err(FileUploadError::FileDatabaseCreateError);
+    .map(ApiFile::from);
 
     if let Err(e) = file {
-        let api_error: ApiError = e.into();
+        let api_error = ApiError::new("Failed to create file".to_owned(), StatusCode::BAD_REQUEST);
         return api_error.into_response();
     }
 
@@ -82,8 +53,7 @@ pub async fn handle_file_upload(
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
-        let mut api_error: ApiError = FileUploadError::UploadNotFound.into();
-        api_error.status = StatusCode::NOT_FOUND;
+        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
     };
 
@@ -93,35 +63,44 @@ pub async fn handle_file_upload(
     let storage = get_storage(&file.storage);
 
     let Ok(mut writer) = storage.get_upload_writer(&file).await else {
-        let api_error: ApiError = FileUploadError::FileCreateError.into();
+        let api_error = ApiError::new("Failed to write file ".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
     };
 
     let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
-        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
     };
 
     let is_same_user = file.created_by_id == user.map(|u| u.id);
 
     if !is_same_user {
-        let api_error: ApiError = FileUploadError::UploadNotFound.into();
+        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
     };
 
     if let Err(e) = start_upload(pool, &upload.id).await {
-        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        let api_error = ApiError::new(
+            "Failed to create file".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        );
         return api_error.into_response();
     };
 
     while let Some(bytes) = reader_stream.next().await {
         if bytes.is_err() {
             if let Err(e) = delete_files(pool, &[file.id]).await {
-                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                let api_error = ApiError::new(
+                    "Failed to upload file".to_owned(),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                );
                 return api_error.into_response();
             };
 
-            let api_error: ApiError = FileUploadError::FileWriteError.into();
+            let api_error = ApiError::new(
+                "Failed to write file".to_owned(),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            );
             return api_error.into_response();
         };
 
@@ -129,11 +108,17 @@ pub async fn handle_file_upload(
             eprintln!("Error writing to file: {e}");
 
             if let Err(e) = delete_files(pool, &[file.id]).await {
-                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                let api_error = ApiError::new(
+                    "Failed to upload file".to_owned(),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                );
                 return api_error.into_response();
             };
 
-            let api_error: ApiError = FileUploadError::FileWriteError.into();
+            let api_error = ApiError::new(
+                "Failed to upload file".to_owned(),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            );
             return api_error.into_response();
         };
 
@@ -141,23 +126,35 @@ pub async fn handle_file_upload(
             eprintln!("Error flushing to file: {e}");
 
             if let Err(e) = delete_files(pool, &[file.id]).await {
-                let api_error: ApiError = FileUploadError::FileDatabaseCreateError(e).into();
+                let api_error = ApiError::new(
+                    "Failed to upload file".to_owned(),
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                );
                 return api_error.into_response();
             };
 
-            let api_error: ApiError = FileUploadError::FileWriteError.into();
+            let api_error = ApiError::new(
+                "Failed to write file".to_owned(),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            );
             return api_error.into_response();
         }
     }
 
     if let Err(e) = storage.finish_upload(&file).await {
         eprintln!("Error finishing upload: {e:?}");
-        let api_error: ApiError = FileUploadError::FileWriteError.into();
+        let api_error = ApiError::new(
+            "Failed to upload file".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        );
         return api_error.into_response();
     };
 
     if let Err(e) = finish_upload(pool, &upload.id).await {
-        let api_error: ApiError = FileUploadError::UploadDatabaseError(e).into();
+        let api_error = ApiError::new(
+            "Failed to upload file".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        );
         return api_error.into_response();
     };
 

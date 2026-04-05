@@ -2,6 +2,7 @@ pub(crate) mod auth;
 mod constants;
 pub mod download;
 pub mod encryption;
+pub mod error;
 pub mod file;
 pub mod integration;
 pub mod storage;
