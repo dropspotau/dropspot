@@ -41,7 +41,7 @@ pub async fn handle_file_request_download(
         .await
         .map(|download| ApiDownload::from(download));
 
-    if let Err(e) = download {
+    if download.is_err() {
         let api_error = ApiError::new(
             "Failed to record download".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,

@@ -97,7 +97,7 @@ pub async fn upsert_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
     slug: &StorageType,
-    data: IntegrationData,
+    data: &IntegrationData,
 ) -> Result<Integration, sqlx::Error> {
     sqlx::query_as!(
         Integration,

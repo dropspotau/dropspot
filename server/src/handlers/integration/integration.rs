@@ -7,7 +7,6 @@ use dropspot_core::integration::integration::{
     Integration as ApiIntegration, UpsertIntegrationPayload,
 };
 use reqwest::StatusCode;
-use sqlx::types::JsonValue;
 
 use crate::{
     db::{
@@ -23,7 +22,7 @@ impl From<Integration> for ApiIntegration {
         Self {
             slug: integration.slug.into(),
             is_active: integration.is_active,
-            data: integration.data.clone(),
+            data: integration.data.0,
         }
     }
 }
@@ -85,13 +84,7 @@ pub async fn handle_upsert_local_integration(
     };
 
     let organisation = organisation.unwrap();
-    let result = upsert_integration(
-        &pool,
-        &organisation.id,
-        &storage_type,
-        JsonValue::from(&payload.data),
-    )
-    .await;
+    let result = upsert_integration(&pool, &organisation.id, &storage_type, &payload.data).await;
 
     if let Err(e) = result {
         let api_error = ApiError::new("Integration not found".to_owned(), StatusCode::BAD_REQUEST);
