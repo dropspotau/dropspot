@@ -72,8 +72,7 @@ pub struct UpdateSettingsPayload {
 }
 
 pub async fn handle_update_settings(
-    State(state): State<AppState>,
-    user: User,
+    _user: User,
     Form(payload): Form<UpdateSettingsPayload>,
 ) -> Response {
     if let Some(ref file_expiry_minutes) = payload.file_expiry_minutes {

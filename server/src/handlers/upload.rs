@@ -36,7 +36,7 @@ pub async fn handle_file_request_upload(
     .await
     .map(ApiFile::from);
 
-    if let Err(e) = file {
+    if file.is_err() {
         let api_error = ApiError::new("Failed to create file".to_owned(), StatusCode::BAD_REQUEST);
         return api_error.into_response();
     }
@@ -79,7 +79,7 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    if let Err(e) = start_upload(pool, &upload.id).await {
+    if start_upload(pool, &upload.id).await.is_err() {
         let api_error = ApiError::new(
             "Failed to create file".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -89,7 +89,7 @@ pub async fn handle_file_upload(
 
     while let Some(bytes) = reader_stream.next().await {
         if bytes.is_err() {
-            if let Err(e) = delete_files(pool, &[file.id]).await {
+            if delete_files(pool, &[file.id]).await.is_err() {
                 let api_error = ApiError::new(
                     "Failed to upload file".to_owned(),
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -107,7 +107,7 @@ pub async fn handle_file_upload(
         if let Err(e) = writer.write(&bytes.unwrap()).await {
             eprintln!("Error writing to file: {e}");
 
-            if let Err(e) = delete_files(pool, &[file.id]).await {
+            if delete_files(pool, &[file.id]).await.is_err() {
                 let api_error = ApiError::new(
                     "Failed to upload file".to_owned(),
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -125,7 +125,7 @@ pub async fn handle_file_upload(
         if let Err(e) = writer.flush().await {
             eprintln!("Error flushing to file: {e}");
 
-            if let Err(e) = delete_files(pool, &[file.id]).await {
+            if delete_files(pool, &[file.id]).await.is_err() {
                 let api_error = ApiError::new(
                     "Failed to upload file".to_owned(),
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -150,7 +150,7 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    if let Err(e) = finish_upload(pool, &upload.id).await {
+    if finish_upload(pool, &upload.id).await.is_err() {
         let api_error = ApiError::new(
             "Failed to upload file".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,

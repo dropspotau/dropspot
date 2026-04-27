@@ -20,26 +20,6 @@ impl Download {
     }
 }
 
-pub async fn get_downloads(pool: &PgPool) -> Result<Vec<Download>, sqlx::Error> {
-    sqlx::query_as!(
-        Download,
-        r#"
-            select 
-                download.id,
-                download.file_id,
-                download.created_at,
-                users.id "created_by_id?",
-                users.email "created_by_name?",
-                download.expires_at
-            from download
-            left join users
-            on users.id = download.created_by_id
-        "#
-    )
-    .fetch_all(pool)
-    .await
-}
-
 pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sqlx::Error> {
     sqlx::query_as!(
         Download,

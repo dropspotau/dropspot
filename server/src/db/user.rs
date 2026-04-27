@@ -4,7 +4,6 @@ use uuid::Uuid;
 
 use crate::db::organisation::{
     DEFAULT_ORGANISATION_NAME, create_organisation, get_default_organisation,
-    get_organisation_for_user,
 };
 
 use super::types::Id;
@@ -120,6 +119,7 @@ pub async fn get_user_password(pool: &PgPool, id: &Uuid) -> Result<String, sqlx:
               users.password
             from users
             where users.id = $1
+            limit 1
         "#,
         id
     )

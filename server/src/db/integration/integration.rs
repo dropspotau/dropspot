@@ -62,10 +62,6 @@ pub async fn get_integration_by_slug(
     .await
 }
 
-struct Password {
-    password: String,
-}
-
 pub async fn set_integration_status(
     pool: &PgPool,
     organisation_id: &Uuid,
