@@ -1,16 +1,17 @@
+use dropspot_core::integration::integration::IntegrationData;
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, types::JsonValue};
+use sqlx::{PgPool, prelude::FromRow, types::Json};
 use uuid::Uuid;
 
 use crate::storage::StorageType;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, FromRow)]
 pub struct Integration {
     pub id: Uuid,
     pub slug: StorageType,
     pub organisation_id: Uuid,
     pub is_active: bool,
-    pub data: JsonValue,
+    pub data: Json<IntegrationData>,
 }
 
 pub async fn get_integrations(
@@ -25,7 +26,7 @@ pub async fn get_integrations(
               slug as "slug: StorageType",
               organisation_id,
               is_active,
-              data
+              data as "data: Json<IntegrationData>"
             from integration
             where organisation_id = $1
             limit 1
@@ -49,7 +50,7 @@ pub async fn get_integration_by_slug(
               slug as "slug: StorageType",
               organisation_id,
               is_active,
-              data
+              data as "data: Json<IntegrationData>"
             from integration
             where organisation_id = $1 and slug = $2::storage
             limit 1
@@ -77,7 +78,12 @@ pub async fn set_integration_status(
             update integration
             set is_active = $3
             where organisation_id = $1 and slug = $2::storage
-            returning id, slug as "slug: StorageType", organisation_id, is_active, data
+            returning 
+                id, 
+                slug as "slug: StorageType", 
+                organisation_id, 
+                is_active, 
+                data as "data: Json<IntegrationData>"
         "#,
         organisation_id,
         slug as &StorageType, // Needed for correct enum typing
@@ -91,7 +97,7 @@ pub async fn upsert_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
     slug: &StorageType,
-    data: JsonValue,
+    data: IntegrationData,
 ) -> Result<Integration, sqlx::Error> {
     sqlx::query_as!(
         Integration,
@@ -101,11 +107,16 @@ pub async fn upsert_integration(
             on conflict (organisation_id, slug)
             do update set
                 data = $3
-            returning id, slug as "slug: StorageType", organisation_id, is_active, data
+            returning
+                id,
+                slug as "slug: StorageType",
+                organisation_id,
+                is_active,
+                data as "data: Json<IntegrationData>"
         "#,
         organisation_id,
         slug as &StorageType, // Needed for correct enum typing
-        data,
+        Json(data) as _,
     )
     .fetch_one(pool)
     .await

@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-
 use axum::{
     Json,
     extract::{Path, State},
     response::IntoResponse,
 };
-use dropspot_core::{
-    integration::integration::{Integration as ApiIntegration, UpsertIntegrationPayload},
-    storage::StorageType as ApiStorageType,
+use dropspot_core::integration::integration::{
+    Integration as ApiIntegration, UpsertIntegrationPayload,
 };
 use reqwest::StatusCode;
+use sqlx::types::JsonValue;
 
 use crate::{
     db::{
@@ -25,7 +23,7 @@ impl From<Integration> for ApiIntegration {
         Self {
             slug: integration.slug.into(),
             is_active: integration.is_active,
-            data: HashMap::new(),
+            data: integration.data.clone(),
         }
     }
 }
@@ -87,7 +85,13 @@ pub async fn handle_upsert_local_integration(
     };
 
     let organisation = organisation.unwrap();
-    let result = upsert_integration(&pool, &organisation.id, &storage_type).await;
+    let result = upsert_integration(
+        &pool,
+        &organisation.id,
+        &storage_type,
+        JsonValue::from(&payload.data),
+    )
+    .await;
 
     if let Err(e) = result {
         let api_error = ApiError::new("Integration not found".to_owned(), StatusCode::BAD_REQUEST);

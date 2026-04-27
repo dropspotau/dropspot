@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -10,19 +8,31 @@ use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::storage::StorageType;
 
-#[derive(Serialize, Deserialize, Tsify)]
+#[derive(Serialize, Deserialize, Clone, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct LocalIntegration {
+    folder: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub enum IntegrationData {
+    Local(LocalIntegration),
+}
+
+#[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UpsertIntegrationPayload {
     pub is_active: bool,
-    pub data: HashMap<String, String>,
+    pub data: IntegrationData,
 }
 
-#[derive(Serialize, Deserialize, Tsify)]
+#[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Integration {
     pub slug: StorageType,
     pub is_active: bool,
-    pub data: HashMap<String, String>,
+    pub data: IntegrationData,
 }
 
 pub async fn upsert_integration(

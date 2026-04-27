@@ -300,19 +300,21 @@
     </md-icon-button>
     <div class="file-details-container">
         <h3 class="file-detail-name">Integrations</h3>
-    
-        <li id="settings-integrations-list-item-local" class="file-item">
-            <md-icon class="integration-icon">storage</md-icon>
-            <div class="file-info">
-                File System
-            </div>
-        </li>
-        <li id="settings-integrations-list-item-gcs" class="file-item">
-            <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
-            <div class="file-info">
-                Google Cloud Storage
-            </div>
-        </li>
+
+        {% for integration in integrations %}
+            <li id="settings-integrations-list-item-local" class="file-item">
+                <md-icon class="integration-icon">storage</md-icon>
+                <div class="file-info">
+                    File System
+                </div>
+            </li>
+            <li id="settings-integrations-list-item-gcs" class="file-item">
+                <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
+                <div class="file-info">
+                    Google Cloud Storage
+                </div>
+            </li>
+        {% endfor %}
     </div>
 
     <script type="module">
@@ -348,119 +350,3 @@
     </script>
 </section>
 
-<!-- Integrations: Local -->
-<section id="settings-integrations-local" class="settings-page" hidden>
-    <md-icon-button id="settings-integrations-local-back" class="popover-back-button">
-        <md-icon>arrow_back</md-icon>
-    </md-icon-button>
-    <div class="file-details-container">
-        <div class="integration-title">
-            <md-icon class="integration-icon">storage</md-icon>
-            <h3 class="file-detail-name no-margin">Local</h3>
-        </div>
-
-        {% if let Some(local) = local_integration %}
-            <div class="file-details-grid">
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Upload Path</span>
-                    <div class="file-detail-value-row">
-                        <md-filled-text-field type="text" 
-                                              name="bucket_name"
-                                              label="Expire after" 
-                                              value="{{ local.upload_path }}" 
-                                              min="1" 
-                                              max="60" 
-                                              pattern="\W+"
-                                              hx-patch="/app/settings/integrations/local/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#local-result"
-                                              hx-swap="innerHTML"
-                                              class="settings-field-update-input">
-                        </md-filled-text-field>
-                        <div id="local-result" class="settings-field-update-result"></div>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <md-filled-button id="create-local" hx-post="/app/settings/integrations/local/update" hx-vals="{'upload_path': 'files'}">Link File System</md-filled-button>
-        {% endif %}
-    </div>
-    <dropspot-integration slug="local"></dropspot-integration>    
-
-
-    <script type="module">
-        const backButton = document.querySelector("#settings-integrations-local-back");
-        const integrationsPage = document.querySelector("#settings-integrations");
-        const localPage = document.querySelector("#settings-integrations-local");
-        const createButton = document.querySelector("#create-local");
-
-        if (backButton && integrationsPage && localPage) {
-            backButton.addEventListener("click", () => {
-                integrationsPage.removeAttribute("hidden");
-                localPage.setAttribute("hidden", "");
-            });
-        }
-
-        if (createButton) {
-            htmx.process(createButton);
-        }
-    </script>
-</section>
-
-<!-- Integrations: GCS -->
-<section id="settings-integrations-gcs" class="settings-page" hidden>
-    <md-icon-button id="settings-integrations-gcs-back" class="popover-back-button">
-        <md-icon>arrow_back</md-icon>
-    </md-icon-button>
-    <div class="file-details-container">
-        <div class="integration-title">
-            <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
-            <h3 class="file-detail-name no-margin">Google Cloud Storage</h3>
-        </div>
-
-        {% if let Some(gcs) = gcs_integration %}
-            <div class="file-details-grid">
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Bucket Name</span>
-                    <div class="file-detail-value-row">
-                        <md-filled-text-field type="text" 
-                                              name="bucket_name"
-                                              label="Expire after" 
-                                              value="{{ gcs.bucket_name }}" 
-                                              min="1" 
-                                              max="60" 
-                                              pattern="\W+"
-                                              hx-patch="/app/settings/integrations/gcs/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#gcs-result"
-                                              hx-swap="innerHTML"
-                                              class="settings-field-update-input">
-                        </md-filled-text-field>
-                        <div id="gcs-result" class="settings-field-update-result"></div>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <md-filled-button id="create-gcs" hx-post="/app/settings/integrations/gcs/update" hx-vals="{'bucket_name': 'Placeholder'}">Link Google Cloud Storage</md-filled-button>
-        {% endif %}
-    </div>
-
-
-    <script type="module">
-        const backButton = document.querySelector("#settings-integrations-gcs-back");
-        const integrationsPage = document.querySelector("#settings-integrations");
-        const gcsPage = document.querySelector("#settings-integrations-gcs");
-        const createButton = document.querySelector("#create-gcs");
-
-        if (backButton && integrationsPage && gcsPage) {
-            backButton.addEventListener("click", () => {
-                integrationsPage.removeAttribute("hidden");
-                gcsPage.setAttribute("hidden", "");
-            });
-        }
-
-        if (createButton) {
-            htmx.process(createButton);
-        }
-    </script>
-</section>
