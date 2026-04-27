@@ -27,9 +27,9 @@ use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_files, handle_get_file,
-    handle_get_integration_by_slug, handle_header, handle_index, handle_list_files, handle_login,
-    handle_refresh_tokens, handle_settings, handle_update_settings, handle_update_user,
-    handle_upsert_integration,
+    handle_get_integration_by_slug, handle_get_integrations, handle_header, handle_index,
+    handle_list_files, handle_login, handle_refresh_tokens, handle_settings,
+    handle_update_settings, handle_update_user, handle_upsert_integration,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -217,9 +217,10 @@ async fn main() -> Result<(), ()> {
                     .route("/api/user/login", post(handle_login))
                     .route("/api/user/create", post(handle_create_user))
                     .route("/api/user/refresh", post(handle_refresh_tokens))
+                    .route("/api/integrations", get(handle_get_integrations))
                     .route(
                         "/api/integrations/{slug}",
-                        patch(handle_get_integration_by_slug),
+                        get(handle_get_integration_by_slug),
                     )
                     .route(
                         "/api/integrations/{slug}/upsert",

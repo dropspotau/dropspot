@@ -35,15 +35,38 @@ pub struct Integration {
     pub data: IntegrationData,
 }
 
+pub async fn get_integrations(auth: Authentication) -> Result<Vec<Integration>, reqwest::Error> {
+    let mut headers = get_auth_headers(Some(&auth));
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
+    let result = reqwest::Client::new()
+        .get(format!("{ENDPOINT}/api/integrations"))
+        .headers(headers)
+        .send()
+        .await?
+        .json::<Vec<Integration>>()
+        .await?;
+
+    Ok(result)
+}
+
+#[wasm_bindgen]
+pub async fn get_integrations_js(auth: Authentication) -> Result<Vec<Integration>, JsError> {
+    get_integrations(auth)
+        .map_err(|e| JsError::new(&format!("{e}")))
+        .await
+}
+
 pub async fn upsert_integration(
     payload: UpsertIntegrationPayload,
     auth: Authentication,
+    slug: String,
 ) -> Result<Integration, reqwest::Error> {
     let mut headers = get_auth_headers(Some(&auth));
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let result = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/api/integrations/local/upsert"))
+        .post(format!("{ENDPOINT}/api/integrations/{slug}/upsert"))
         .headers(headers)
         .json(&payload)
         .send()
@@ -58,8 +81,9 @@ pub async fn upsert_integration(
 pub async fn upsert_integration_js(
     payload: UpsertIntegrationPayload,
     auth: Authentication,
+    slug: String,
 ) -> Result<Integration, JsError> {
-    upsert_integration(payload, auth)
+    upsert_integration(payload, auth, slug)
         .map_err(|e| JsError::new(&format!("{e}")))
         .await
 }

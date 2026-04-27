@@ -1,4 +1,9 @@
-import { upload_js, create_link_js, type UploadResult } from "dropspot-core";
+import {
+  upload_js,
+  create_link_js,
+  type UploadResult,
+  type Integration,
+} from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
@@ -35,6 +40,9 @@ export class UploadBarElement extends LitElement {
   @property()
   private file: File = null!;
 
+  @property()
+  private integrations: Integration[] = [];
+
   @state()
   private uploadResult: UploadResult | null = null;
 
@@ -47,7 +55,10 @@ export class UploadBarElement extends LitElement {
     super.disconnectedCallback();
   }
 
-  public static create = (file: File): UploadBarElement => {
+  public static create = (
+    file: File,
+    integrations: Integration[],
+  ): UploadBarElement => {
     const container = document.querySelector("#recent-uploads");
 
     if (!container) {
@@ -58,6 +69,7 @@ export class UploadBarElement extends LitElement {
 
     const element = document.createElement("upload-bar");
     element.setAttribute("file", JSON.stringify(file));
+    element.setAttribute("integrations", JSON.stringify(integrations));
     container.appendChild(element);
 
     return element;
@@ -101,11 +113,13 @@ export class UploadBarElement extends LitElement {
         <copy-button value="${url}" class="button-white"></copy-button>
       `;
     }
+
+    console.debug(this.integrations);
     return html`
       <h3 class="text-white no-margin">Uploading ${this.file.name}...</h3>
-      <span>
+      <div>
         <!-- Filler for space-between -->
-      </span>
+      </div>
     `;
   }
 }
