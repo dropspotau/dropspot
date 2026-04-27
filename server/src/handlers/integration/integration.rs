@@ -52,7 +52,7 @@ pub async fn handle_get_integration_by_slug(
 
     let result = get_integration_by_slug(&pool, &organisation.id, &storage_type).await;
 
-    if let Err(e) = result {
+    if result.is_err() {
         let api_error = ApiError::new("Integration not found".to_owned(), StatusCode::BAD_REQUEST);
         return api_error.into_response();
     }
@@ -61,7 +61,7 @@ pub async fn handle_get_integration_by_slug(
     Json(integration).into_response()
 }
 
-pub async fn handle_upsert_local_integration(
+pub async fn handle_upsert_integration(
     State(state): State<AppState>,
     user: User,
     Path(slug): Path<String>,
@@ -70,7 +70,7 @@ pub async fn handle_upsert_local_integration(
     let pool = state.get_pool();
     let organisation = get_organisation_for_user(pool, &user.id).await;
 
-    if let Err(e) = organisation {
+    if organisation.is_err() {
         let api_error = ApiError::new(
             "Failed to load organisation".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
