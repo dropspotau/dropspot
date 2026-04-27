@@ -7,15 +7,19 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::user::{
-    AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser,
+use dropspot_core::{
+    integration::integration::{IntegrationData, LocalIntegration},
+    user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
 };
 use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
     auth::password::{hash_password, verify_password},
-    db::{User, create_user, get_user_by_email, get_user_by_id, get_user_password},
+    db::{
+        User, create_user, get_organisation_for_user, get_user_by_email, get_user_by_id,
+        get_user_password, upsert_integration,
+    },
     state::AppState,
     types::ApiError,
 };
@@ -85,6 +89,13 @@ pub async fn handle_create_user(
     )
     .await
     .unwrap();
+
+    let organisation = get_organisation_for_user(pool, &user.id).await;
+
+    if let Err(e) = organisation {
+        let api_error: ApiError = LoginError::CreateUserError(e).into();
+        return api_error.into_response();
+    }
 
     // Generate tokens
     let tokens = state

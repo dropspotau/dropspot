@@ -1,6 +1,9 @@
 use chrono::{DateTime, Utc};
+use dropspot_core::integration::integration::{IntegrationData, LocalIntegration};
 use sqlx::PgPool;
 use uuid::Uuid;
+
+use crate::{db::upsert_integration, storage::StorageType};
 
 use super::types::Id;
 
@@ -80,6 +83,17 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
         name,
     )
     .fetch_one(pool)
+    .await?;
+
+    // Create the local integration as a starting point
+    upsert_integration(
+        pool,
+        &id.id,
+        &StorageType::Local,
+        &IntegrationData::Local(LocalIntegration {
+            folder: "files".to_owned(),
+        }),
+    )
     .await?;
 
     get_organisation_by_id(pool, &id.id).await

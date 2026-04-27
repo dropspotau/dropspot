@@ -11,7 +11,7 @@ use crate::storage::StorageType;
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct LocalIntegration {
-    folder: String,
+    pub folder: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
