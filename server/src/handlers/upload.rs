@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        User, can_upload, create_file, delete_files, finish_upload, get_file_by_id,
+        Organisation, User, can_upload, create_file, delete_files, finish_upload, get_file_by_id,
         get_organisation_for_user, get_upload_by_file_id, start_upload,
     },
     state::AppState,
@@ -170,8 +170,22 @@ pub async fn handle_can_upload(
 ) -> Response {
     let pool = state.get_pool();
 
-    let user = user.map(|u| u.id);
-    let can_upload = can_upload(pool, user.as_ref(), payload.size).await;
+    let mut organisation: Option<Organisation> = None;
+    if let Some(user) = user {
+        let org = get_organisation_for_user(pool, &user.id).await;
+
+        if let Err(e) = org {
+            return ApiError::new(
+                format!("Failed to retrieve organisation: {e}"),
+                StatusCode::UNAUTHORIZED,
+            )
+            .into_response();
+        }
+
+        organisation = Some(org.unwrap());
+    }
+
+    let can_upload = can_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
 
     if let Err(e) = can_upload {
         return ApiError::new(

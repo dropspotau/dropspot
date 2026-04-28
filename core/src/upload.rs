@@ -9,6 +9,7 @@ use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
 use crate::file::File;
+use crate::integration::integration::Integration;
 use crate::storage::StorageType;
 
 #[derive(Debug, thiserror::Error)]
@@ -112,9 +113,14 @@ pub struct CanUploadRequest {
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CanUploadResult {
+    // Whether the user is allowed to upload the file
     pub can_upload: bool,
+    // Whether the user is unable to upload any more files
     pub is_at_file_limit: bool,
+    // Whether the file exceeds the upload size limit
     pub file_too_large: bool,
+    // The integrations available to use with this upload
+    pub integrations: Vec<Integration>,
 }
 
 pub async fn can_upload(

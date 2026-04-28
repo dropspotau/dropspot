@@ -1,8 +1,12 @@
 use chrono::{DateTime, Duration, Utc};
-use dropspot_core::upload::CanUploadResult;
+use dropspot_core::{
+    integration::integration::Integration as ApiIntegration, upload::CanUploadResult,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
+
+use crate::db::{get_integrations, organisation::get_default_organisation};
 
 #[derive(Serialize, Deserialize)]
 pub struct Upload {
@@ -84,9 +88,17 @@ pub async fn can_upload(
     organisation_id: Option<&Uuid>,
     file_size: usize,
 ) -> Result<CanUploadResult, sqlx::Error> {
+    let organisation_id = match organisation_id {
+        Some(id) => id,
+        None => &get_default_organisation(pool).await?.id,
+    };
+    let integrations = get_integrations(pool, organisation_id).await?;
+
+    // TODO(alec): Returning API-specific types from a database call seems a bit strange
     Ok(CanUploadResult {
         can_upload: true,
         is_at_file_limit: false,
         file_too_large: false,
+        integrations: integrations.into_iter().map(ApiIntegration::from).collect(),
     })
 }

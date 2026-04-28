@@ -44,9 +44,17 @@ export class UploadBarElement extends LitElement {
   @state()
   private uploadResult: UploadResult | null = null;
 
+  @state()
+  private integrations: Integration[] = [];
+
   connectedCallback() {
     super.connectedCallback();
-    this.startUpload();
+
+    this.verifyUpload().then((canUpload) => {
+      if (canUpload) {
+        this.startUpload();
+      }
+    });
   }
 
   disconnectedCallback() {
@@ -77,17 +85,37 @@ export class UploadBarElement extends LitElement {
     this.file = file;
   };
 
+  private verifyUpload = async (): Promise<boolean> => {
+    const auth = getAuth();
+    const canUpload = await can_upload_js(auth, { size: this.file.size });
+    const { integrations } = canUpload;
+    this.integrations = integrations;
+    console.debug(integrations);
+
+    return canUpload.can_upload;
+  };
+
   private startUpload = async (): Promise<void> => {
     const fileContents = new Uint8Array(await this.file.arrayBuffer());
     const auth = getAuth();
 
-    const canUpload = await can_upload_js(auth, { size: fileContents.length });
-    console.debug(canUpload);
-
     let result: UploadResult;
+    const integration = this.integrations
+      .filter((integration) => integration.is_active)
+      .at(0);
+
+    if (!integration) {
+      ToastElement.create("No integrations to use for file upload", "danger");
+      return;
+    }
 
     try {
-      result = await upload_js(this.file.name, fileContents, auth, "local");
+      result = await upload_js(
+        this.file.name,
+        fileContents,
+        auth,
+        integration.slug,
+      );
     } catch (e) {
       ToastElement.create(
         "Sorry, there was an issue uploading the file. Please try again.",
