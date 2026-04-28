@@ -10,6 +10,7 @@ import { customElement, state } from "lit/decorators.js";
 
 import { getAuth } from "../auth";
 import { ToastElement } from "../toast";
+import { applyGlobalStyles } from "../style";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -50,6 +51,10 @@ export class UploadBarElement extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
+    if (this.shadowRoot) {
+      applyGlobalStyles(this.shadowRoot);
+    }
+
     this.verifyUpload().then((canUpload) => {
       if (canUpload) {
         this.startUpload();
@@ -61,10 +66,7 @@ export class UploadBarElement extends LitElement {
     super.disconnectedCallback();
   }
 
-  public static create = (
-    file: File,
-    integrations: Integration[],
-  ): UploadBarElement => {
+  public static create = (file: File): UploadBarElement => {
     const container = document.querySelector("#recent-uploads");
 
     if (!container) {
@@ -75,7 +77,6 @@ export class UploadBarElement extends LitElement {
 
     const element = document.createElement("upload-bar");
     element.setFile(file); // Not a plain object, so JSON.stringify results in {}
-    element.setAttribute("integrations", JSON.stringify(integrations));
     container.appendChild(element);
 
     return element;

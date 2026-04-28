@@ -1,4 +1,3 @@
-import { get_integrations_js } from "dropspot-core";
 import { getAuth } from "./auth";
 import { UploadBarElement } from "./components";
 
@@ -29,7 +28,6 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
       return;
     }
 
-    const integrations = await get_integrations_js(auth);
-    UploadBarElement.create(file, integrations);
+    UploadBarElement.create(file);
   });
 }
