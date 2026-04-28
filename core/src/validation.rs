@@ -23,5 +23,5 @@ pub fn validate_file(file_path: &str) -> Result<File, FileValidationError> {
         return Err(FileValidationError::IsDirectory);
     }
 
-    std::fs::File::open(file_path).map_err(FileValidationError::ErrorOpeningFile)
+    File::open(file_path).map_err(FileValidationError::ErrorOpeningFile)
 }
