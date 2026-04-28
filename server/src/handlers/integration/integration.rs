@@ -49,6 +49,10 @@ pub async fn handle_get_integrations(
         return api_error.into_response();
     };
 
+    let integrations = integrations
+        .into_iter()
+        .map(ApiIntegration::from)
+        .collect::<Vec<ApiIntegration>>();
     Json(integrations).into_response()
 }
 

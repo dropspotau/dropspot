@@ -16,6 +16,7 @@ pub struct LocalIntegration {
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
+#[serde(untagged)]
 pub enum IntegrationData {
     Local(LocalIntegration),
 }

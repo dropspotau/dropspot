@@ -11,7 +11,8 @@ use super::local::LocalStorage;
 use super::s3::S3Storage;
 
 #[derive(Type, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[sqlx(type_name = "storage", rename_all = "lowercase")]
+#[sqlx(type_name = "storage", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum StorageType {
     Local,
     S3,
