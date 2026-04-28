@@ -1,4 +1,5 @@
 use chrono::{DateTime, Duration, Utc};
+use dropspot_core::upload::CanUploadResult;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -76,4 +77,16 @@ pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Err
     )
     .fetch_one(pool)
     .await
+}
+
+pub async fn can_upload(
+    pool: &PgPool,
+    organisation_id: Option<&Uuid>,
+    file_size: usize,
+) -> Result<CanUploadResult, sqlx::Error> {
+    Ok(CanUploadResult {
+        can_upload: true,
+        is_at_file_limit: false,
+        file_too_large: false,
+    })
 }

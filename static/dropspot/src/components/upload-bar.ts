@@ -3,9 +3,10 @@ import {
   create_link_js,
   type UploadResult,
   type Integration,
+  can_upload_js,
 } from "dropspot-core";
 import { html, css, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 
 import { getAuth } from "../auth";
 import { ToastElement } from "../toast";
@@ -37,11 +38,8 @@ export class UploadBarElement extends LitElement {
     }
   `;
 
-  @property()
+  // NOTE(alec): Can't use a Lit property as this is set calling setAttribute
   private file: File = null!;
-
-  @property()
-  private integrations: Integration[] = [];
 
   @state()
   private uploadResult: UploadResult | null = null;
@@ -68,16 +66,23 @@ export class UploadBarElement extends LitElement {
     }
 
     const element = document.createElement("upload-bar");
-    element.setAttribute("file", JSON.stringify(file));
+    element.setFile(file); // Not a plain object, so JSON.stringify results in {}
     element.setAttribute("integrations", JSON.stringify(integrations));
     container.appendChild(element);
 
     return element;
   };
 
+  public setFile = (file: File): void => {
+    this.file = file;
+  };
+
   private startUpload = async (): Promise<void> => {
     const fileContents = new Uint8Array(await this.file.arrayBuffer());
     const auth = getAuth();
+
+    const canUpload = await can_upload_js(auth, { size: fileContents.length });
+    console.debug(canUpload);
 
     let result: UploadResult;
 
@@ -114,7 +119,6 @@ export class UploadBarElement extends LitElement {
       `;
     }
 
-    console.debug(this.integrations);
     return html`
       <h3 class="text-white no-margin">Uploading ${this.file.name}...</h3>
       <div>

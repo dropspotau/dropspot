@@ -1,5 +1,6 @@
 use std::io::{BufReader, BufWriter};
 
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
@@ -95,9 +96,49 @@ pub async fn upload_js(
     let upload = upload(name, contents, auth, storage).await;
 
     if let Err(e) = upload {
-        return Err(JsError::new(&format!("{e:?}")));
+        return Err(JsError::new(&format!("{e}")));
     };
 
     let upload = upload.unwrap();
     Ok(upload)
+}
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CanUploadRequest {
+    pub size: usize,
+}
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct CanUploadResult {
+    pub can_upload: bool,
+    pub is_at_file_limit: bool,
+    pub file_too_large: bool,
+}
+
+pub async fn can_upload(
+    auth: Option<Authentication>,
+    payload: CanUploadRequest,
+) -> Result<CanUploadResult, reqwest::Error> {
+    let headers = get_auth_headers(auth.as_ref());
+
+    reqwest::Client::new()
+        .get(format!("{ENDPOINT}/api/upload/can-upload"))
+        .query(&payload)
+        .headers(headers)
+        .send()
+        .await?
+        .json::<CanUploadResult>()
+        .await
+}
+
+#[wasm_bindgen]
+pub async fn can_upload_js(
+    auth: Option<Authentication>,
+    payload: CanUploadRequest,
+) -> Result<CanUploadResult, JsError> {
+    can_upload(auth, payload)
+        .map_err(|e| JsError::new(&format!("{e}")))
+        .await
 }

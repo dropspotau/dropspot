@@ -61,21 +61,6 @@ create table download (
     expires_at timestamptz not null
 );
 
--- create table local_integration (
---     id uuid primary key default uuid_generate_v4(),
---     organisation_id uuid references organisation (id) on delete cascade not null unique,
---     upload_path varchar(256) not null,
---     is_active boolean not null
--- );
---
--- create table gcs_integration (
---     id uuid primary key default uuid_generate_v4(),
---     organisation_id uuid references organisation (id) on delete cascade not null unique,
---     bucket_name varchar(256) not null,
---     credentials_key_json jsonb, -- Can be left out if using IAP authentication
---     is_active boolean not null
--- );
-
 create table integration (
     id uuid primary key default uuid_generate_v4(),
     slug storage not null,

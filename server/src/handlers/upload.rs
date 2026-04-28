@@ -1,19 +1,20 @@
 use axum::{
     body::Body,
-    extract::{Json, Path, State},
+    extract::{Json, Path, Query, State},
     response::{IntoResponse, Response},
 };
-use dropspot_core::file::File as ApiFile;
 use dropspot_core::upload::CreateFileBody;
+use dropspot_core::{file::File as ApiFile, upload::CanUploadRequest};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
+use serde::Deserialize;
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
 use crate::{
     db::{
-        User, create_file, delete_files, finish_upload, get_file_by_id, get_upload_by_file_id,
-        start_upload,
+        User, can_upload, create_file, delete_files, finish_upload, get_file_by_id,
+        get_organisation_for_user, get_upload_by_file_id, start_upload,
     },
     state::AppState,
     storage::{StorageType, get_storage},
@@ -41,7 +42,7 @@ pub async fn handle_file_request_upload(
         return api_error.into_response();
     }
 
-    return Json(file.unwrap()).into_response();
+    Json(file.unwrap()).into_response()
 }
 
 pub async fn handle_file_upload(
@@ -160,4 +161,25 @@ pub async fn handle_file_upload(
 
     let api_file: ApiFile = file.clone().into();
     Json(api_file).into_response()
+}
+
+pub async fn handle_can_upload(
+    State(state): State<AppState>,
+    user: Option<User>,
+    Query(payload): Query<CanUploadRequest>,
+) -> Response {
+    let pool = state.get_pool();
+
+    let user = user.map(|u| u.id);
+    let can_upload = can_upload(pool, user.as_ref(), payload.size).await;
+
+    if let Err(e) = can_upload {
+        return ApiError::new(
+            format!("Failed to determine upload status: {e}"),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    }
+
+    Json(can_upload.unwrap()).into_response()
 }
