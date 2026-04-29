@@ -13,7 +13,7 @@ importers:
         version: 2.4.1
       dropspot-core:
         specifier: file:../../core/pkg
-        version: file:../../core/pkg
+        version: pkg@file:../../core/pkg
       htmx.org:
         specifier: 4.0.0-alpha8
         version: 4.0.0-alpha8
@@ -545,9 +545,6 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  dropspot-core@file:../../core/pkg:
-    resolution: {directory: ../../core/pkg, type: directory}
-
   esbuild@0.27.3:
     resolution: {integrity: sha512-8VwMnyGCONIs6cWue2IdpHxHnAjzxnw2Zr7MkVxB2vjmQ2ivqGFb4LEG3SMnv0Gb2F/G/2yA8zUaiL1gywDCCg==}
     engines: {node: '>=18'}
@@ -665,6 +662,9 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
+
+  pkg@file:../../core/pkg:
+    resolution: {directory: ../../core/pkg, type: directory}
 
   playwright-core@1.59.1:
     resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
@@ -1082,8 +1082,6 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  dropspot-core@file:../../core/pkg: {}
-
   esbuild@0.27.3:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.27.3
@@ -1198,6 +1196,8 @@ snapshots:
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
+
+  pkg@file:../../core/pkg: {}
 
   playwright-core@1.59.1: {}
 

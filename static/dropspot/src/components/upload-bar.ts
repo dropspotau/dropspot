@@ -55,11 +55,7 @@ export class UploadBarElement extends LitElement {
       applyGlobalStyles(this.shadowRoot);
     }
 
-    this.verifyUpload().then((canUpload) => {
-      if (canUpload) {
-        this.startUpload();
-      }
-    });
+    this.verifyUpload();
   }
 
   disconnectedCallback() {
@@ -93,12 +89,12 @@ export class UploadBarElement extends LitElement {
     });
     const { can_upload: canUpload, integrations } = uploadPreview;
     this.integrations = integrations;
-    console.debug(integrations, uploadPreview);
 
     return canUpload;
   };
 
-  private startUpload = async (): Promise<void> => {
+  // @ts-ignore
+  private startUpload = async (doUpload: boolean): Promise<void> => {
     const fileContents = new Uint8Array(await this.file.arrayBuffer());
     const auth = getAuth();
 
@@ -112,28 +108,30 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    try {
-      result = await upload_js(
-        this.file.name,
-        fileContents,
-        auth,
-        integration.slug,
-      );
-    } catch (e) {
-      ToastElement.create(
-        "Sorry, there was an issue uploading the file. Please try again.",
-        "danger",
-      );
-      return;
+    if (doUpload) {
+      try {
+        result = await upload_js(
+          this.file.name,
+          fileContents,
+          auth,
+          integration.slug,
+        );
+      } catch (e) {
+        ToastElement.create(
+          "Sorry, there was an issue uploading the file. Please try again.",
+          "danger",
+        );
+        return;
+      }
+
+      this.uploadResult = result;
+
+      const event: FileUploadEvent = new CustomEvent("file-upload", {
+        detail: { upload: result },
+        bubbles: true,
+      });
+      this.dispatchEvent(event);
     }
-
-    this.uploadResult = result;
-
-    const event: FileUploadEvent = new CustomEvent("file-upload", {
-      detail: { upload: result },
-      bubbles: true,
-    });
-    this.dispatchEvent(event);
   };
 
   render() {
@@ -147,6 +145,17 @@ export class UploadBarElement extends LitElement {
       return html`
         <h3 class="text-white no-margin">${this.uploadResult.file.name}</h3>
         <copy-button value="${url}" class="button-white"></copy-button>
+      `;
+    }
+
+    const isSelectingIntegrations =
+      this.integrations.length > 1 && !this.uploadResult;
+    if (isSelectingIntegrations) {
+      return html`
+        <h3 class="text-white no-margin">
+          How should ${this.file.name} be uploaded?
+        </h3>
+        <div>Integrations</div>
       `;
     }
 
