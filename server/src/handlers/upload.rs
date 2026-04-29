@@ -4,7 +4,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use dropspot_core::upload::CreateFileBody;
-use dropspot_core::{file::File as ApiFile, upload::CanUploadRequest};
+use dropspot_core::{file::File as ApiFile, upload::PreviewUploadRequest};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
 use serde::Deserialize;
@@ -13,8 +13,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, preview_upload, create_file, delete_files, finish_upload, get_file_by_id,
-        get_organisation_for_user, get_upload_by_file_id, start_upload,
+        Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
+        get_organisation_for_user, get_upload_by_file_id, preview_upload, start_upload,
     },
     state::AppState,
     storage::{StorageType, get_storage},
@@ -166,7 +166,7 @@ pub async fn handle_file_upload(
 pub async fn handle_preview_upload(
     State(state): State<AppState>,
     user: Option<User>,
-    Query(payload): Query<CanUploadRequest>,
+    Query(payload): Query<PreviewUploadRequest>,
 ) -> Response {
     let pool = state.get_pool();
 
@@ -185,15 +185,16 @@ pub async fn handle_preview_upload(
         organisation = Some(org.unwrap());
     }
 
-    let can_upload = preview_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
+    let upload_preiew =
+        preview_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
 
-    if let Err(e) = can_upload {
+    if let Err(e) = upload_preiew {
         return ApiError::new(
-            format!("Failed to determine upload status: {e}"),
+            format!("Failed to determine upload preview: {e}"),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
     }
 
-    Json(can_upload.unwrap()).into_response()
+    Json(upload_preiew.unwrap()).into_response()
 }

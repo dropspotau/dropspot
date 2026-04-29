@@ -93,7 +93,7 @@ export class UploadBarElement extends LitElement {
     });
     const { can_upload: canUpload, integrations } = uploadPreview;
     this.integrations = integrations;
-    console.debug(integrations);
+    console.debug(integrations, uploadPreview);
 
     return canUpload;
   };

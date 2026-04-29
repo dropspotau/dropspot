@@ -106,7 +106,7 @@ pub async fn upload_js(
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CanUploadRequest {
+pub struct PreviewUploadRequest {
     pub size: usize,
 }
 
@@ -125,12 +125,12 @@ pub struct PreviewUploadResult {
 
 pub async fn preview_upload(
     auth: Option<Authentication>,
-    payload: CanUploadRequest,
+    payload: PreviewUploadRequest,
 ) -> Result<PreviewUploadResult, reqwest::Error> {
     let headers = get_auth_headers(auth.as_ref());
 
     reqwest::Client::new()
-        .get(format!("{ENDPOINT}/api/upload/can-upload"))
+        .get(format!("{ENDPOINT}/api/upload/preview"))
         .query(&payload)
         .headers(headers)
         .send()
@@ -142,7 +142,7 @@ pub async fn preview_upload(
 #[wasm_bindgen]
 pub async fn preview_upload_js(
     auth: Option<Authentication>,
-    payload: CanUploadRequest,
+    payload: PreviewUploadRequest,
 ) -> Result<PreviewUploadResult, JsError> {
     preview_upload(auth, payload)
         .map_err(|e| JsError::new(&format!("{e}")))

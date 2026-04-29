@@ -29,7 +29,6 @@ pub async fn get_integrations(
               data as "data: Json<IntegrationData>"
             from integration
             where organisation_id = $1
-            limit 1
         "#,
         organisation_id
     )
@@ -57,33 +56,6 @@ pub async fn get_integration_by_slug(
         "#,
         organisation_id,
         slug as &StorageType // Needed for correct enum typing
-    )
-    .fetch_one(pool)
-    .await
-}
-
-pub async fn set_integration_status(
-    pool: &PgPool,
-    organisation_id: &Uuid,
-    slug: &StorageType,
-    is_active: bool,
-) -> Result<Integration, sqlx::Error> {
-    sqlx::query_as!(
-        Integration,
-        r#"
-            update integration
-            set is_active = $3
-            where organisation_id = $1 and slug = $2::storage
-            returning 
-                id, 
-                slug as "slug: StorageType", 
-                organisation_id, 
-                is_active, 
-                data as "data: Json<IntegrationData>"
-        "#,
-        organisation_id,
-        slug as &StorageType, // Needed for correct enum typing
-        is_active,
     )
     .fetch_one(pool)
     .await

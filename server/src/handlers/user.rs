@@ -7,9 +7,8 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::{
-    integration::integration::{IntegrationData, LocalIntegration},
-    user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
+use dropspot_core::user::{
+    AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser,
 };
 use reqwest::StatusCode;
 use thiserror::Error;
@@ -18,7 +17,7 @@ use crate::{
     auth::password::{hash_password, verify_password},
     db::{
         User, create_user, get_organisation_for_user, get_user_by_email, get_user_by_id,
-        get_user_password, upsert_integration,
+        get_user_password,
     },
     state::AppState,
     types::ApiError,

@@ -10,15 +10,22 @@ use crate::storage::StorageType;
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct LocalIntegration {
+pub struct LocalIntegrationData {
     pub folder: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct GcsIntegrationData {
+    pub bucket_name: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(untagged)]
 pub enum IntegrationData {
-    Local(LocalIntegration),
+    Local(LocalIntegrationData),
+    Gcs(GcsIntegrationData),
 }
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]

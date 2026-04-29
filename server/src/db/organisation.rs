@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use dropspot_core::integration::integration::{IntegrationData, LocalIntegration};
+use dropspot_core::integration::integration::{IntegrationData, LocalIntegrationData};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -90,7 +90,7 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
         pool,
         &id.id,
         &StorageType::Local,
-        &IntegrationData::Local(LocalIntegration {
+        &IntegrationData::Local(LocalIntegrationData {
             folder: "files".to_owned(),
         }),
     )
