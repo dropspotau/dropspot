@@ -22,6 +22,7 @@ impl From<Integration> for ApiIntegration {
     fn from(integration: Integration) -> Self {
         Self {
             slug: integration.slug.into(),
+            name: integration.slug.name().to_owned(),
             is_active: integration.is_active,
             data: integration.data.0,
         }

@@ -47,6 +47,14 @@ impl StorageType {
             Self::S3 => "AWS S3 Storage",
         }
     }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::Local => "Local",
+            Self::GCS => "GCS",
+            Self::S3 => "S3",
+        }
+    }
 }
 
 impl ToString for StorageType {

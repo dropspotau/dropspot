@@ -27,7 +27,7 @@ export class UploadBarElement extends LitElement {
   static styles = css`
     :host {
       display: flex;
-      flex-flow: row;
+      flex-flow: row wrap;
       place-items: center;
       place-content: space-between;
       flex: 0 0 4rem;
@@ -41,6 +41,31 @@ export class UploadBarElement extends LitElement {
     .integration-select {
       display: flex;
       gap: 0.5rem;
+    }
+
+    .integration-button {
+      display: flex;
+      flex-flow: column;
+      place-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+
+      &:hover {
+        background-color: var(--dropspot-hover);
+      }
+    }
+
+    .integration-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a2e;
     }
   `;
 
@@ -158,7 +183,12 @@ export class UploadBarElement extends LitElement {
       this.startUpload(integration);
     };
 
-    return html`<integration-icon slug="${integration.slug}" @click="${handleClick}"></integration-icon`;
+    return html`
+      <button class="integration-button" @click="${handleClick}">
+        <integration-icon slug="${integration.slug}"></integration-icon>
+        <span class="integration-name">${integration.name}</span>
+      </button>
+    `;
   };
 
   render() {
