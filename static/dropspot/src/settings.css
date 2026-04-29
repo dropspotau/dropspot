@@ -126,13 +126,6 @@
 }
 
 /* Intregrations */
-.integration-icon {
-    height: 1.5rem;
-    width: 1.5rem;
-    object-fit: contain;
-    color: var(--dropspot-grey-dark);
-}
-
 .integration-title {
     display: flex;
     gap: 0.5rem;

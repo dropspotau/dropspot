@@ -39,6 +39,26 @@ impl TryFrom<String> for StorageType {
     }
 }
 
+impl StorageType {
+    pub fn full_name(&self) -> &'static str {
+        match self {
+            Self::Local => "File System",
+            Self::GCS => "Google Cloud Storage",
+            Self::S3 => "AWS S3 Storage",
+        }
+    }
+}
+
+impl ToString for StorageType {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Local => "local".to_string(),
+            Self::GCS => "gcs".to_string(),
+            Self::S3 => "s3".to_string(),
+        }
+    }
+}
+
 impl From<ApiStorageType> for StorageType {
     fn from(storage_type: ApiStorageType) -> Self {
         match storage_type {

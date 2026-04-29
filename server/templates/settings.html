@@ -303,15 +303,9 @@
 
         {% for integration in integrations %}
             <li id="settings-integrations-list-item-local" class="file-item">
-                <md-icon class="integration-icon">storage</md-icon>
+                <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
                 <div class="file-info">
-                    File System
-                </div>
-            </li>
-            <li id="settings-integrations-list-item-gcs" class="file-item">
-                <img src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png" alt="Google" class="integration-icon">
-                <div class="file-info">
-                    Google Cloud Storage
+                    {{ integration.slug.full_name() }}
                 </div>
             </li>
         {% endfor %}
