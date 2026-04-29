@@ -112,7 +112,7 @@ pub struct CanUploadRequest {
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct CanUploadResult {
+pub struct PreviewUploadResult {
     // Whether the user is allowed to upload the file
     pub can_upload: bool,
     // Whether the user is unable to upload any more files
@@ -123,10 +123,10 @@ pub struct CanUploadResult {
     pub integrations: Vec<Integration>,
 }
 
-pub async fn can_upload(
+pub async fn preview_upload(
     auth: Option<Authentication>,
     payload: CanUploadRequest,
-) -> Result<CanUploadResult, reqwest::Error> {
+) -> Result<PreviewUploadResult, reqwest::Error> {
     let headers = get_auth_headers(auth.as_ref());
 
     reqwest::Client::new()
@@ -135,16 +135,16 @@ pub async fn can_upload(
         .headers(headers)
         .send()
         .await?
-        .json::<CanUploadResult>()
+        .json::<PreviewUploadResult>()
         .await
 }
 
 #[wasm_bindgen]
-pub async fn can_upload_js(
+pub async fn preview_upload_js(
     auth: Option<Authentication>,
     payload: CanUploadRequest,
-) -> Result<CanUploadResult, JsError> {
-    can_upload(auth, payload)
+) -> Result<PreviewUploadResult, JsError> {
+    preview_upload(auth, payload)
         .map_err(|e| JsError::new(&format!("{e}")))
         .await
 }

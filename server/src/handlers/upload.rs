@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, can_upload, create_file, delete_files, finish_upload, get_file_by_id,
+        Organisation, User, preview_upload, create_file, delete_files, finish_upload, get_file_by_id,
         get_organisation_for_user, get_upload_by_file_id, start_upload,
     },
     state::AppState,
@@ -163,7 +163,7 @@ pub async fn handle_file_upload(
     Json(api_file).into_response()
 }
 
-pub async fn handle_can_upload(
+pub async fn handle_preview_upload(
     State(state): State<AppState>,
     user: Option<User>,
     Query(payload): Query<CanUploadRequest>,
@@ -185,7 +185,7 @@ pub async fn handle_can_upload(
         organisation = Some(org.unwrap());
     }
 
-    let can_upload = can_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
+    let can_upload = preview_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
 
     if let Err(e) = can_upload {
         return ApiError::new(

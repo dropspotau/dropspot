@@ -1,9 +1,9 @@
 import {
   upload_js,
   create_link_js,
+  preview_upload_js,
   type UploadResult,
   type Integration,
-  can_upload_js,
 } from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
@@ -88,12 +88,14 @@ export class UploadBarElement extends LitElement {
 
   private verifyUpload = async (): Promise<boolean> => {
     const auth = getAuth();
-    const canUpload = await can_upload_js(auth, { size: this.file.size });
-    const { integrations } = canUpload;
+    const uploadPreview = await preview_upload_js(auth, {
+      size: this.file.size,
+    });
+    const { can_upload: canUpload, integrations } = uploadPreview;
     this.integrations = integrations;
     console.debug(integrations);
 
-    return canUpload.can_upload;
+    return canUpload;
   };
 
   private startUpload = async (): Promise<void> => {

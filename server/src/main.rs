@@ -25,10 +25,10 @@ use uuid::Uuid;
 
 use crate::db::connect;
 use crate::handlers::{
-    handle_can_upload, handle_create_user, handle_delete_file, handle_file_download,
-    handle_file_request_download, handle_file_request_upload, handle_file_upload, handle_files,
-    handle_get_file, handle_get_integration_by_slug, handle_get_integrations, handle_header,
-    handle_index, handle_list_files, handle_login, handle_refresh_tokens, handle_settings,
+    handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
+    handle_file_request_upload, handle_file_upload, handle_files, handle_get_file,
+    handle_get_integration_by_slug, handle_get_integrations, handle_header, handle_index,
+    handle_list_files, handle_login, handle_preview_upload, handle_refresh_tokens, handle_settings,
     handle_update_settings, handle_update_user, handle_upsert_integration,
 };
 use crate::state::AppState;
@@ -203,8 +203,8 @@ async fn main() -> Result<(), ()> {
 
                 let app = Router::new()
                     .route("/api/upload", post(handle_file_request_upload))
+                    .route("/api/upload/preview", get(handle_preview_upload))
                     .route("/api/upload/{file_id}/upload", post(handle_file_upload))
-                    .route("/api/upload/can-upload", get(handle_can_upload))
                     .route("/api/file", get(handle_list_files))
                     .route("/api/file/{id}", get(handle_get_file))
                     .route(

@@ -1,6 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use dropspot_core::{
-    integration::integration::Integration as ApiIntegration, upload::CanUploadResult,
+    integration::integration::Integration as ApiIntegration, upload::PreviewUploadResult,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -83,11 +83,11 @@ pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Err
     .await
 }
 
-pub async fn can_upload(
+pub async fn preview_upload(
     pool: &PgPool,
     organisation_id: Option<&Uuid>,
     file_size: usize,
-) -> Result<CanUploadResult, sqlx::Error> {
+) -> Result<PreviewUploadResult, sqlx::Error> {
     let organisation_id = match organisation_id {
         Some(id) => id,
         None => &get_default_organisation(pool).await?.id,
@@ -95,7 +95,7 @@ pub async fn can_upload(
     let integrations = get_integrations(pool, organisation_id).await?;
 
     // TODO(alec): Returning API-specific types from a database call seems a bit strange
-    Ok(CanUploadResult {
+    Ok(PreviewUploadResult {
         can_upload: true,
         is_at_file_limit: false,
         file_too_large: false,
