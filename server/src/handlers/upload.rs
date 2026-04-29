@@ -7,7 +7,6 @@ use dropspot_core::upload::CreateFileBody;
 use dropspot_core::{file::File as ApiFile, upload::PreviewUploadRequest};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
-use serde::Deserialize;
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 

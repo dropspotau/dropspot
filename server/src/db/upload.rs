@@ -92,18 +92,18 @@ pub async fn preview_upload(
         Some(id) => id,
         None => &get_default_organisation(pool).await?.id,
     };
-    println!("{organisation_id:?}");
-    let integrations = get_integrations(pool, organisation_id).await?;
+    let integrations = get_integrations(pool, organisation_id)
+        .await?
+        .into_iter()
+        .filter(|integration| integration.is_active)
+        .map(ApiIntegration::from)
+        .collect::<Vec<ApiIntegration>>();
 
     // TODO(alec): Returning API-specific types from a database call seems a bit strange
     Ok(PreviewUploadResult {
-        can_upload: true,
+        can_upload: !integrations.is_empty(),
         is_at_file_limit: false,
         file_too_large: false,
-        integrations: integrations
-            .into_iter()
-            .filter(|integration| integration.is_active)
-            .map(ApiIntegration::from)
-            .collect(),
+        integrations,
     })
 }

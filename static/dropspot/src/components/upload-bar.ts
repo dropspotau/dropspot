@@ -5,7 +5,7 @@ import {
   type UploadResult,
   type Integration,
 } from "dropspot-core";
-import { html, css, LitElement } from "lit";
+import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import { getAuth } from "../auth";
@@ -37,6 +37,11 @@ export class UploadBarElement extends LitElement {
       align-items: center;
       background-color: var(--dropspot-dark);
     }
+
+    .integration-select {
+      display: flex;
+      gap: 0.5rem;
+    }
   `;
 
   // NOTE(alec): Can't use a Lit property as this is set calling setAttribute
@@ -55,7 +60,32 @@ export class UploadBarElement extends LitElement {
       applyGlobalStyles(this.shadowRoot);
     }
 
-    this.verifyUpload();
+    this.verifyUpload().then((canUpload) => {
+      const integrations = this.integrations.filter(
+        (integration) => integration.is_active,
+      );
+
+      if (!canUpload) {
+        const integration = integrations.at(0);
+
+        if (!integration) {
+          ToastElement.create(
+            "No integrations to use for file upload",
+            "danger",
+          );
+          return;
+        }
+
+        // From here, the user will select an integration which then triggers startUpload
+      }
+
+      const hasOneIntegration = this.integrations.length === 1;
+
+      if (hasOneIntegration) {
+        // If only one integration is available, use it
+        this.startUpload(this.integrations[0]);
+      }
+    });
   }
 
   disconnectedCallback() {
@@ -93,45 +123,42 @@ export class UploadBarElement extends LitElement {
     return canUpload;
   };
 
-  // @ts-ignore
-  private startUpload = async (doUpload: boolean): Promise<void> => {
+  private startUpload = async (integration: Integration): Promise<void> => {
     const fileContents = new Uint8Array(await this.file.arrayBuffer());
     const auth = getAuth();
 
     let result: UploadResult;
-    const integration = this.integrations
-      .filter((integration) => integration.is_active)
-      .at(0);
 
-    if (!integration) {
-      ToastElement.create("No integrations to use for file upload", "danger");
+    try {
+      result = await upload_js(
+        this.file.name,
+        fileContents,
+        auth,
+        integration.slug,
+      );
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an issue uploading the file. Please try again.",
+        "danger",
+      );
       return;
     }
 
-    if (doUpload) {
-      try {
-        result = await upload_js(
-          this.file.name,
-          fileContents,
-          auth,
-          integration.slug,
-        );
-      } catch (e) {
-        ToastElement.create(
-          "Sorry, there was an issue uploading the file. Please try again.",
-          "danger",
-        );
-        return;
-      }
+    this.uploadResult = result;
 
-      this.uploadResult = result;
+    const event: FileUploadEvent = new CustomEvent("file-upload", {
+      detail: { upload: result },
+      bubbles: true,
+    });
+    this.dispatchEvent(event);
+  };
 
-      const event: FileUploadEvent = new CustomEvent("file-upload", {
-        detail: { upload: result },
-        bubbles: true,
-      });
-      this.dispatchEvent(event);
-    }
+  private renderIntegration = (integration: Integration): TemplateResult<1> => {
+    const handleClick = (): void => {
+      this.startUpload(integration);
+    };
+
+    return html`<integration-icon slug="${integration.slug}" @click="${handleClick}"></integration-icon`;
   };
 
   render() {
@@ -155,7 +182,9 @@ export class UploadBarElement extends LitElement {
         <h3 class="text-white no-margin">
           How should ${this.file.name} be uploaded?
         </h3>
-        <div>Integrations</div>
+        <div class="integration-select">
+          ${this.integrations.map(this.renderIntegration)}
+        </div>
       `;
     }
 
