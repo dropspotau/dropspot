@@ -64,7 +64,7 @@ create table download (
 create table integration (
     id uuid primary key default uuid_generate_v4(),
     slug storage not null,
-    organisation_id uuid references organisation (id) on delete cascade not null unique,
+    organisation_id uuid references organisation (id) on delete cascade not null,
     is_active boolean not null,
     data jsonb not null,
 
