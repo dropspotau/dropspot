@@ -2,8 +2,12 @@
     display: flex;
     flex-flow: column-reverse;
     gap: 1rem;
-    width: 64%;
+    width: 48%;
     align-self: center;
+    
+    @media only screen and (max-width: 48rem) {
+        width: 100%;
+    }
 }
 
 #linked-file {

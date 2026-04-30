@@ -32,7 +32,6 @@ export class UploadBarElement extends LitElement {
       flex-flow: row wrap;
       place-items: center;
       place-content: space-between;
-      flex: 0 0 4rem;
       padding: 1rem 2rem;
       border-radius: 1rem;
       gap: 1rem;
@@ -241,7 +240,9 @@ export class UploadBarElement extends LitElement {
       const url = createDownloadUrl(link);
 
       return html`
-        <h3 class="text-white no-margin">${this.uploadResult.file.name}</h3>
+        <h3 class="text-white no-margin">
+          Uploaded ${this.uploadResult.file.name}
+        </h3>
         <copy-button value="${url}" class="button-white"></copy-button>
       `;
     }
