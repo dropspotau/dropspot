@@ -23,14 +23,6 @@ export class IntegrationIconElement extends LitElement {
   @property()
   private slug: StorageType = null!;
 
-  connectedCallback() {
-    super.connectedCallback();
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-  }
-
   render() {
     switch (this.slug) {
       case "local":

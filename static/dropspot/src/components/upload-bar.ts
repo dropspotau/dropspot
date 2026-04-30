@@ -4,9 +4,11 @@ import {
   preview_upload_js,
   type UploadResult,
   type Integration,
+  type StorageType,
 } from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 
 import { getAuth } from "../auth";
 import { ToastElement } from "../toast";
@@ -48,18 +50,30 @@ export class UploadBarElement extends LitElement {
       flex-flow: column;
       place-items: center;
       gap: 0.5rem;
+      height: 5rem;
+      width: 5rem;
       padding: 1rem;
       background: #ffffff;
-      border: 2px solid #e5e7eb;
-      border-radius: 16px;
+      border: 2px solid var(--dropspot-grey-light);
+      border-radius: 1rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background-color 0.2s ease;
       text-decoration: none;
       color: inherit;
 
       &:hover {
         background-color: var(--dropspot-hover);
       }
+
+      &[disabled] {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
+    .integration-button-uploading {
+      cursor: default;
+      --md-circular-progress-size: 2.5rem;
     }
 
     .integration-name {
@@ -77,6 +91,13 @@ export class UploadBarElement extends LitElement {
 
   @state()
   private integrations: Integration[] = [];
+
+  /**
+   * The slug of the storage integration method being used to currently upload.
+   * @example "local" if uploading to local storage, null if not uploading
+   */
+  @state()
+  private uploadingIntegrationSlug: StorageType | null = null;
 
   connectedCallback() {
     super.connectedCallback();
@@ -111,10 +132,6 @@ export class UploadBarElement extends LitElement {
         this.startUpload(this.integrations[0]);
       }
     });
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
   }
 
   public static create = (file: File): UploadBarElement => {
@@ -153,6 +170,7 @@ export class UploadBarElement extends LitElement {
     const auth = getAuth();
 
     let result: UploadResult;
+    this.uploadingIntegrationSlug = integration.slug;
 
     try {
       result = await upload_js(
@@ -162,6 +180,7 @@ export class UploadBarElement extends LitElement {
         integration.slug,
       );
     } catch (e) {
+      this.uploadingIntegrationSlug = null;
       ToastElement.create(
         "Sorry, there was an issue uploading the file. Please try again.",
         "danger",
@@ -169,6 +188,7 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
+    this.uploadingIntegrationSlug = null;
     this.uploadResult = result;
 
     const event: FileUploadEvent = new CustomEvent("file-upload", {
@@ -179,20 +199,41 @@ export class UploadBarElement extends LitElement {
   };
 
   private renderIntegration = (integration: Integration): TemplateResult<1> => {
+    const isUploading = this.uploadingIntegrationSlug === integration.slug;
+    const isDisabled = this.uploadingIntegrationSlug !== null && !isUploading;
+    const className = classMap({
+      "integration-button": true,
+      "integration-button-uploading": isUploading,
+    });
+
     const handleClick = (): void => {
+      if (isDisabled) {
+        // Somehow this fired while another file is already uploading
+        return;
+      }
+
       this.startUpload(integration);
     };
 
     return html`
-      <button class="integration-button" @click="${handleClick}">
-        <integration-icon slug="${integration.slug}"></integration-icon>
-        <span class="integration-name">${integration.name}</span>
+      <button
+        class="${className}"
+        @click="${handleClick}"
+        .disabled="${isDisabled}"
+      >
+        ${isUploading
+          ? html`<md-circular-progress indeterminate></md-circular-progress>`
+          : html`
+              <integration-icon slug="${integration.slug}"></integration-icon>
+              <span class="integration-name">${integration.name}</span>
+            `}
       </button>
     `;
   };
 
   render() {
     if (this.uploadResult) {
+      // The file has uploaded
       const link = create_link_js(
         this.uploadResult.file.id,
         this.uploadResult.encryption,
@@ -208,9 +249,10 @@ export class UploadBarElement extends LitElement {
     const isSelectingIntegrations =
       this.integrations.length > 1 && !this.uploadResult;
     if (isSelectingIntegrations) {
+      // Multple integrations exist and the user must choose which one to upload to
       return html`
         <h3 class="text-white no-margin">
-          How should ${this.file.name} be uploaded?
+          Please select where this file should be uploaded to.
         </h3>
         <div class="integration-select">
           ${this.integrations.map(this.renderIntegration)}
@@ -218,6 +260,7 @@ export class UploadBarElement extends LitElement {
       `;
     }
 
+    // The file is uploading
     return html`
       <h3 class="text-white no-margin">Uploading ${this.file.name}...</h3>
       <div>
