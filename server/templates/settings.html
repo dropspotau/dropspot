@@ -219,4 +219,30 @@
             {% endfor %}
         </div>
     </section>
+
+    {% for integration in integrations %}
+        <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
+            <div class="file-details-container">
+                <div class="file-details-grid">
+                    <div class="file-detail-item">
+                        <div class="file-detail-item">
+                            <span class="file-detail-label">Name</span>
+                            <div class="file-detail-value-row">
+                                <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                                <span>{{ integration.slug.full_name() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-detail-item">
+                        <div class="file-detail-item">
+                            <span class="file-detail-label">Data</span>
+                            <div class="file-detail-value-row">
+                                {{ integration.slug.full_name() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endfor %}
 </tree-menu>
