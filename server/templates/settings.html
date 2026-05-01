@@ -1,346 +1,347 @@
-<section id="settings-main" class="settings-page">
-  <div class="settings-section">
-    <h3 class="section-label">Settings</h3>
-    <ul class="settings-list">
-      
-      <li id="limits-menu-item" class="settings-item">
-        <md-icon class="settings-icon">av_timer</md-icon>
-        <div class="settings-text">
-          <span class="settings-item-title">Default Expiry</span>
-          <span class="settings-item-desc">Set default download and time limits</span>
-        </div>
-        <md-icon class="settings-action">chevron_right</md-icon>
-      </li>
+<stack-menu>
+    <section id="settings-main" class="settings-page">
+      <div class="settings-section">
+        <h3 class="section-label">Settings</h3>
+        <ul class="settings-list">
+          
+          <li id="limits-menu-item" class="settings-item">
+            <md-icon class="settings-icon">av_timer</md-icon>
+            <div class="settings-text">
+              <span class="settings-item-title">Default Expiry</span>
+              <span class="settings-item-desc">Set default download and time limits</span>
+            </div>
+            <md-icon class="settings-action">chevron_right</md-icon>
+          </li>
 
-      <li class="settings-item" disabled>
-        <md-icon class="settings-icon">database</md-icon>
-        <div class="settings-text">
-          <span class="settings-item-title">Storage Allocation (Coming Soon)</span>
-          <span class="settings-item-desc">Manage your available space</span>
-        </div>
-        <md-icon class="settings-action">chevron_right</md-icon>
-      </li>
-    </ul>
-  </div>
+          <li class="settings-item" disabled>
+            <md-icon class="settings-icon">database</md-icon>
+            <div class="settings-text">
+              <span class="settings-item-title">Storage Allocation (Coming Soon)</span>
+              <span class="settings-item-desc">Manage your available space</span>
+            </div>
+            <md-icon class="settings-action">chevron_right</md-icon>
+          </li>
+        </ul>
+      </div>
 
-  <div class="settings-section">
-    <h3 class="section-label">Organisation Settings</h3>
-    <ul class="settings-list">
-      
-      <li id="user-menu-item" class="settings-item">
-        <md-icon class="settings-icon">group</md-icon>
-        <div class="settings-text">
-          <span class="settings-item-title">Team Members</span>
-          <span class="settings-item-desc">Manage access and roles</span>
-        </div>
-        <md-icon class="settings-action">chevron_right</md-icon>
-      </li>
+      <div class="settings-section">
+        <h3 class="section-label">Organisation Settings</h3>
+        <ul class="settings-list">
+          
+          <li id="user-menu-item" class="settings-item">
+            <md-icon class="settings-icon">group</md-icon>
+            <div class="settings-text">
+              <span class="settings-item-title">Team Members</span>
+              <span class="settings-item-desc">Manage access and roles</span>
+            </div>
+            <md-icon class="settings-action">chevron_right</md-icon>
+          </li>
 
-      <li id="integrations-menu-item" class="settings-item">
-        <md-icon class="settings-icon">link</md-icon>
-        <div class="settings-text">
-          <span class="settings-item-title">Integrations</span>
-          <span class="settings-item-desc">Manage external access</span>
-        </div>
-        <md-icon class="settings-action">chevron_right</md-icon>
-      </li>
+          <li id="integrations-menu-item" class="settings-item">
+            <md-icon class="settings-icon">link</md-icon>
+            <div class="settings-text">
+              <span class="settings-item-title">Integrations</span>
+              <span class="settings-item-desc">Manage external access</span>
+            </div>
+            <md-icon class="settings-action">chevron_right</md-icon>
+          </li>
 
-      <li class="settings-item" disabled>
-        <md-icon class="settings-icon">water_drop</md-icon>
-        <div class="settings-text">
-          <span class="settings-item-title">Branding (Coming Soon)</span>
-          <span class="settings-item-desc">Customise logo and colours</span>
-        </div>
-        <md-icon class="settings-action">chevron_right</md-icon>
-      </li>
-    </ul>
-  </div>
-</section>
+          <li class="settings-item" disabled>
+            <md-icon class="settings-icon">water_drop</md-icon>
+            <div class="settings-text">
+              <span class="settings-item-title">Branding (Coming Soon)</span>
+              <span class="settings-item-desc">Customise logo and colours</span>
+            </div>
+            <md-icon class="settings-action">chevron_right</md-icon>
+          </li>
+        </ul>
+      </div>
+    </section>
 
-<script type="module">
-    // Navigate from the first menu to secondary pages
-    const limitsMenuItem = document.querySelector("#limits-menu-item");
-    const userMenuItem = document.querySelector("#user-menu-item");
-    const integrationsMenuItem = document.querySelector("#integrations-menu-item");
-    const mainPage = document.querySelector("#settings-main");
-    const limitsPage = document.querySelector("#settings-limits");
-    const userPage = document.querySelector("#settings-user");
-    const integrationsPage = document.querySelector("#settings-integrations");
+    <script type="module">
+        // Navigate from the first menu to secondary pages
+        const limitsMenuItem = document.querySelector("#limits-menu-item");
+        const userMenuItem = document.querySelector("#user-menu-item");
+        const integrationsMenuItem = document.querySelector("#integrations-menu-item");
+        const mainPage = document.querySelector("#settings-main");
+        const limitsPage = document.querySelector("#settings-limits");
+        const userPage = document.querySelector("#settings-user");
+        const integrationsPage = document.querySelector("#settings-integrations");
 
-    if (limitsMenuItem && limitsPage) {
-        limitsMenuItem.addEventListener("click", () => {
-            mainPage.setAttribute("hidden", "");
-            limitsPage.removeAttribute("hidden");
-        });
-    }
+        if (limitsMenuItem && limitsPage) {
+            limitsMenuItem.addEventListener("click", () => {
+                mainPage.setAttribute("hidden", "");
+                limitsPage.removeAttribute("hidden");
+            });
+        }
 
 
-    if (userMenuItem && userPage) {
-        userMenuItem.addEventListener("click", () => {
-            mainPage.setAttribute("hidden", "");
-            userPage.removeAttribute("hidden");
-        });
-    }
+        if (userMenuItem && userPage) {
+            userMenuItem.addEventListener("click", () => {
+                mainPage.setAttribute("hidden", "");
+                userPage.removeAttribute("hidden");
+            });
+        }
 
-    if (integrationsMenuItem && integrationsPage) {
-        integrationsMenuItem.addEventListener("click", () => {
-            mainPage.setAttribute("hidden", "");
-            integrationsPage.removeAttribute("hidden");
-        });
-    }
-</script>
+        if (integrationsMenuItem && integrationsPage) {
+            integrationsMenuItem.addEventListener("click", () => {
+                mainPage.setAttribute("hidden", "");
+                integrationsPage.removeAttribute("hidden");
+            });
+        }
+    </script>
 
-<section id="settings-user" class="settings-page" hidden>
-    <md-icon-button id="settings-user-back" class="popover-back-button">
-        <md-icon>arrow_back</md-icon>
-    </md-icon-button>
-    <ul id="user-list" class="file-list">
-        {% for user in users %}
-            <li id="user-{{ user.id }}" class="file-item">
-                <md-icon class="file-icon">person</md-icon>
-                <div class="file-info">
-                    <span class="file-name">{{ user.first_name }} {{ user.last_name }}</span>
+    <section id="settings-user" class="settings-page" hidden>
+        <md-icon-button id="settings-user-back" class="popover-back-button">
+            <md-icon>arrow_back</md-icon>
+        </md-icon-button>
+        <ul id="user-list" class="file-list">
+            {% for user in users %}
+                <li id="user-{{ user.id }}" class="file-item">
+                    <md-icon class="file-icon">person</md-icon>
+                    <div class="file-info">
+                        <span class="file-name">{{ user.first_name }} {{ user.last_name }}</span>
+                    </div>
+                </li>
+                <script type="module">
+                    // Navigate from the user menu to the detail page and back to the main page
+                    const backButton = document.querySelector("#settings-user-back");
+                    const mainPage = document.querySelector("#settings-main");
+                    const userPage = document.querySelector("#settings-user");
+                    const listItem = document.querySelector("#user-{{ user.id }}");
+                    const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
+
+                    if (backButton && mainPage && userPage) {
+                        backButton.addEventListener("click", () => {
+                            mainPage.removeAttribute("hidden");
+                            userPage.setAttribute("hidden", "");
+                        });
+
+                    }
+
+                    if (listItem && userPage && detailPage) {
+                        listItem.addEventListener("click", (e) => {
+                            userPage.setAttribute("hidden", "");
+                            detailPage.removeAttribute("hidden");
+                        });
+                    }
+
+                </script>
+            {% endfor %}
+        </ul>
+    </section>
+
+    {% for user in users %}
+        {% let is_current_user = user.id == current_user_id %}
+        <section id="settings-user-detail-{{ user.id }}" class="settings-page" hidden>
+            <md-icon-button id="settings-user-detail-{{ user.id }}-back" class="popover-back-button">
+                <md-icon>arrow_back</md-icon>
+            </md-icon-button>
+            <div class="file-details-container">
+                <div class="file-details-grid">
+                    <div class="file-detail-item">
+                        {% if is_current_user %}
+                            <div class="file-detail-item">
+                                <span class="file-detail-label">Name</span>
+                                <div class="file-detail-value-row">
+                                    <div style="display: flex; place-items: center; gap: 0.25rem";>
+                                        <md-filled-text-field type="text" 
+                                                              name="first_name"
+                                                              label="First name" 
+                                                              value="{{ user.first_name }}" 
+                                                              pattern="\W+"
+                                                              hx-patch="/app/settings/user/{{ user.id }}/update"
+                                                              hx-trigger="input delay:750ms"
+                                                              hx-target="#user-first-name-result"
+                                                              hx-swap="innerHTML"
+                                                              class="settings-field-update-input"
+                                                              style="flex: 1;">
+                                        </md-filled-text-field>
+                                        <div id="user-first-name-result" class="settings-field-update-result"></div>
+                                    </div>
+                                    <div style="display: flex; place-items: center; gap: 0.25rem";>
+                                        <md-filled-text-field type="text" 
+                                                              name="last_name"
+                                                              label="Last name" 
+                                                              value="{{ user.last_name }}" 
+                                                              pattern="\W+"
+                                                              hx-patch="/app/settings/user/{{ user.id }}/update"
+                                                              hx-trigger="input, delay:750ms"
+                                                              hx-target="#user-last-name-result"
+                                                              hx-swap="innerHTML"
+                                                              class="settings-field-update-input"
+                                                              style="flex: 1;">
+                                        </md-filled-text-field>
+                                        <div id="user-last-name-result" class="settings-field-update-result"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <h3 class="file-detail-name no-margin">{{ user.get_name() }}</h3>
+                        {% endif %}
+                    </div>
+                    <div class="file-detail-item">
+                        {% if is_current_user %}
+                            <span class="file-detail-label">Email</span>
+                            <div class="file-detail-value-row">
+                                <md-filled-text-field type="email" 
+                                                      name="email"
+                                                      label="Email" 
+                                                      value="{{ user.email }}" 
+                                                      pattern="\W+"
+                                                      hx-patch="/app/settings/user/{{ user.id }}/update"
+                                                      hx-trigger="input delay:750ms"
+                                                      hx-target="#user-email-result"
+                                                      hx-swap="innerHTML"
+                                                      class="settings-field-update-input"
+                                                      style="flex: 1;">
+                                </md-filled-text-field>
+                                <div id="user-email-result" class="settings-field-update-result"></div>
+                            </div>
+                        {% else %}
+                            <span class="file-detail-label">Email</span>
+                            <span class="file-detail-value">{{ user.email }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="file-detail-item">
+                        <span class="file-detail-label">Joined At</span>
+                        <span class="file-detail-value">{{ user.created_at_slash_date() }}</span>
+                    </div>
+                  
+                    <div class="file-detail-item">
+                        <span class="file-detail-label">Files Created</span>
+                        <span class="file-detail-value badge">{{ user.file_count }}</span>
+                    </div>
                 </div>
-            </li>
-            <script type="module">
-                // Navigate from the user menu to the detail page and back to the main page
-                const backButton = document.querySelector("#settings-user-back");
-                const mainPage = document.querySelector("#settings-main");
-                const userPage = document.querySelector("#settings-user");
-                const listItem = document.querySelector("#user-{{ user.id }}");
-                const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
+            </div>
+        </section>
+        <script type="module">
+            const backButton = document.querySelector("#settings-user-detail-{{ user.id }}-back");
+            const userPage = document.querySelector("#settings-user");
+            const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
 
-                if (backButton && mainPage && userPage) {
-                    backButton.addEventListener("click", () => {
-                        mainPage.removeAttribute("hidden");
-                        userPage.setAttribute("hidden", "");
-                    });
+            if (backButton && userPage && detailPage) {
+                backButton.addEventListener("click", () => {
+                    userPage.removeAttribute("hidden");
+                    detailPage.setAttribute("hidden", "");
+                });
+            }
+        </script>
+    {% endfor %}
 
-                }
-
-                if (listItem && userPage && detailPage) {
-                    listItem.addEventListener("click", (e) => {
-                        userPage.setAttribute("hidden", "");
-                        detailPage.removeAttribute("hidden");
-                    });
-                }
-
-            </script>
-        {% endfor %}
-    </ul>
-</section>
-
-{% for user in users %}
-    {% let is_current_user = user.id == current_user_id %}
-    <section id="settings-user-detail-{{ user.id }}" class="settings-page" hidden>
-        <md-icon-button id="settings-user-detail-{{ user.id }}-back" class="popover-back-button">
+    <section id="settings-limits" class="settings-page" hidden>
+        <md-icon-button id="settings-limits-back" class="popover-back-button">
             <md-icon>arrow_back</md-icon>
         </md-icon-button>
         <div class="file-details-container">
+            <h3 class="file-detail-name">File Settings</h3>
+        
             <div class="file-details-grid">
                 <div class="file-detail-item">
-                    {% if is_current_user %}
-                        <div class="file-detail-item">
-                            <span class="file-detail-label">Name</span>
-                            <div class="file-detail-value-row">
-                                <div style="display: flex; place-items: center; gap: 0.25rem";>
-                                    <md-filled-text-field type="text" 
-                                                          name="first_name"
-                                                          label="First name" 
-                                                          value="{{ user.first_name }}" 
-                                                          pattern="\W+"
-                                                          hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                          hx-trigger="input delay:750ms"
-                                                          hx-target="#user-first-name-result"
-                                                          hx-swap="innerHTML"
-                                                          class="settings-field-update-input"
-                                                          style="flex: 1;">
-                                    </md-filled-text-field>
-                                    <div id="user-first-name-result" class="settings-field-update-result"></div>
-                                </div>
-                                <div style="display: flex; place-items: center; gap: 0.25rem";>
-                                    <md-filled-text-field type="text" 
-                                                          name="last_name"
-                                                          label="Last name" 
-                                                          value="{{ user.last_name }}" 
-                                                          pattern="\W+"
-                                                          hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                          hx-trigger="input, delay:750ms"
-                                                          hx-target="#user-last-name-result"
-                                                          hx-swap="innerHTML"
-                                                          class="settings-field-update-input"
-                                                          style="flex: 1;">
-                                    </md-filled-text-field>
-                                    <div id="user-last-name-result" class="settings-field-update-result"></div>
-                                </div>
-                            </div>
-                        </div>
-                    {% else %}
-                        <h3 class="file-detail-name no-margin">{{ user.get_name() }}</h3>
-                    {% endif %}
+                    <span class="file-detail-label">File Expiry</span>
+                    <div class="file-detail-value-row">
+                        <md-filled-text-field type="number" 
+                                              name="file_expiry_minutes"
+                                              label="Expire after" 
+                                              value="{{ file_expiry_minutes }}" 
+                                              min="1" 
+                                              max="60" 
+                                              pattern="\d+"
+                                              suffix-text="minutes"
+                                              hx-patch="/app/settings/update"
+                                              hx-trigger="input delay:750ms"
+                                              hx-target="#expiry-limit-result"
+                                              hx-swap="innerHTML"
+                                              class="settings-field-update-input">
+                        </md-filled-text-field>
+                        <div id="expiry-limit-result" class="settings-field-update-result"></div>
+                    </div>
                 </div>
+          
                 <div class="file-detail-item">
-                    {% if is_current_user %}
-                        <span class="file-detail-label">Email</span>
-                        <div class="file-detail-value-row">
-                            <md-filled-text-field type="email" 
-                                                  name="email"
-                                                  label="Email" 
-                                                  value="{{ user.email }}" 
-                                                  pattern="\W+"
-                                                  hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                  hx-trigger="input delay:750ms"
-                                                  hx-target="#user-email-result"
-                                                  hx-swap="innerHTML"
-                                                  class="settings-field-update-input"
-                                                  style="flex: 1;">
-                            </md-filled-text-field>
-                            <div id="user-email-result" class="settings-field-update-result"></div>
-                        </div>
-                    {% else %}
-                        <span class="file-detail-label">Email</span>
-                        <span class="file-detail-value">{{ user.email }}</span>
-                    {% endif %}
-                </div>
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Joined At</span>
-                    <span class="file-detail-value">{{ user.created_at_slash_date() }}</span>
-                </div>
-              
-                <div class="file-detail-item">
-                    <span class="file-detail-label">Files Created</span>
-                    <span class="file-detail-value badge">{{ user.file_count }}</span>
+                    <span class="file-detail-label">Download Limit</span>
+                    <div class="file-detail-value-row">
+                        <md-filled-text-field type="number" 
+                                              name="download_limit"
+                                              label="Downloadable" 
+                                              value="{{ download_limit }}" 
+                                              min="1" 
+                                              max="100" 
+                                              pattern="\d+"
+                                              suffix-text="times"
+                                              hx-patch="/app/settings/update"
+                                              hx-trigger="input delay:750ms"
+                                              hx-target="#download-limit-result"
+                                              hx-swap="innerHTML"
+                                              class="settings-field-update-input">
+                        </md-filled-text-field>
+                        <div id="download-limit-result" class="settings-field-update-result"></div>
+                    </div>
                 </div>
             </div>
         </div>
+        <script type="module">
+            const backButton = document.querySelector("#settings-limits-back");
+            const mainPage = document.querySelector("#settings-main");
+            const limitsPage = document.querySelector("#settings-limits");
+
+            if (backButton && mainPage && limitsPage) {
+                backButton.addEventListener("click", () => {
+                    mainPage.removeAttribute("hidden");
+                    limitsPage.setAttribute("hidden", "");
+                });
+            }
+        </script>
     </section>
-    <script type="module">
-        const backButton = document.querySelector("#settings-user-detail-{{ user.id }}-back");
-        const userPage = document.querySelector("#settings-user");
-        const detailPage = document.querySelector("#settings-user-detail-{{ user.id }}");
 
-        if (backButton && userPage && detailPage) {
-            backButton.addEventListener("click", () => {
-                userPage.removeAttribute("hidden");
-                detailPage.setAttribute("hidden", "");
-            });
-        }
-    </script>
-{% endfor %}
+    <!-- Integrations -->
+    <section id="settings-integrations" class="settings-page" hidden>
+        <md-icon-button id="settings-integrations-back" class="popover-back-button">
+            <md-icon>arrow_back</md-icon>
+        </md-icon-button>
+        <div class="file-details-container">
+            <h3 class="file-detail-name">Integrations</h3>
 
-<section id="settings-limits" class="settings-page" hidden>
-    <md-icon-button id="settings-limits-back" class="popover-back-button">
-        <md-icon>arrow_back</md-icon>
-    </md-icon-button>
-    <div class="file-details-container">
-        <h3 class="file-detail-name">File Settings</h3>
-    
-        <div class="file-details-grid">
-            <div class="file-detail-item">
-                <span class="file-detail-label">File Expiry</span>
-                <div class="file-detail-value-row">
-                    <md-filled-text-field type="number" 
-                                          name="file_expiry_minutes"
-                                          label="Expire after" 
-                                          value="{{ file_expiry_minutes }}" 
-                                          min="1" 
-                                          max="60" 
-                                          pattern="\d+"
-                                          suffix-text="minutes"
-                                          hx-patch="/app/settings/update"
-                                          hx-trigger="input delay:750ms"
-                                          hx-target="#expiry-limit-result"
-                                          hx-swap="innerHTML"
-                                          class="settings-field-update-input">
-                    </md-filled-text-field>
-                    <div id="expiry-limit-result" class="settings-field-update-result"></div>
-                </div>
-            </div>
-      
-            <div class="file-detail-item">
-                <span class="file-detail-label">Download Limit</span>
-                <div class="file-detail-value-row">
-                    <md-filled-text-field type="number" 
-                                          name="download_limit"
-                                          label="Downloadable" 
-                                          value="{{ download_limit }}" 
-                                          min="1" 
-                                          max="100" 
-                                          pattern="\d+"
-                                          suffix-text="times"
-                                          hx-patch="/app/settings/update"
-                                          hx-trigger="input delay:750ms"
-                                          hx-target="#download-limit-result"
-                                          hx-swap="innerHTML"
-                                          class="settings-field-update-input">
-                    </md-filled-text-field>
-                    <div id="download-limit-result" class="settings-field-update-result"></div>
-                </div>
-            </div>
+            {% for integration in integrations %}
+                <li id="settings-integrations-list-item-local" class="file-item">
+                    <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                    <div class="file-info">
+                        {{ integration.slug.full_name() }}
+                    </div>
+                </li>
+            {% endfor %}
         </div>
-    </div>
-    <script type="module">
-        const backButton = document.querySelector("#settings-limits-back");
-        const mainPage = document.querySelector("#settings-main");
-        const limitsPage = document.querySelector("#settings-limits");
 
-        if (backButton && mainPage && limitsPage) {
-            backButton.addEventListener("click", () => {
-                mainPage.removeAttribute("hidden");
-                limitsPage.setAttribute("hidden", "");
-            });
-        }
-    </script>
-</section>
+        <script type="module">
+            const backButton = document.querySelector("#settings-integrations-back");
+            const mainPage = document.querySelector("#settings-main");
+            const integrationsPage = document.querySelector("#settings-integrations");
 
-<!-- Integrations -->
-<section id="settings-integrations" class="settings-page" hidden>
-    <md-icon-button id="settings-integrations-back" class="popover-back-button">
-        <md-icon>arrow_back</md-icon>
-    </md-icon-button>
-    <div class="file-details-container">
-        <h3 class="file-detail-name">Integrations</h3>
+            const localListItem = document.querySelector("#settings-integrations-list-item-local");
+            const localPage = document.querySelector("#settings-integrations-local");
+            const gcsListItem = document.querySelector("#settings-integrations-list-item-gcs");
+            const gcsPage = document.querySelector("#settings-integrations-gcs");
 
-        {% for integration in integrations %}
-            <li id="settings-integrations-list-item-local" class="file-item">
-                <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
-                <div class="file-info">
-                    {{ integration.slug.full_name() }}
-                </div>
-            </li>
-        {% endfor %}
-    </div>
+            if (backButton && mainPage && integrationsPage) {
+                backButton.addEventListener("click", () => {
+                    mainPage.removeAttribute("hidden");
+                    integrationsPage.setAttribute("hidden", "");
+                });
+            }
 
-    <script type="module">
-        const backButton = document.querySelector("#settings-integrations-back");
-        const mainPage = document.querySelector("#settings-main");
-        const integrationsPage = document.querySelector("#settings-integrations");
+            if (localListItem && integrationsPage && localPage) {
+                localListItem.addEventListener("click", () => {
+                    localPage.removeAttribute("hidden");
+                    integrationsPage.setAttribute("hidden", "");
+                });
+            }
 
-        const localListItem = document.querySelector("#settings-integrations-list-item-local");
-        const localPage = document.querySelector("#settings-integrations-local");
-        const gcsListItem = document.querySelector("#settings-integrations-list-item-gcs");
-        const gcsPage = document.querySelector("#settings-integrations-gcs");
-
-        if (backButton && mainPage && integrationsPage) {
-            backButton.addEventListener("click", () => {
-                mainPage.removeAttribute("hidden");
-                integrationsPage.setAttribute("hidden", "");
-            });
-        }
-
-        if (localListItem && integrationsPage && localPage) {
-            localListItem.addEventListener("click", () => {
-                localPage.removeAttribute("hidden");
-                integrationsPage.setAttribute("hidden", "");
-            });
-        }
-
-        if (gcsListItem && integrationsPage && gcsPage) {
-            gcsListItem.addEventListener("click", () => {
-                gcsPage.removeAttribute("hidden");
-                integrationsPage.setAttribute("hidden", "");
-            });
-        }
-    </script>
-</section>
-
+            if (gcsListItem && integrationsPage && gcsPage) {
+                gcsListItem.addEventListener("click", () => {
+                    gcsPage.removeAttribute("hidden");
+                    integrationsPage.setAttribute("hidden", "");
+                });
+            }
+        </script>
+    </section>
+</stack-menu>
