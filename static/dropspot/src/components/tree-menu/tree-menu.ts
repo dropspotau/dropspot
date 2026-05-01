@@ -39,14 +39,21 @@ export class TreeMenuElement extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues): void {
-    if (changedProperties.has("openKey") && this.openKey) {
-      this.showElement(this.openKey);
+    const hasKeyChanged = changedProperties.has("openKey") && this.openKey;
+
+    if (hasKeyChanged) {
+      this.showElement(this.openKey!);
 
       // Save the previous key in case of a back button press
       const previousKey = changedProperties.get("openKey") ?? null;
       this.keyHistory.push(previousKey);
     }
   }
+
+  /**
+   * Shows the page with the given key and hides all other pages
+   * @param key The page key to show
+   */
   private showElement = (key: string): void => {
     const menuKeyElements = [...this.querySelectorAll("[menu-key]")].filter(
       (element) => element instanceof HTMLElement,
@@ -91,6 +98,10 @@ export class TreeMenuElement extends LitElement {
     this.openKey = key;
   };
 
+  /**
+   * Goes back to the previous page
+   * @param e The event
+   */
   private handleBackClick = (): void => {
     const previousKey = this.keyHistory.pop();
 
@@ -100,7 +111,6 @@ export class TreeMenuElement extends LitElement {
   };
 
   render() {
-    console.debug(this.openKey, this.defaultKey);
     const isSubPage = this.openKey !== this.defaultKey;
 
     return html`
