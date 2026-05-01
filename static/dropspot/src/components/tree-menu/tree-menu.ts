@@ -1,4 +1,4 @@
-import { html, css, LitElement } from "lit";
+import { html, css, LitElement, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("tree-menu")
@@ -22,64 +22,95 @@ export class TreeMenuElement extends LitElement {
   @property({ attribute: "default-key" })
   private defaultKey?: string;
 
+  /** The current open key */
+  @state()
+  private openKey: string | null = null;
+  private keyHistory: string[] = [];
+
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener("menu-navigation", this.handleMenuChange);
     this.addEventListener("click", this.handleClick);
 
     if (this.defaultKey) {
-      this.showElement(this.defaultKey);
+      // Open the default key by default
+      this.openKey = this.defaultKey;
     }
   }
 
-  @state()
-  private openIndex: number = 0;
+  protected updated(changedProperties: PropertyValues): void {
+    if (changedProperties.has("openKey") && this.openKey) {
+      this.showElement(this.openKey);
 
+      // Save the previous key in case of a back button press
+      const previousKey = changedProperties.get("openKey") ?? null;
+      this.keyHistory.push(previousKey);
+    }
+  }
   private showElement = (key: string): void => {
-    const element = this.querySelector(`[menu-key="${key}"]`);
+    const menuKeyElements = [...this.querySelectorAll("[menu-key]")].filter(
+      (element) => element instanceof HTMLElement,
+    );
 
-    if (element instanceof HTMLElement) {
-      element.setAttribute("menu-open", "");
+    for (const element of menuKeyElements) {
+      const isTarget = element.getAttribute("menu-key") === key;
+
+      if (isTarget) {
+        element.setAttribute("menu-open", "");
+      } else {
+        element.removeAttribute("menu-open");
+      }
     }
-
-    const otherElements = [
-      ...this.querySelectorAll(`[menu-key]:not([menu-key="${key}"])`),
-    ].filter((element) => element instanceof HTMLElement);
-
-    for (const element of otherElements) {
-      element.removeAttribute("menu-open");
-    }
-    console.debug(element);
-    console.debug(otherElements);
   };
 
+  /**
+   * Handles a menu change via child element click
+   * @param e The event
+   */
   private handleClick = (e: MouseEvent): void => {
     const { target } = e;
 
-    if (!(target instanceof HTMLElement)) {
+    if (!(target instanceof Element)) {
       return;
     }
 
-    const key = target.getAttribute("menu-navigate-to");
+    const keyElement = target.closest("[menu-navigate-to]");
+    const key = keyElement?.getAttribute("menu-navigate-to");
 
     if (key) {
-      this.showElement(key);
+      this.openKey = key;
     }
   };
 
+  /**
+   * Handles a programmatic menu change
+   * @param e The event
+   */
   private handleMenuChange = (e: MenuNavigationEvent): void => {
     const { key } = e.detail;
-    this.showElement(key);
+    this.openKey = key;
+  };
+
+  private handleBackClick = (): void => {
+    const previousKey = this.keyHistory.pop();
+
+    if (previousKey) {
+      this.openKey = previousKey;
+    }
   };
 
   render() {
-    const isSubPage = this.openIndex > 0;
+    console.debug(this.openKey, this.defaultKey);
+    const isSubPage = this.openKey !== this.defaultKey;
 
     return html`
       ${isSubPage
         ? html`
             <slot name="back-button">
-              <md-icon-button class="popover-back-button">
+              <md-icon-button
+                class="popover-back-button"
+                @click="${this.handleBackClick}"
+              >
                 <md-icon>arrow_back</md-icon>
               </md-icon-button>
             </slot>
