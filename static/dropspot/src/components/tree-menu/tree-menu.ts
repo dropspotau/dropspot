@@ -1,8 +1,8 @@
 import { html, css, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
-@customElement("stack-menu")
-export class StackMenuElement extends LitElement {
+@customElement("tree-menu")
+export class TreeMenuElement extends LitElement {
   static styles = css`
     :host {
       display: contents;
@@ -53,7 +53,7 @@ type MenuNavigationEvent = CustomEvent<{
 
 declare global {
   interface HTMLElementTagNameMap {
-    "stack-menu": StackMenuElement;
+    "tree-menu": TreeMenuElement;
   }
 
   interface DocumentEventMap {

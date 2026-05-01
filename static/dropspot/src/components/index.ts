@@ -1,3 +1,3 @@
 export { IntegrationElement } from "./integration";
-export { StackMenuElement } from "./stack-menu";
+export { TreeMenuElement } from "./tree-menu";
 export { UploadBarElement } from "./upload-bar";
