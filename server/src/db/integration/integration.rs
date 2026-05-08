@@ -65,16 +65,18 @@ pub async fn upsert_integration(
     pool: &PgPool,
     organisation_id: &Uuid,
     slug: &StorageType,
+    is_active: bool,
     data: &IntegrationData,
 ) -> Result<Integration, sqlx::Error> {
     sqlx::query_as!(
         Integration,
         r#"
             insert into integration (organisation_id, slug, is_active, data)
-            values ($1, $2, true, $3)
+            values ($1, $2, $3, $4)
             on conflict (organisation_id, slug)
             do update set
-                data = $3
+                is_active = $3,
+                data = $4
             returning
                 id,
                 slug as "slug: StorageType",
@@ -84,6 +86,7 @@ pub async fn upsert_integration(
         "#,
         organisation_id,
         slug as &StorageType, // Needed for correct enum typing
+        is_active,
         Json(data) as _,
     )
     .fetch_one(pool)

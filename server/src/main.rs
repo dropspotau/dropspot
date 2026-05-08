@@ -30,6 +30,7 @@ use crate::handlers::{
     handle_get_integration_by_slug, handle_get_integrations, handle_header, handle_index,
     handle_list_files, handle_login, handle_preview_upload, handle_refresh_tokens, handle_settings,
     handle_update_settings, handle_update_user, handle_upsert_integration,
+    handle_upsert_integration_form,
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
@@ -234,6 +235,10 @@ async fn main() -> Result<(), ()> {
                     .route("/app/settings", get(handle_settings))
                     .route("/app/settings/update", patch(handle_update_settings))
                     .route("/app/settings/user/{id}/update", patch(handle_update_user))
+                    .route(
+                        "/app/integrations/{slug}/upsert",
+                        patch(handle_upsert_integration_form),
+                    )
                     .nest_service("/static", serve_dir.clone())
                     .fallback_service(serve_dir)
                     .with_state(state);

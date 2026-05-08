@@ -221,6 +221,7 @@
     </section>
 
     {% for integration in integrations %}
+        {% let slug = integration.slug.to_string() %}
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
             <div class="file-details-container">
                 <div class="file-details-grid">
@@ -238,14 +239,21 @@
                         </div>
                     </div>
 
-                    {% match integration.data.0 %}
-                        {% when IntegrationData::Local with (data) %}
-                            {% let folder = data.folder %}
-                            {% include "local_integration.html" %}
-                        {% when IntegrationData::Gcs with (data) %}
-                            {% let bucket_name = data.bucket_name %}
-                            {% include "gcs_integration.html" %}
-                    {% endmatch %}
+                    <form hx-patch="/app/integrations/{{ slug }}/upsert"
+                          hx-trigger="input delay:750ms"
+                          hx-target="#integrations-{{ slug }}-result"
+                    >
+                        <div id="integrations-{{ slug }}-result"></div>
+                        <input type="checkbox" name="is_active" value="true" switch>
+                        {% match integration.data.0 %}
+                            {% when IntegrationData::Local with (data) %}
+                                {% let folder = data.folder %}
+                                {% include "local_integration.html" %}
+                            {% when IntegrationData::Gcs with (data) %}
+                                {% let bucket_name = data.bucket_name %}
+                                {% include "gcs_integration.html" %}
+                        {% endmatch %}
+                    </form>
                 </div>
             </div>
         </section>
