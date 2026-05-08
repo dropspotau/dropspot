@@ -19,6 +19,7 @@
           config = {
             allowUnfree = true;
             permittedInsecurePackages = [];
+            cudaSupport = true; # For llama-cpp to allow GPU usage
           };
         };
 
@@ -51,8 +52,12 @@
           direnv
           gdk
           gcloud-login
+          opencode
 
-          llama-cpp
+          (llama-cpp.override { 
+            # Pass your config value here if the derivation supports it
+            cudaSupport = true; # Compiele with GPU usage
+          })
         ] ++ rustDeps ++ editorDeps;
       in
       {
