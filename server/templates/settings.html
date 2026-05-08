@@ -237,6 +237,15 @@
                             {{ integration.slug.full_name() }}
                         </div>
                     </div>
+
+                    {% match integration.data.0 %}
+                        {% when IntegrationData::Local with (data) %}
+                            {% let folder = data.folder %}
+                            {% include "local_integration.html" %}
+                        {% when IntegrationData::Gcs with (data) %}
+                            {% let bucket_name = data.bucket_name %}
+                            {% include "gcs_integration.html" %}
+                    {% endmatch %}
                 </div>
             </div>
         </section>
