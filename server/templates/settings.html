@@ -239,12 +239,12 @@
                         </div>
                     </div>
 
+                    <integration-form slug="{{ slug }}" is-active="{{ integration.is_active }}"></integration-form>
                     <form hx-patch="/app/integrations/{{ slug }}/upsert"
                           hx-trigger="input delay:750ms"
                           hx-target="#integrations-{{ slug }}-result"
                     >
                         <div id="integrations-{{ slug }}-result"></div>
-                        <input type="checkbox" name="is_active" value="true" switch>
                         {% match integration.data.0 %}
                             {% when IntegrationData::Local with (data) %}
                                 {% let folder = data.folder %}

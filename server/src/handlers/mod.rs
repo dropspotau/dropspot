@@ -15,5 +15,4 @@ pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
 pub use web::file::{handle_delete_file, handle_files};
 pub use web::header::handle_header;
 pub use web::index::handle_index;
-pub use web::integration::handle_upsert_integration as handle_upsert_integration_form;
 pub use web::settings::{handle_settings, handle_update_settings, handle_update_user};

@@ -75,7 +75,7 @@ pub async fn upsert_integration(
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let result = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/api/integrations/{slug}/upsert"))
+        .patch(format!("{ENDPOINT}/api/integrations/{slug}/upsert"))
         .headers(headers)
         .json(&payload)
         .send()
