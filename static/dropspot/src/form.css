@@ -1,0 +1,50 @@
+/** TODO(alec): Rename this to be general form class names */
+
+/** Overarching form container */
+.file-details-grid {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+/** A form row */
+.file-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/** Form field label */
+.file-detail-label {
+  font-size: 13px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/** Form title */
+.file-detail-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/** Form field value. Used to display a value when a field can't be edited */
+.file-detail-value {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+/** A row used to contain an input and a tick or cross based on whether it succeeded or not */
+.file-detail-value-row {
+  display: flex;
+  place-items: center;
+  gap: 1rem;
+
+  &:has(.settings-field-update-result) {
+      justify-content: space-between;
+  };
+}

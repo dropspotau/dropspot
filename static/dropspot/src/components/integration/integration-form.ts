@@ -5,10 +5,13 @@ import {
   type LocalIntegrationData,
   type StorageType,
 } from "dropspot-core";
+import { MdSwitch } from "@material/web/switch/switch";
+import { MdFilledTextField } from "@material/web/textfield/filled-text-field";
+
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { getAuth } from "../../auth";
-import { MdFilledTextField } from "@material/web/textfield/filled-text-field";
+import { applyGlobalStyles } from "../../style";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {
@@ -31,7 +34,13 @@ const getInitialData = (slug: StorageType): IntegrationData => {
  */
 @customElement("integration-form")
 export class IntegrationFormElement extends LitElement {
-  static styles = css``;
+  static styles = css`
+    :host {
+      display: flex;
+      flex-flow: column;
+      gap: 1rem;
+    }
+  `;
 
   @property()
   private slug: StorageType | null = null;
@@ -50,6 +59,10 @@ export class IntegrationFormElement extends LitElement {
     }
 
     this.data = getInitialData(this.slug);
+
+    if (this.shadowRoot) {
+      applyGlobalStyles(this.shadowRoot);
+    }
   }
 
   /**
@@ -75,26 +88,29 @@ export class IntegrationFormElement extends LitElement {
   private handleActiveChange = (e: Event): void => {
     const { target } = e;
 
-    if (!(target instanceof HTMLInputElement)) {
+    if (!(target instanceof MdSwitch)) {
       return;
     }
 
-    this.isActive = target.checked;
+    this.isActive = target.selected;
   };
 
   private renderLocal = (): TemplateResult<1> => {
     const data: LocalIntegrationData = { folder: "", ...this.data };
 
     return html`
-      <md-filled-text-field
-        type="text"
-        name="folder"
-        value="${data.folder}"
-        pattern="w+"
-        class="settings-field-update-input"
-        @change="${this.handleChange("folder", (value) => value)}"
-      >
-      </md-filled-text-field>
+      <div class="file-detail-item">
+        <span class="file-detail-label">Folder</span>
+        <md-filled-text-field
+          type="text"
+          name="folder"
+          value="${data.folder}"
+          pattern="w+"
+          class="settings-field-update-input"
+          @change="${this.handleChange("folder", (value) => value)}"
+        >
+        </md-filled-text-field>
+      </div>
     `;
   };
 
@@ -102,14 +118,19 @@ export class IntegrationFormElement extends LitElement {
     const data: GcsIntegrationData = { bucket_name: "", ...this.data };
 
     return html`
-      <md-filled-text-field
-        type="text"
-        value="${data.bucket_name}"
-        pattern="w+"
-        class="settings-field-update-input"
-        @change="${this.handleChange("bucket_name", (value) => value)}"
-      >
-      </md-filled-text-field>
+      <div class="file-detail-item">
+        <span class="file-detail-label">Folder</span>
+        <md-filled-text-field
+          type="text"
+          name="bucket"
+          label="Bucket"
+          value="${data.bucket_name}"
+          pattern="w+"
+          class="settings-field-update-input"
+          @change="${this.handleChange("bucket_name", (value) => value)}"
+        >
+        </md-filled-text-field>
+      </div>
     `;
   };
 
@@ -129,16 +150,20 @@ export class IntegrationFormElement extends LitElement {
 
   render() {
     return html`
-      <input
-        type="checkbox"
-        name="is_active"
-        switch
-        .checked=${this.isActive}
-        @change=${this.handleActiveChange}
-      />
-      ${this.slug === "local" ? this.renderLocal() : ""}
-      ${this.slug === "gcs" ? this.renderGcs() : ""}
-      <md-filled-button @click=${this.handleSubmit}>Submit</md-filled-button>
+      <div class="file-details-grid">
+        <div class="file-detail-item">
+          <span class="file-detail-label">Active</span>
+          <md-switch
+            icons
+            .checked=${this.isActive}
+            @change=${this.handleActiveChange}
+            ${this.isActive ? html`selected` : ""}
+          ></md-switch>
+        </div>
+        ${this.slug === "local" ? this.renderLocal() : ""}
+        ${this.slug === "gcs" ? this.renderGcs() : ""}
+        <md-filled-button @click=${this.handleSubmit}>Submit</md-filled-button>
+      </div>
     `;
   }
 }

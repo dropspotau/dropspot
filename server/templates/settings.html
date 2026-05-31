@@ -232,28 +232,8 @@
                             <span>{{ integration.slug.full_name() }}</span>
                         </div>
                     </div>
-                    <div class="file-detail-item">
-                        <span class="file-detail-label">Data</span>
-                        <div class="file-detail-value-row">
-                            {{ integration.slug.full_name() }}
-                        </div>
-                    </div>
 
                     <integration-form slug="{{ slug }}" {% if integration.is_active %}is-active{% endif %}></integration-form>
-                    <form hx-patch="/app/integrations/{{ slug }}/upsert"
-                          hx-trigger="input delay:750ms"
-                          hx-target="#integrations-{{ slug }}-result"
-                    >
-                        <div id="integrations-{{ slug }}-result"></div>
-                        {% match integration.data.0 %}
-                            {% when IntegrationData::Local with (data) %}
-                                {% let folder = data.folder %}
-                                {% include "local_integration.html" %}
-                            {% when IntegrationData::Gcs with (data) %}
-                                {% let bucket_name = data.bucket_name %}
-                                {% include "gcs_integration.html" %}
-                        {% endmatch %}
-                    </form>
                 </div>
             </div>
         </section>

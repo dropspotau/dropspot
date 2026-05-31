@@ -6,11 +6,13 @@ import "@material/web/progress/circular-progress.js";
 import "@material/web/menu/menu.js";
 import "@material/web/menu/menu-item.js";
 import "@material/web/textfield/filled-text-field.js";
+import "@material/web/switch/switch.js";
 import init from "dropspot-core";
 
 import "./header.css";
 import "./index.css";
 import "./file.css";
+import "./form.css";
 import "./menu.css";
 import "./settings.css";
 import "./theme.css";
