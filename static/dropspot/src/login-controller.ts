@@ -179,6 +179,11 @@ export class LoginControllerElement extends LitElement {
   `;
 
   render() {
+    const subtitleText = this.isSigningUp
+      ? "Already have an account?"
+      : "No account?";
+    const actionText = this.isSigningUp ? "Sign in" : "Sign up";
+
     return html`
       <md-filled-button class="button-white" @click="${this.handleClick}">
         Login
@@ -199,9 +204,9 @@ export class LoginControllerElement extends LitElement {
           <hr />
           <section class="form-row">
             <p class="no-margin">
-              <span>Already have an account?</span>
+              <span>${subtitleText}</span>
               <span class="microlink" @click="${this.handleToggleSignup}"
-                >Sign up</span
+                >${actionText}</span
               >
             </p>
           </section>

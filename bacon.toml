@@ -99,8 +99,8 @@ background = true
 watch = ["templates"]
 on_change_strategy = "kill_then_restart"
 
-[jobs.wasm-pack]
-command = ["wasm-pack", "build"]
+[jobs.build-wasm]
+command = ["./scripts/build-wasm.sh"]
 need_stdout = true
 
 # Run your long-running application (eg server) and have the result displayed in bacon.
