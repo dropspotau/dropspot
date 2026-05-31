@@ -28,6 +28,19 @@ pub enum IntegrationData {
     Gcs(GcsIntegrationData),
 }
 
+impl IntegrationData {
+    pub fn to_map(&self) -> Vec<(String, String)> {
+        match self {
+            IntegrationData::Local(data) => {
+                vec![("folder".to_string(), data.folder.clone())]
+            }
+            IntegrationData::Gcs(data) => {
+                vec![("bucket_name".to_string(), data.bucket_name.clone())]
+            }
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct UpsertIntegrationPayload {

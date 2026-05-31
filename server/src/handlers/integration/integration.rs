@@ -114,7 +114,14 @@ pub async fn handle_upsert_integration(
     };
 
     let organisation = organisation.unwrap();
-    let result = upsert_integration(&pool, &organisation.id, &storage_type, payload.is_active, &payload.data).await;
+    let result = upsert_integration(
+        &pool,
+        &organisation.id,
+        &storage_type,
+        payload.is_active,
+        &payload.data,
+    )
+    .await;
 
     if result.is_err() {
         let api_error = ApiError::new("Integration not found".to_owned(), StatusCode::BAD_REQUEST);

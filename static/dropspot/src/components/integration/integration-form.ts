@@ -64,6 +64,15 @@ export class IntegrationFormElement extends LitElement {
     if (this.shadowRoot) {
       applyGlobalStyles(this.shadowRoot);
     }
+
+    // Take any existing field attributes and update the initial form
+    for (const fieldName in this.dataset) {
+      const fieldValue = this.dataset[fieldName];
+
+      if (fieldName in this.data && fieldValue !== undefined) {
+        this.data = { ...this.data, [fieldName]: fieldValue };
+      }
+    }
   }
 
   /**

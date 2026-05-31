@@ -233,7 +233,13 @@
                         </div>
                     </div>
 
-                    <integration-form slug="{{ slug }}" {% if integration.is_active %}is-active{% endif %}></integration-form>
+                    <integration-form 
+                        slug="{{ slug }}"
+                        {% if integration.is_active %}is-active{% endif %}
+                        {% for (field, value) in integration.data.to_map() %}
+                            data-{{ field }}="{{ value }}"
+                        {% endfor %}
+                    ></integration-form>
                 </div>
             </div>
         </section>

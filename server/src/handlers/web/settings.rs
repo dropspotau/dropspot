@@ -5,7 +5,6 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use dropspot_core::integration::integration::IntegrationData;
 use serde::Deserialize;
 use uuid::Uuid;
 
