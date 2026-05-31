@@ -41,6 +41,11 @@
           wasm-pack # WebAssembly compilation
         ];
 
+        tsDeps = with pkgs; [
+          typescript
+          vtsls
+        ];
+
         editorDeps = with pkgs; [
           neovim
           rustfmt
@@ -58,7 +63,7 @@
             # Pass your config value here if the derivation supports it
             cudaSupport = true; # Compiele with GPU usage
           })
-        ] ++ rustDeps ++ editorDeps;
+        ] ++ rustDeps ++ tsDeps ++ editorDeps;
       in
       {
         devShells.default = with pkgs; mkShell {
