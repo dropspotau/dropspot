@@ -239,7 +239,7 @@
                         </div>
                     </div>
 
-                    <integration-form slug="{{ slug }}" is-active="{{ integration.is_active }}"></integration-form>
+                    <integration-form slug="{{ slug }}" {% if integration.is_active %}is-active{% endif %}></integration-form>
                     <form hx-patch="/app/integrations/{{ slug }}/upsert"
                           hx-trigger="input delay:750ms"
                           hx-target="#integrations-{{ slug }}-result"

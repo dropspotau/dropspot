@@ -10,24 +10,25 @@ import { customElement, property, state } from "lit/decorators.js";
 import { getAuth } from "../../auth";
 import { MdFilledTextField } from "@material/web/textfield/filled-text-field";
 
-const isLocal = (
-  data: IntegrationData | null,
-): data is LocalIntegrationData => {
-  if (data === null) {
-    return false;
+const getInitialData = (slug: StorageType): IntegrationData => {
+  if (slug === "local") {
+    return { folder: "" };
   }
 
-  return data.hasOwnProperty("folder");
-};
-
-const isGcs = (data: IntegrationData | null): data is GcsIntegrationData => {
-  if (data === null) {
-    return false;
+  if (slug === "gcs") {
+    return { bucket_name: "" };
   }
 
-  return data.hasOwnProperty("bucket");
+  if (slug === "s3") {
+    return { bucket_name: "" };
+  }
+
+  throw new Error(`Cannot get initial data for invalid slug: ${slug}`);
 };
 
+/**
+ * A form
+ */
 @customElement("integration-form")
 export class IntegrationFormElement extends LitElement {
   static styles = css``;
@@ -39,27 +40,50 @@ export class IntegrationFormElement extends LitElement {
   private isActive: boolean = false;
 
   @state()
-  private data: IntegrationData | null = null;
+  private data: IntegrationData = {} as IntegrationData; // Gets loaded on mount
 
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    if (!this.slug) {
+      throw new Error("<integration-form> missing slug");
+    }
+
+    this.data = getInitialData(this.slug);
+  }
+
+  /**
+   * Updates data of a given integration
+   * @param key The field of the integration data to change
+   * @param transform Transforms the string value of the form input to the respective data type
+   */
   private handleChange =
     <Type extends IntegrationData>(
       key: keyof Type,
-      fallbackData: Type,
       transform: (value: string) => Type[typeof key],
     ): ((e: Event) => void) =>
     (e) => {
-      if (!(e.target instanceof MdFilledTextField)) {
+      if (!(e.target instanceof MdFilledTextField) || !this.slug) {
         return;
       }
 
       const value = transform(e.target.value);
-      let data = isLocal(this.data) ? this.data : fallbackData;
+      const data = this.data ?? getInitialData(this.slug);
       this.data = { ...data, [key]: value };
     };
 
+  private handleActiveChange = (e: Event): void => {
+    const { target } = e;
+
+    if (!(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    this.isActive = target.checked;
+  };
+
   private renderLocal = (): TemplateResult<1> => {
-    const initialData: LocalIntegrationData = { folder: "" };
-    const data = isLocal(this.data) ? this.data : initialData;
+    const data: LocalIntegrationData = { folder: "", ...this.data };
 
     return html`
       <md-filled-text-field
@@ -68,15 +92,14 @@ export class IntegrationFormElement extends LitElement {
         value="${data.folder}"
         pattern="w+"
         class="settings-field-update-input"
-        @change="${this.handleChange("folder", data, (value) => value)}"
+        @change="${this.handleChange("folder", (value) => value)}"
       >
       </md-filled-text-field>
     `;
   };
 
   private renderGcs = (): TemplateResult<1> => {
-    const initialData: GcsIntegrationData = { bucket_name: "" };
-    let data = isGcs(this.data) ? this.data : initialData;
+    const data: GcsIntegrationData = { bucket_name: "", ...this.data };
 
     return html`
       <md-filled-text-field
@@ -84,7 +107,7 @@ export class IntegrationFormElement extends LitElement {
         value="${data.bucket_name}"
         pattern="w+"
         class="settings-field-update-input"
-        @change="${this.handleChange("bucket_name", data, (value) => value)}"
+        @change="${this.handleChange("bucket_name", (value) => value)}"
       >
       </md-filled-text-field>
     `;
@@ -92,7 +115,6 @@ export class IntegrationFormElement extends LitElement {
 
   private handleSubmit = async (): Promise<void> => {
     const auth = getAuth();
-    console.debug(auth, this.slug, this.isActive, this.data);
 
     if (!this.slug || !this.data || !auth) {
       return;
@@ -107,13 +129,12 @@ export class IntegrationFormElement extends LitElement {
 
   render() {
     return html`
-      FORM ${this.isActive ? "yes" : "no"}
       <input
         type="checkbox"
         name="is_active"
-        value="true"
         switch
         .checked=${this.isActive}
+        @change=${this.handleActiveChange}
       />
       ${this.slug === "local" ? this.renderLocal() : ""}
       ${this.slug === "gcs" ? this.renderGcs() : ""}
