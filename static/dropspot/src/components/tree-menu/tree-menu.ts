@@ -1,4 +1,4 @@
-import { html, css, LitElement, type PropertyValues } from "lit";
+import { html, css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("tree-menu")
@@ -35,18 +35,7 @@ export class TreeMenuElement extends LitElement {
     if (this.defaultKey) {
       // Open the default key by default
       this.openKey = this.defaultKey;
-    }
-  }
-
-  protected updated(changedProperties: PropertyValues): void {
-    const hasKeyChanged = changedProperties.has("openKey") && this.openKey;
-
-    if (hasKeyChanged) {
-      this.showElement(this.openKey!);
-
-      // Save the previous key in case of a back button press
-      const previousKey = changedProperties.get("openKey") ?? null;
-      this.keyHistory.push(previousKey);
+      this.showElement(this.openKey);
     }
   }
 
@@ -84,8 +73,14 @@ export class TreeMenuElement extends LitElement {
     const keyElement = target.closest("[menu-navigate-to]");
     const key = keyElement?.getAttribute("menu-navigate-to");
 
+    if (key && this.openKey && key !== this.openKey) {
+      // Record this key in the history, in case we go back
+      this.keyHistory.push(this.openKey);
+    }
+
     if (key) {
       this.openKey = key;
+      this.showElement(key);
     }
   };
 
@@ -95,7 +90,14 @@ export class TreeMenuElement extends LitElement {
    */
   private handleMenuChange = (e: MenuNavigationEvent): void => {
     const { key } = e.detail;
+
+    if (this.openKey) {
+      // Record this key in the history, in case we go back
+      this.keyHistory.push(this.openKey);
+    }
+
     this.openKey = key;
+    this.showElement(key);
   };
 
   /**
@@ -107,6 +109,7 @@ export class TreeMenuElement extends LitElement {
 
     if (previousKey) {
       this.openKey = previousKey;
+      this.showElement(this.openKey);
     }
   };
 
