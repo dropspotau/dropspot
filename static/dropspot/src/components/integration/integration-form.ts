@@ -12,6 +12,7 @@ import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { getAuth } from "../../auth";
 import { applyGlobalStyles } from "../../style";
+import { ToastElement } from "../../toast";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {
@@ -146,6 +147,7 @@ export class IntegrationFormElement extends LitElement {
       auth,
       this.slug,
     );
+    ToastElement.create("Updated!", "success");
   };
 
   render() {
@@ -155,9 +157,8 @@ export class IntegrationFormElement extends LitElement {
           <span class="file-detail-label">Active</span>
           <md-switch
             icons
-            .checked=${this.isActive}
+            .selected=${this.isActive}
             @change=${this.handleActiveChange}
-            ${this.isActive ? html`selected` : ""}
           ></md-switch>
         </div>
         ${this.slug === "local" ? this.renderLocal() : ""}
