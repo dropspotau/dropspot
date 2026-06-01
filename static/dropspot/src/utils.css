@@ -30,6 +30,14 @@
         --md-filled-button-pressed-label-text-color: #FFFFFF;
     }
 
+    .button-success {
+        --md-filled-button-container-color: var(--dropspot-success);
+        --md-filled-button-label-text-color: #FFFFFF;
+        --md-filled-button-hover-label-text-color: #FFFFFF;
+        --md-filled-button-focus-label-text-color: #FFFFFF;
+        --md-filled-button-pressed-label-text-color: #FFFFFF;
+    }
+
     .md-icon-button-white {
         --md-icon-button-icon-color: #FFFFFF;
         --md-icon-button-selected-icon-color: #FFFFFF;
@@ -37,6 +45,14 @@
         --md-icon-button-disabled-icon-color: #FFFFFF;
         --md-icon-button-hover-icon-color: #FFFFFF;
         --md-icon-button-pressed-icon-color: #FFFFFF;
+    }
+
+
+    md-switch {
+        --md-switch-selected-track-color: var(--dropspot-success);
+        --md-switch-selected-hover-track-color: var(--dropspot-success);
+        --md-switch-selected-focus-track-color: var(--dropspot-success);
+        --md-switch-selected-pressed-track-color: var(--dropspot-success);
     }
 
     md-filled-text-field {
