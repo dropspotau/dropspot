@@ -75,7 +75,7 @@
         {% let is_current_user = user.id == current_user_id %}
         <section class="settings-page" menu-key="user-{{ user.id }}">
             <div class="file-details-container">
-                <div class="file-details-grid">
+                <div class="form">
                     <div class="form-row">
                         {% if is_current_user %}
                             <div class="form-row">
@@ -158,7 +158,7 @@
         <div class="file-details-container">
             <h3 class="file-detail-name">File Settings</h3>
         
-            <div class="file-details-grid">
+            <div class="form">
                 <div class="form-row">
                     <span class="file-detail-label">File Expiry</span>
                     <div class="file-detail-value-row">
@@ -224,7 +224,7 @@
         {% let slug = integration.slug.to_string() %}
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
             <div class="file-details-container">
-                <div class="file-details-grid">
+                <div class="form">
                     <div class="form-row">
                         <span class="file-detail-label">Name</span>
                         <div class="file-detail-value-row">

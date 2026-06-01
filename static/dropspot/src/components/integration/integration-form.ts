@@ -161,7 +161,7 @@ export class IntegrationFormElement extends LitElement {
 
   render() {
     return html`
-      <div class="file-details-grid">
+      <div class="form">
         <div class="form-row">
           <span class="file-detail-label">Active</span>
           <md-switch
