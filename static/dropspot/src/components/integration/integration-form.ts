@@ -110,7 +110,7 @@ export class IntegrationFormElement extends LitElement {
 
     return html`
       <div class="form-row">
-        <span class="file-detail-label">Folder</span>
+        <span class="form-label">Folder</span>
         <md-filled-text-field
           type="text"
           name="folder"
@@ -129,7 +129,7 @@ export class IntegrationFormElement extends LitElement {
 
     return html`
       <div class="form-row">
-        <span class="file-detail-label">Folder</span>
+        <span class="form-label">Folder</span>
         <md-filled-text-field
           type="text"
           name="bucket"
@@ -163,7 +163,7 @@ export class IntegrationFormElement extends LitElement {
     return html`
       <div class="form">
         <div class="form-row">
-          <span class="file-detail-label">Active</span>
+          <span class="form-label">Active</span>
           <md-switch
             icons
             .selected=${this.isActive}
