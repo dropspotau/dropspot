@@ -172,7 +172,7 @@ export class IntegrationFormElement extends LitElement {
         </div>
         ${this.slug === "local" ? this.renderLocal() : ""}
         ${this.slug === "gcs" ? this.renderGcs() : ""}
-        <div class="file-detail-value-row">
+        <div class="form-value-row">
           <md-filled-button class="button-success" @click=${this.handleSubmit}
             >Submit</md-filled-button
           >

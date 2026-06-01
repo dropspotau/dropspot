@@ -32,14 +32,14 @@
 }
 
 /** Form field value. Used to display a value when a field can't be edited */
-.file-detail-value {
+.form-value {
   font-size: 16px;
   color: #333;
   font-weight: 500;
 }
 
 /** A row used to contain an input and a tick or cross based on whether it succeeded or not */
-.file-detail-value-row {
+.form-value-row {
   display: flex;
   place-items: center;
   gap: 1rem;

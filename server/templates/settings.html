@@ -80,7 +80,7 @@
                         {% if is_current_user %}
                             <div class="form-row">
                                 <span class="form-label">Name</span>
-                                <div class="file-detail-value-row">
+                                <div class="form-value-row">
                                     <div style="display: flex; place-items: center; gap: 0.25rem";>
                                         <md-filled-text-field type="text" 
                                                               name="first_name"
@@ -120,7 +120,7 @@
                     <div class="form-row">
                         {% if is_current_user %}
                             <span class="form-label">Email</span>
-                            <div class="file-detail-value-row">
+                            <div class="form-value-row">
                                 <md-filled-text-field type="email" 
                                                       name="email"
                                                       label="Email" 
@@ -137,17 +137,17 @@
                             </div>
                         {% else %}
                             <span class="form-label">Email</span>
-                            <span class="file-detail-value">{{ user.email }}</span>
+                            <span class="form-value">{{ user.email }}</span>
                         {% endif %}
                     </div>
                     <div class="form-row">
                         <span class="form-label">Joined At</span>
-                        <span class="file-detail-value">{{ user.created_at_slash_date() }}</span>
+                        <span class="form-value">{{ user.created_at_slash_date() }}</span>
                     </div>
                   
                     <div class="form-row">
                         <span class="form-label">Files Created</span>
-                        <span class="file-detail-value badge">{{ user.file_count }}</span>
+                        <span class="form-value badge">{{ user.file_count }}</span>
                     </div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
             <div class="form">
                 <div class="form-row">
                     <span class="form-label">File Expiry</span>
-                    <div class="file-detail-value-row">
+                    <div class="form-value-row">
                         <md-filled-text-field type="number" 
                                               name="file_expiry_minutes"
                                               label="Expire after" 
@@ -182,7 +182,7 @@
           
                 <div class="form-row">
                     <span class="form-label">Download Limit</span>
-                    <div class="file-detail-value-row">
+                    <div class="form-value-row">
                         <md-filled-text-field type="number" 
                                               name="download_limit"
                                               label="Downloadable" 
@@ -227,7 +227,7 @@
                 <div class="form">
                     <div class="form-row">
                         <span class="form-label">Name</span>
-                        <div class="file-detail-value-row">
+                        <div class="form-value-row">
                             <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
                             <span>{{ integration.slug.full_name() }}</span>
                         </div>
