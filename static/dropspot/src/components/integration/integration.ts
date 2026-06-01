@@ -56,7 +56,7 @@ export class IntegrationElement extends LitElement {
         ${this.integration
           ? html`
               <div class="file-details-grid">
-                <div class="file-detail-item">
+                <div class="form-row">
                   <span class="file-detail-label">Upload Path</span>
                   <div class="file-detail-value-row">
                     <md-filled-text-field

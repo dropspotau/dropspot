@@ -109,7 +109,7 @@ export class IntegrationFormElement extends LitElement {
     const data: LocalIntegrationData = { folder: "", ...this.data };
 
     return html`
-      <div class="file-detail-item">
+      <div class="form-row">
         <span class="file-detail-label">Folder</span>
         <md-filled-text-field
           type="text"
@@ -128,7 +128,7 @@ export class IntegrationFormElement extends LitElement {
     const data: GcsIntegrationData = { bucket_name: "", ...this.data };
 
     return html`
-      <div class="file-detail-item">
+      <div class="form-row">
         <span class="file-detail-label">Folder</span>
         <md-filled-text-field
           type="text"
@@ -162,7 +162,7 @@ export class IntegrationFormElement extends LitElement {
   render() {
     return html`
       <div class="file-details-grid">
-        <div class="file-detail-item">
+        <div class="form-row">
           <span class="file-detail-label">Active</span>
           <md-switch
             icons

@@ -76,9 +76,9 @@
         <section class="settings-page" menu-key="user-{{ user.id }}">
             <div class="file-details-container">
                 <div class="file-details-grid">
-                    <div class="file-detail-item">
+                    <div class="form-row">
                         {% if is_current_user %}
-                            <div class="file-detail-item">
+                            <div class="form-row">
                                 <span class="file-detail-label">Name</span>
                                 <div class="file-detail-value-row">
                                     <div style="display: flex; place-items: center; gap: 0.25rem";>
@@ -117,7 +117,7 @@
                             <h3 class="file-detail-name no-margin">{{ user.get_name() }}</h3>
                         {% endif %}
                     </div>
-                    <div class="file-detail-item">
+                    <div class="form-row">
                         {% if is_current_user %}
                             <span class="file-detail-label">Email</span>
                             <div class="file-detail-value-row">
@@ -140,12 +140,12 @@
                             <span class="file-detail-value">{{ user.email }}</span>
                         {% endif %}
                     </div>
-                    <div class="file-detail-item">
+                    <div class="form-row">
                         <span class="file-detail-label">Joined At</span>
                         <span class="file-detail-value">{{ user.created_at_slash_date() }}</span>
                     </div>
                   
-                    <div class="file-detail-item">
+                    <div class="form-row">
                         <span class="file-detail-label">Files Created</span>
                         <span class="file-detail-value badge">{{ user.file_count }}</span>
                     </div>
@@ -159,7 +159,7 @@
             <h3 class="file-detail-name">File Settings</h3>
         
             <div class="file-details-grid">
-                <div class="file-detail-item">
+                <div class="form-row">
                     <span class="file-detail-label">File Expiry</span>
                     <div class="file-detail-value-row">
                         <md-filled-text-field type="number" 
@@ -180,7 +180,7 @@
                     </div>
                 </div>
           
-                <div class="file-detail-item">
+                <div class="form-row">
                     <span class="file-detail-label">Download Limit</span>
                     <div class="file-detail-value-row">
                         <md-filled-text-field type="number" 
@@ -225,7 +225,7 @@
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
             <div class="file-details-container">
                 <div class="file-details-grid">
-                    <div class="file-detail-item">
+                    <div class="form-row">
                         <span class="file-detail-label">Name</span>
                         <div class="file-detail-value-row">
                             <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
