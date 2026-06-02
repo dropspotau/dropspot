@@ -13,7 +13,8 @@ use uuid::Uuid;
 use crate::{
     db::{
         Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
-        get_organisation_for_user, get_upload_by_file_id, preview_upload, start_upload,
+        get_integration_by_slug, get_organisation_for_user, get_upload_by_file_id, preview_upload,
+        start_upload,
     },
     state::AppState,
     storage::{StorageType, get_storage},
@@ -46,7 +47,7 @@ pub async fn handle_file_request_upload(
 
 pub async fn handle_file_upload(
     State(state): State<AppState>,
-    user: Option<User>,
+    user: User, // TODO(alec): Allow unauthorised uploads again
     Path(file_id): Path<Uuid>,
     body: Body,
 ) -> Response {
@@ -59,8 +60,28 @@ pub async fn handle_file_upload(
 
     let mut reader_stream = body.into_data_stream();
 
-    // TODO(alec): Create file providers to upload to AWS, GCP etc.
-    let storage = get_storage(&file.storage);
+    let org = get_organisation_for_user(pool, &user.id).await;
+
+    if let Err(e) = org {
+        return ApiError::new(
+            format!("Failed to retrieve organisation: {e}"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    }
+
+    let organisation = Some(org.unwrap());
+    let Ok(integration) =
+        get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
+    else {
+        return ApiError::new(
+            format!("Integration not found for organisation"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
+
+    let storage = get_storage(&integration.data);
 
     let Ok(mut writer) = storage.get_upload_writer(&file).await else {
         let api_error = ApiError::new("Failed to write file ".to_owned(), StatusCode::NOT_FOUND);
@@ -72,7 +93,7 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    let is_same_user = file.created_by_id == user.map(|u| u.id);
+    let is_same_user = file.created_by_id.unwrap() == user.id;
 
     if !is_same_user {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);

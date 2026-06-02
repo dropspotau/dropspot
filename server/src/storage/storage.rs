@@ -1,4 +1,7 @@
 use async_trait::async_trait;
+use dropspot_core::integration::integration::{
+    GcsIntegrationData, IntegrationData, LocalIntegrationData,
+};
 use dropspot_core::storage::StorageType as ApiStorageType;
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
@@ -8,7 +11,6 @@ use crate::db::File;
 
 use super::gcs::GcsStorage;
 use super::local::LocalStorage;
-use super::s3::S3Storage;
 
 #[derive(Type, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[sqlx(type_name = "storage", rename_all = "snake_case")]
@@ -103,10 +105,13 @@ pub trait Storage: Sync + Send {
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()>;
 }
 
-pub fn get_storage(storage_type: &StorageType) -> Box<dyn Storage> {
-    match storage_type {
-        StorageType::Local => Box::new(LocalStorage {}),
-        StorageType::S3 => Box::new(S3Storage {}),
-        StorageType::GCS => Box::new(GcsStorage {}),
+pub fn get_storage(integration_data: &IntegrationData) -> Box<dyn Storage> {
+    match integration_data {
+        IntegrationData::Local(LocalIntegrationData { folder }) => Box::new(LocalStorage {
+            folder: folder.to_owned(),
+        }),
+        IntegrationData::Gcs(GcsIntegrationData { bucket_name }) => Box::new(GcsStorage {
+            bucket_name: bucket_name.to_owned(),
+        }),
     }
 }

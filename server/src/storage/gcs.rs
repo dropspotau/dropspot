@@ -12,7 +12,9 @@ use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
-pub struct GcsStorage {}
+pub struct GcsStorage {
+    pub bucket_name: String,
+}
 
 //
 // TODO(alec): At some point, it'd be nice to make the GCS writer not rely on reading from a temp file for GCS uploads.

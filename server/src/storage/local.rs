@@ -3,7 +3,9 @@ use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
-pub struct LocalStorage {}
+pub struct LocalStorage {
+    pub folder: String,
+}
 
 #[async_trait]
 impl Storage for LocalStorage {
