@@ -70,6 +70,20 @@ export class FilePreviewElement extends LitElement {
     }
   };
 
+  /** Stops audio and videos from playing when the modal is closed */
+  private stopMedia = (): void => {
+    const video = this.shadowRoot?.querySelector("video");
+    const audio = this.shadowRoot?.querySelector("audio");
+
+    if (video && !video.paused) {
+      video.pause();
+    }
+
+    if (audio && !audio.paused) {
+      audio.pause();
+    }
+  };
+
   render() {
     const previewType = getFilePreviewType(this.name);
     let previewHtml: TemplateResult<1>;
@@ -97,6 +111,7 @@ export class FilePreviewElement extends LitElement {
         .open="${this.isModalOpen}"
         @close="${() => {
           this.isModalOpen = false;
+          this.stopMedia();
         }}"
       >
         <div class="modal-content">
