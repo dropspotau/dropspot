@@ -12,9 +12,9 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
-        get_integration_by_slug, get_organisation_for_user, get_upload_by_file_id, preview_upload,
-        start_upload,
+        Organisation, User, create_file, delete_files, finish_upload, get_default_organisation,
+        get_file_by_id, get_integration_by_slug, get_organisation_for_user, get_upload_by_file_id,
+        preview_upload, start_upload,
     },
     state::AppState,
     storage::{StorageType, get_storage},
@@ -47,7 +47,7 @@ pub async fn handle_file_request_upload(
 
 pub async fn handle_file_upload(
     State(state): State<AppState>,
-    user: User, // TODO(alec): Allow unauthorised uploads again
+    user: Option<User>,
     Path(file_id): Path<Uuid>,
     body: Body,
 ) -> Response {
@@ -60,9 +60,12 @@ pub async fn handle_file_upload(
 
     let mut reader_stream = body.into_data_stream();
 
-    let org = get_organisation_for_user(pool, &user.id).await;
+    let organisation = match &user {
+        Some(u) => get_organisation_for_user(pool, &u.id).await,
+        None => get_default_organisation(pool).await,
+    };
 
-    if let Err(e) = org {
+    if let Err(e) = organisation {
         return ApiError::new(
             format!("Failed to retrieve organisation: {e}"),
             StatusCode::UNAUTHORIZED,
@@ -70,7 +73,7 @@ pub async fn handle_file_upload(
         .into_response();
     }
 
-    let organisation = Some(org.unwrap());
+    let organisation = Some(organisation.unwrap());
     let Ok(integration) =
         get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
     else {
@@ -93,7 +96,7 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    let is_same_user = file.created_by_id.unwrap() == user.id;
+    let is_same_user = file.created_by_id == user.map(|u| u.id);
 
     if !is_same_user {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
@@ -205,8 +208,7 @@ pub async fn handle_preview_upload(
         organisation = Some(org.unwrap());
     }
 
-    let upload_preiew =
-        preview_upload(pool, organisation.map(|o| o.id).as_ref(), payload.size).await;
+    let upload_preiew = preview_upload(pool, organisation.map(|o| o.id).as_ref()).await;
 
     if let Err(e) = upload_preiew {
         return ApiError::new(

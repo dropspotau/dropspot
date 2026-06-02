@@ -8,7 +8,10 @@ use reqwest::StatusCode;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use crate::db::{Download, User, create_download, get_download_by_id, get_file_by_id};
+use crate::db::{
+    Download, User, create_download, get_default_organisation, get_download_by_id, get_file_by_id,
+    get_integration_by_slug, get_organisation_for_user,
+};
 use crate::{state::AppState, storage::get_storage, types::ApiError};
 
 impl From<Download> for ApiDownload {
@@ -70,7 +73,7 @@ pub async fn handle_file_download(
         return api_error.into_response();
     }
 
-    let is_same_user = user.map(|u| u.id) == download.created_by_id;
+    let is_same_user = user.as_ref().map(|u| u.id) == download.created_by_id;
 
     if !is_same_user {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
@@ -82,7 +85,32 @@ pub async fn handle_file_download(
         return api_error.into_response();
     };
 
-    let storage = get_storage(&file.storage);
+    let organisation = match &user {
+        Some(u) => get_organisation_for_user(pool, &u.id).await,
+        None => get_default_organisation(pool).await,
+    };
+
+    if let Err(e) = organisation {
+        return ApiError::new(
+            format!("Failed to retrieve organisation: {e}"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    }
+
+    let organisation = Some(organisation.unwrap());
+    let Ok(integration) =
+        get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
+    else {
+        return ApiError::new(
+            format!("Integration not found for organisation"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
+
+    let storage = get_storage(&integration.data);
+
     let Ok(reader) = storage.get_download_reader(&file).await else {
         let api_error = ApiError::new(
             "Failed to read file".to_owned(),
