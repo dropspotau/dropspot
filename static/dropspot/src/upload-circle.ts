@@ -1,0 +1,59 @@
+import { getAuth } from "./auth";
+import { UploadBarElement } from "./components";
+
+const upload = document.querySelector("#upload");
+const fileInput = document.querySelector("#file-input");
+
+/** Triggers a file to be uploaded */
+const triggerUpload = (file: File): void => {
+  const auth = getAuth();
+
+  if (!auth) {
+    return;
+  }
+
+  UploadBarElement.create(file);
+};
+
+if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
+  upload.addEventListener("click", () => {
+    if (fileInput) {
+      // Open the file dialog
+      fileInput.click();
+    }
+  });
+
+  upload.addEventListener("dragover", (e) => {
+    // Allows the drop event to fire
+    e.preventDefault();
+  });
+
+  upload.addEventListener("drop", (e) => {
+    const { dataTransfer } = e;
+
+    if (!dataTransfer) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const files = [...dataTransfer.files];
+
+    for (const file of files) {
+      triggerUpload(file);
+    }
+  });
+
+  fileInput.addEventListener("change", () => {
+    if (!fileInput.files) {
+      return;
+    }
+
+    const files = [...fileInput.files];
+
+    for (const file of files) {
+      triggerUpload(file);
+    }
+  });
+}

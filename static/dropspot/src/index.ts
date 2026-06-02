@@ -28,8 +28,8 @@ import "./login-controller";
 import "./modal";
 import "./my-element";
 import "./popover";
-import "./recent-upload";
 import "./toast";
+import "./upload-circle";
 
 // Import all components
 import "./components";
