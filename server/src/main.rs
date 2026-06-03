@@ -207,6 +207,7 @@ async fn main() -> Result<(), ()> {
                     .route("/api/upload/{file_id}/upload", post(handle_file_upload))
                     .route("/api/file", get(handle_list_files))
                     .route("/api/file/{id}", get(handle_get_file))
+                    .route("/api/file/{id}/delete", delete(handle_delete_file))
                     .route(
                         "/api/file/{file_id}/download",
                         get(handle_file_request_download),
@@ -230,7 +231,6 @@ async fn main() -> Result<(), ()> {
                     .route("/app", get(handle_index))
                     .route("/app/header", get(handle_header))
                     .route("/app/files", get(handle_files))
-                    .route("/app/files/{id}/delete", delete(handle_delete_file))
                     .route("/app/settings", get(handle_settings))
                     .route("/app/settings/update", patch(handle_update_settings))
                     .route("/app/settings/user/{id}/update", patch(handle_update_user))

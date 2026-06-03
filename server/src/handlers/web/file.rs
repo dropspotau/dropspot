@@ -1,20 +1,12 @@
 use askama::Template;
 use axum::{
-    extract::{Path, State},
-    http::HeaderValue,
+    extract::State,
     response::{IntoResponse, Response},
 };
-use reqwest::StatusCode;
-use uuid::Uuid;
 
 use crate::{
-    db::{
-        File, User, delete_files, get_file_by_id, get_files, get_integration_by_slug,
-        get_organisation_for_user,
-    },
+    db::{File, User, get_files},
     state::AppState,
-    storage::get_storage,
-    types::ApiError,
 };
 
 use super::template::HtmlTemplate;
@@ -47,77 +39,4 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
 
     let template = FilesTemplate { files, is_empty };
     HtmlTemplate(template).into_response()
-}
-
-#[derive(Template)]
-#[template(path = "delete_file.html")]
-struct DeleteFileTemplate {
-    deleted: bool,
-}
-
-pub async fn handle_delete_file(
-    State(state): State<AppState>,
-    Path(id): Path<Uuid>,
-    user: User,
-) -> Response {
-    let pool = state.get_pool();
-
-    let Ok(file) = get_file_by_id(pool, &id).await else {
-        let template = DeleteFileTemplate { deleted: false };
-        let response = HtmlTemplate(template).into_response();
-
-        return response;
-    };
-
-    if let Some(ref user_id) = file.created_by_id
-        && user_id == &user.id
-    {
-        // Only uploaders can delete their files
-        let template = DeleteFileTemplate { deleted: false };
-        let response = HtmlTemplate(template).into_response();
-
-        return response;
-    }
-
-    if let Err(_e) = delete_files(pool, &[file.id]).await {
-        let template = DeleteFileTemplate { deleted: false };
-        let response = HtmlTemplate(template).into_response();
-
-        return response;
-    }
-
-    let organisation = get_organisation_for_user(pool, &user.id).await;
-
-    if let Err(e) = organisation {
-        return ApiError::new(
-            format!("Failed to retrieve organisation: {e}"),
-            StatusCode::UNAUTHORIZED,
-        )
-        .into_response();
-    }
-
-    let organisation = Some(organisation.unwrap());
-    let Ok(integration) =
-        get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
-    else {
-        return ApiError::new(
-            format!("Integration not found for organisation"),
-            StatusCode::UNAUTHORIZED,
-        )
-        .into_response();
-    };
-
-    let storage = get_storage(&integration.data);
-
-    if storage.delete(&file).await.is_err() {
-        eprintln!("Failed to delete file: {}", file.id);
-    }
-
-    let template = DeleteFileTemplate { deleted: true };
-    let mut response = HtmlTemplate(template).into_response();
-
-    let headers = response.headers_mut();
-    headers.insert("HX-Trigger", HeaderValue::from_str("file-delete").unwrap());
-
-    response
 }
