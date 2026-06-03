@@ -4,11 +4,17 @@ use axum::{
     http::HeaderValue,
     response::{IntoResponse, Response},
 };
+use reqwest::StatusCode;
 use uuid::Uuid;
 
 use crate::{
-    db::{File, User, delete_files, get_file_by_id, get_files},
+    db::{
+        File, User, delete_files, get_file_by_id, get_files, get_integration_by_slug,
+        get_organisation_for_user,
+    },
     state::AppState,
+    storage::get_storage,
+    types::ApiError,
 };
 
 use super::template::HtmlTemplate;
@@ -80,7 +86,30 @@ pub async fn handle_delete_file(
         return response;
     }
 
-    if file.delete_file().is_err() {
+    let organisation = get_organisation_for_user(pool, &user.id).await;
+
+    if let Err(e) = organisation {
+        return ApiError::new(
+            format!("Failed to retrieve organisation: {e}"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    }
+
+    let organisation = Some(organisation.unwrap());
+    let Ok(integration) =
+        get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
+    else {
+        return ApiError::new(
+            format!("Integration not found for organisation"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
+
+    let storage = get_storage(&integration.data);
+
+    if storage.delete(&file).await.is_err() {
         eprintln!("Failed to delete file: {}", file.id);
     }
 
