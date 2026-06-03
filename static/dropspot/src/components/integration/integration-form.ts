@@ -1,5 +1,5 @@
 import {
-  upsert_integration_js,
+  upsertIntegration,
   type GcsIntegrationData,
   type IntegrationData,
   type LocalIntegrationData,
@@ -151,7 +151,7 @@ export class IntegrationFormElement extends LitElement {
       return;
     }
 
-    await upsert_integration_js(
+    await upsertIntegration(
       { is_active: this.isActive, data: this.data },
       auth,
       this.slug,

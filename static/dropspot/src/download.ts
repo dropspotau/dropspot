@@ -1,7 +1,7 @@
 import {
-  download_js,
-  parse_link_js,
-  get_file_js,
+  download as downloadFile,
+  parseLink,
+  getFile,
   type Link,
   type File,
 } from "dropspot-core";
@@ -19,7 +19,7 @@ const tryDetectIdentifier = (): Link | null => {
   const file = url.searchParams.get("file");
 
   if (file) {
-    return parse_link_js(file);
+    return parseLink(file);
   }
 
   return null;
@@ -48,7 +48,7 @@ const initialiseDownload = async (): Promise<void> => {
   let file: File;
 
   try {
-    file = await get_file_js(fileId);
+    file = await getFile(fileId);
   } catch (e) {
     showFileNotFound(linkedFileElement);
     return;
@@ -78,7 +78,7 @@ const initialiseDownload = async (): Promise<void> => {
       } else {
         try {
           button.setAttribute("is-downloading", "");
-          buffer = (await download_js(
+          buffer = (await downloadFile(
             file.id,
             encryption,
             auth,

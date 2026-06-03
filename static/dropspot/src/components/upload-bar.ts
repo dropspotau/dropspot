@@ -1,7 +1,7 @@
 import {
-  upload_js,
-  create_link_js,
-  preview_upload_js,
+  upload,
+  createLink,
+  previewUpload,
   type UploadResult,
   type Integration,
   type StorageType,
@@ -155,7 +155,7 @@ export class UploadBarElement extends LitElement {
 
   private verifyUpload = async (): Promise<boolean> => {
     const auth = getAuth();
-    const uploadPreview = await preview_upload_js(auth, {
+    const uploadPreview = await previewUpload(auth, {
       size: this.file.size,
     });
     const { can_upload: canUpload, integrations } = uploadPreview;
@@ -172,7 +172,7 @@ export class UploadBarElement extends LitElement {
     this.uploadingIntegrationSlug = integration.slug;
 
     try {
-      result = await upload_js(
+      result = await upload(
         this.file.name,
         fileContents,
         auth,
@@ -233,7 +233,7 @@ export class UploadBarElement extends LitElement {
   render() {
     if (this.uploadResult) {
       // The file has uploaded
-      const link = create_link_js(
+      const link = createLink(
         this.uploadResult.file.id,
         this.uploadResult.encryption,
       );

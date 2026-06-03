@@ -1,4 +1,4 @@
-import { create_user_js, login_js, type LoginResult } from "dropspot-core";
+import { createUser, login, type LoginResult } from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { setTokens, type LoginEvent } from "./auth";
@@ -101,9 +101,9 @@ export class LoginControllerElement extends LitElement {
         typeof firstName === "string" &&
         typeof lastName === "string"
       ) {
-        result = await create_user_js(email, firstName, lastName, password);
+        result = await createUser(email, firstName, lastName, password);
       } else {
-        result = await login_js(email, password);
+        result = await login(email, password);
       }
     } catch (e) {
       ToastElement.create(

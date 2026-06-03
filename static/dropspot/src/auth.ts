@@ -1,5 +1,5 @@
 import {
-  refresh_tokens_js,
+  refreshTokens,
   type Authentication,
   type TokenPair,
   type User,
@@ -45,7 +45,7 @@ export const loginAtStartup = async (): Promise<void> => {
 
   const parsedCachedTokens = JSON.parse(cachedTokens);
 
-  const loginResult = await refresh_tokens_js(parsedCachedTokens.refresh_token);
+  const loginResult = await refreshTokens(parsedCachedTokens.refresh_token);
   setTokens(loginResult.tokens);
 };
 
