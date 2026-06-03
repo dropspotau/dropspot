@@ -32,6 +32,16 @@
                         </md-menu-item>
                     </delete-file>
                 </md-menu>
+                <script type="module">
+                    const actionButton = document.querySelector(`#file-actions-{{ file.id }}`);
+                    const actionMenu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
+
+                    if (actionButton && actionMenu) {
+                        actionButton.addEventListener("click", (e) => {
+                            actionMenu.open = !actionMenu.open;
+                        });
+                    }
+                </script>
             </li>
         {% endfor %}
       </ul>
