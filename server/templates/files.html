@@ -20,7 +20,7 @@
                         <span class="file-size">{{ file.get_formatted_size() }}</span>
                     </div>
                 </div>
-                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
+                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options" ignore-menu-navigation>
                     <md-icon>more_vert</md-icon>
                 </md-icon-button>
                 <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">

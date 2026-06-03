@@ -66,7 +66,11 @@ export class TreeMenuElement extends LitElement {
   private handleClick = (e: MouseEvent): void => {
     const { target } = e;
 
-    if (!(target instanceof Element)) {
+    if (
+      !(target instanceof Element) ||
+      // Some elements (usually buttons) deliberately don't want to trigger a menu navigation
+      target.hasAttribute("ignore-menu-navigation")
+    ) {
       return;
     }
 
