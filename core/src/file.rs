@@ -55,6 +55,19 @@ pub async fn get_file(id: &Uuid, auth: Option<Authentication>) -> Result<File, r
     Ok(file)
 }
 
+pub async fn delete_file(id: &Uuid, auth: Authentication) -> Result<(), reqwest::Error> {
+    let mut headers = get_auth_headers(Some(&auth));
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
+    reqwest::Client::new()
+        .delete(format!("{ENDPOINT}/api/file/{id}"))
+        .headers(headers)
+        .send()
+        .await?
+        .error_for_status()
+        .map(|_r| ())
+}
+
 pub fn create_link(file_id: &Uuid, encryption: &Encryption) -> String {
     let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
     let key_base64 = engine.encode(&encryption.key);
@@ -86,13 +99,13 @@ pub struct Link {
     encryption: Encryption,
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = createLink)]
 pub fn create_link_js(file_id: String, encryption: Encryption) -> Result<String, JsError> {
     let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
     Ok(create_link(&file_id, &encryption))
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = parseLink)]
 pub fn parse_link_js(link: &str) -> Result<Link, JsError> {
     let (file_id, encryption) = parse_link(link).map_err(|err| JsError::new(&format!("{err}")))?;
 
@@ -102,10 +115,18 @@ pub fn parse_link_js(link: &str) -> Result<Link, JsError> {
     })
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = getFile)]
 pub async fn get_file_js(file_id: String, auth: Option<Authentication>) -> Result<File, JsError> {
     let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
     get_file(&file_id, auth)
+        .await
+        .map_err(|e| JsError::new(&format!("{e}")))
+}
+
+#[wasm_bindgen(js_name = deleteFile)]
+pub async fn delete_file_js(file_id: String, auth: Authentication) -> Result<(), JsError> {
+    let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
+    delete_file(&file_id, auth)
         .await
         .map_err(|e| JsError::new(&format!("{e}")))
 }

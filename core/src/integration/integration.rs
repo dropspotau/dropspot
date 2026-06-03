@@ -72,7 +72,7 @@ pub async fn get_integrations(auth: Authentication) -> Result<Vec<Integration>, 
     Ok(result)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = getIntegrations)]
 pub async fn get_integrations_js(auth: Authentication) -> Result<Vec<Integration>, JsError> {
     get_integrations(auth)
         .map_err(|e| JsError::new(&format!("{e}")))
@@ -99,7 +99,7 @@ pub async fn upsert_integration(
     Ok(result)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = upsertIntegration)]
 pub async fn upsert_integration_js(
     payload: UpsertIntegrationPayload,
     auth: Authentication,

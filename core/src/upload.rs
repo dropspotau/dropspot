@@ -86,7 +86,7 @@ pub async fn upload(
     Ok(UploadResult { file, encryption })
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = upload)]
 // #[cfg(target_arch = "wasm32")]
 pub async fn upload_js(
     name: String,
@@ -139,7 +139,7 @@ pub async fn preview_upload(
         .await
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = previewUpload)]
 pub async fn preview_upload_js(
     auth: Option<Authentication>,
     payload: PreviewUploadRequest,

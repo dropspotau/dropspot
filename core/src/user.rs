@@ -116,7 +116,7 @@ pub async fn refresh_tokens(refresh_token: String) -> Result<LoginResult, UserEr
     Ok(result)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = createUser)]
 pub async fn create_user_js(
     email: String,
     first_name: String,
@@ -133,7 +133,7 @@ pub async fn create_user_js(
     Ok(user)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = login)]
 pub async fn login_js(email: String, password: String) -> Result<LoginResult, JsError> {
     let result = login(email, password).await;
 
@@ -145,7 +145,7 @@ pub async fn login_js(email: String, password: String) -> Result<LoginResult, Js
     Ok(user)
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = refreshTokens)]
 pub async fn refresh_tokens_js(refresh_token: String) -> Result<LoginResult, JsError> {
     let result = refresh_tokens(refresh_token).await;
 

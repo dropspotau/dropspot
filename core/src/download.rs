@@ -87,7 +87,7 @@ pub async fn download(
 }
 
 // #[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = download)]
 pub async fn download_js(
     file_id: String,
     encryption: Encryption,
