@@ -12,7 +12,7 @@ use crate::storage::StorageType;
 pub struct File {
     pub id: Uuid,
     pub name: String,
-    pub path: PathBuf,
+    pub path: String,
     pub size: i64,
     pub storage: StorageType,
     pub created_at: DateTime<Utc>,
@@ -31,10 +31,6 @@ impl File {
         let is_past_download_capacity = self.max_downloads <= self.download_count;
 
         is_date_expired || is_past_download_capacity
-    }
-
-    pub fn get_path(&self) -> PathBuf {
-        PathBuf::from(FILES_DIR).join(self.path.clone())
     }
 
     pub fn get_formatted_size(&self) -> String {
@@ -68,17 +64,6 @@ impl File {
         self.created_by_name
             .clone()
             .unwrap_or("Unknown".to_string())
-    }
-
-    // Deletes the actual file
-    pub fn delete_file(&self) -> Result<(), ()> {
-        let path = self.get_path();
-
-        // TODO(alec): Handle different providers: filesystem, S3, GCP bucket etc.
-        match std::fs::remove_file(path) {
-            Ok(_) => Ok(()),
-            Err(_e) => Err(()),
-        }
     }
 }
 

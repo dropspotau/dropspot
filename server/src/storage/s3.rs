@@ -1,35 +1,33 @@
 use async_trait::async_trait;
-use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{db::File, storage::Storage};
 
-pub struct S3Storage {}
+pub struct S3Storage {
+    pub bucket_name: String,
+}
 
 #[async_trait]
 impl Storage for S3Storage {
     async fn get_upload_writer(
         &self,
-        file: &File,
+        _file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
-        let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
-            return Err(());
-        };
-
-        Ok(Box::new(BufWriter::new(io_file)))
+        todo!("S3 storage is not yet implemented")
     }
 
     async fn finish_upload(&self, _file: &File) -> Result<(), ()> {
-        todo!("S3 uploads don't work yet")
+        todo!("S3 storage is not yet implemented")
     }
 
     async fn get_download_reader(
         &self,
-        file: &File,
+        _file: &File,
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()> {
-        let Ok(io_file) = tokio::fs::File::open(file.get_path()).await else {
-            return Err(());
-        };
+        todo!("S3 storage is not yet implemented")
+    }
 
-        Ok(Box::new(BufReader::new(io_file)))
+    async fn delete(&self, file: &File) -> Result<(), ()> {
+        todo!("S3 storage is not yet implemented")
     }
 }

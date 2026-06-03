@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use async_trait::async_trait;
 use tokio::io::{AsyncRead, AsyncWrite, BufReader, BufWriter};
 
@@ -13,7 +15,9 @@ impl Storage for LocalStorage {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
-        let Ok(io_file) = tokio::fs::File::create(file.get_path()).await else {
+        let path = Path::new(&self.folder).join(&file.path);
+
+        let Ok(io_file) = tokio::fs::File::create(path).await else {
             return Err(());
         };
 
@@ -29,10 +33,18 @@ impl Storage for LocalStorage {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()> {
-        let Ok(io_file) = tokio::fs::File::open(file.get_path()).await else {
+        let path = Path::new(&self.folder).join(&file.path);
+
+        let Ok(io_file) = tokio::fs::File::open(path).await else {
             return Err(());
         };
 
         Ok(Box::new(BufReader::new(io_file)))
+    }
+
+    async fn delete(&self, file: &File) -> Result<(), ()> {
+        let path = Path::new(&self.folder).join(&file.path);
+
+        tokio::fs::remove_file(path).await.map_err(|_e| ())
     }
 }

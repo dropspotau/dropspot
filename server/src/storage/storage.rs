@@ -103,6 +103,8 @@ pub trait Storage: Sync + Send {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()>;
+
+    async fn delete(&self, file: &File) -> Result<(), ()>;
 }
 
 pub fn get_storage(integration_data: &IntegrationData) -> Box<dyn Storage> {

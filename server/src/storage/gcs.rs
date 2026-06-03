@@ -6,7 +6,8 @@ use std::{
 use async_trait::async_trait;
 use bytes::Bytes;
 use google_cloud_storage::{
-    client::Storage as GoogleCloudStorage, streaming_source::StreamingSource,
+    client::{Storage as GoogleCloudStorage, StorageControl},
+    streaming_source::StreamingSource,
 };
 use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
@@ -53,7 +54,7 @@ impl Storage for GcsStorage {
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
         let temp_dir = temp_dir();
 
-        let Ok(file) = tokio::fs::File::create(temp_dir.join(file.id.to_string())).await else {
+        let Ok(file) = tokio::fs::File::create(temp_dir.join(&file.path)).await else {
             eprintln!("Failed to create temporary GCS upload file");
             return Err(());
         };
@@ -72,7 +73,7 @@ impl Storage for GcsStorage {
         // TODO(alec): Can temp_dir give different results on different calls?
         let temp_dir = temp_dir();
 
-        let Ok(temp_file) = tokio::fs::File::open(temp_dir.join(file.id.to_string())).await else {
+        let Ok(temp_file) = tokio::fs::File::open(temp_dir.join(&file.path)).await else {
             eprintln!("Failed to create temporary GCS upload file");
             return Err(());
         };
@@ -100,9 +101,8 @@ impl Storage for GcsStorage {
             return Err(());
         };
 
-        let bucket_name = "dropspot-upload-files".to_owned();
-        let artifact_path = format!("projects/_/buckets/{bucket_name}");
-        let reader = client.read_object(&artifact_path, file.id).send().await;
+        let artifact_path = format!("projects/_/buckets/{}", self.bucket_name);
+        let reader = client.read_object(&artifact_path, &file.path).send().await;
 
         if let Err(e) = reader {
             eprintln!("Error reading from GCS bucket artifact: {e}");
@@ -124,5 +124,20 @@ impl Storage for GcsStorage {
         }
 
         Ok(Box::new(Cursor::new(buffer)))
+    }
+
+    async fn delete(&self, file: &File) -> Result<(), ()> {
+        let Ok(client) = StorageControl::builder().build().await else {
+            return Err(());
+        };
+        let artifact_path = format!("projects/_/buckets/{}", self.bucket_name);
+
+        client
+            .delete_object()
+            .set_bucket(artifact_path)
+            .set_object(&file.path)
+            .send()
+            .await
+            .map_err(|_e| ())
     }
 }
