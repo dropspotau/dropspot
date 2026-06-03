@@ -116,6 +116,7 @@ export class IntegrationFormElement extends LitElement {
           name="folder"
           value="${data.folder}"
           pattern="w+"
+          placeholder="Make sure this folder exists!"
           class="settings-field-update-input"
           @change="${this.handleChange("folder", (value) => value)}"
         >
@@ -136,6 +137,7 @@ export class IntegrationFormElement extends LitElement {
           label="Bucket"
           value="${data.bucket_name}"
           pattern="w+"
+          placeholder="Make sure this bucket exists!"
           class="settings-field-update-input"
           @change="${this.handleChange("bucket_name", (value) => value)}"
         >
