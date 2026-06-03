@@ -8,6 +8,7 @@
 {% endif %}
 
 {% if !is_empty %}
+<tree-menu default-key="files">
     <ul id="file-list" class="file-list">
     {% for file in files %}
         <li id="file-{{ file.id }}" class="file-item">
@@ -135,4 +136,5 @@
           });
       }
   </script>
+</tree-menu>
 {% endif %}
