@@ -1,6 +1,6 @@
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
 use thiserror::Error;
 
@@ -8,9 +8,6 @@ use thiserror::Error;
 pub enum PasswordError {
     #[error("Failed to hash password")]
     HashingFailed,
-
-    #[error("Password verification failed")]
-    VerificationFailed,
 
     #[error("Invalid hash format")]
     InvalidHash,

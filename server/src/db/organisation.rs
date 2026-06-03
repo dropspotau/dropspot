@@ -9,7 +9,9 @@ use super::types::Id;
 
 pub struct Organisation {
     pub id: Uuid,
+    #[allow(dead_code)]
     pub name: String,
+    #[allow(dead_code)]
     pub created_at: DateTime<Utc>,
 }
 

@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use chrono::{DateTime, Duration, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -22,8 +20,6 @@ pub struct File {
     pub max_downloads: i32,
     pub download_count: i32,
 }
-
-const FILES_DIR: &'static str = "files";
 
 impl File {
     pub fn is_expired(&self) -> bool {

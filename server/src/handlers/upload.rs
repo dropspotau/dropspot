@@ -189,7 +189,7 @@ pub async fn handle_file_upload(
 pub async fn handle_preview_upload(
     State(state): State<AppState>,
     user: Option<User>,
-    Query(payload): Query<PreviewUploadRequest>,
+    Query(_payload): Query<PreviewUploadRequest>,
 ) -> Response {
     let pool = state.get_pool();
 

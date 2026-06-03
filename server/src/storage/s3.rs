@@ -3,6 +3,7 @@ use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{db::File, storage::Storage};
 
+#[allow(dead_code)]
 pub struct S3Storage {
     pub bucket_name: String,
 }
@@ -27,7 +28,7 @@ impl Storage for S3Storage {
         todo!("S3 storage is not yet implemented")
     }
 
-    async fn delete(&self, file: &File) -> Result<(), ()> {
+    async fn delete(&self, _file: &File) -> Result<(), ()> {
         todo!("S3 storage is not yet implemented")
     }
 }

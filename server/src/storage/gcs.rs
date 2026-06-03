@@ -1,18 +1,12 @@
-use std::{
-    env::temp_dir,
-    io::{Cursor, Read},
-};
+use std::{env::temp_dir, io::Cursor};
 
 use async_trait::async_trait;
-use bytes::Bytes;
-use google_cloud_storage::{
-    client::{Storage as GoogleCloudStorage, StorageControl},
-    streaming_source::StreamingSource,
-};
+use google_cloud_storage::client::{Storage as GoogleCloudStorage, StorageControl};
 use tokio::io::{AsyncRead, AsyncWrite, BufWriter};
 
 use crate::{db::File, storage::Storage};
 
+#[allow(dead_code)]
 pub struct GcsStorage {
     pub bucket_name: String,
 }
@@ -23,28 +17,6 @@ pub struct GcsStorage {
 // return a GcsWriter whose cursor can be written to, but at this point I'm really bikeshedding
 // things so I'll postpone it.
 //
-
-struct GcsWriter {
-    cursor: Cursor<Vec<u8>>,
-}
-
-impl StreamingSource for GcsWriter {
-    type Error = std::convert::Infallible;
-
-    async fn next(&mut self) -> Option<Result<bytes::Bytes, Self::Error>> {
-        let mut buffer = Vec::<u8>::new();
-        let bytes_read = match self.cursor.read(&mut buffer) {
-            Ok(bytes_read) => bytes_read,
-            Err(e) => panic!("Failed to read from GCS writer {e:?}"),
-        };
-
-        if bytes_read == 0 {
-            return None;
-        }
-
-        Some(Ok(Bytes::from_owner(buffer)))
-    }
-}
 
 #[async_trait]
 impl Storage for GcsStorage {
