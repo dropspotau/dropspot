@@ -91,7 +91,7 @@ pub async fn handle_delete_file(
     };
 
     if let Some(ref user_id) = file.created_by_id
-        && user_id == &user.id
+        && user_id != &user.id
     {
         // Only uploaders can delete their files
         let api_error = ApiError::new("Failed to write file".to_owned(), StatusCode::UNAUTHORIZED);

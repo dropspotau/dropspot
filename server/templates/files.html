@@ -20,12 +20,13 @@
                 <md-icon>more_vert</md-icon>
             </md-icon-button>
             <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
-                <b>TODO(alec): Fix up file deletions</b>
-                <md-menu-item hx-delete="/app/files/{{ file.id }}/delete" hx-trigger="click" hx-target="#file-{{ file.id }}" hx-swap="outerHTML">
-                    <div slot="headline" class="menu-item text-danger">
-                        <md-icon>delete</md-icon>
-                        <span>Delete</span></div>
-                </md-menu-item>
+                <delete-file file-id="{{ file.id }}">
+                    <md-menu-item>
+                        <div slot="headline" class="menu-item text-danger">
+                            <md-icon>delete</md-icon>
+                            <span>Delete</span></div>
+                    </md-menu-item>
+                </delete-file>
             </md-menu>
             <script type="module">
                 const fileList = document.querySelector("#file-list");

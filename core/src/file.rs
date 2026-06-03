@@ -60,7 +60,7 @@ pub async fn delete_file(id: &Uuid, auth: Authentication) -> Result<(), reqwest:
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     reqwest::Client::new()
-        .delete(format!("{ENDPOINT}/api/file/{id}"))
+        .delete(format!("{ENDPOINT}/api/file/{id}/delete"))
         .headers(headers)
         .send()
         .await?
