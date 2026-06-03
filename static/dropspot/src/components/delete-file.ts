@@ -42,15 +42,15 @@ export class DeleteFileElement extends LitElement {
     try {
       await deleteFile(this.fileId, auth);
       ToastElement.create("Deleted!", "success");
+
+      const fileDeleteEvent: FileDeleteEvent = new CustomEvent("file-delete", {
+        detail: { id: this.fileId },
+        bubbles: true,
+      });
+      this.dispatchEvent(fileDeleteEvent);
     } catch (e) {
       ToastElement.create("Failed to delete file", "danger");
     }
-
-    const fileDeleteEvent: FileDeleteEvent = new CustomEvent("file-delete", {
-      detail: { id: this.fileId },
-      bubbles: true,
-    });
-    this.dispatchEvent(fileDeleteEvent);
   };
 
   render() {

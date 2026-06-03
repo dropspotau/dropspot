@@ -94,7 +94,7 @@ pub async fn handle_delete_file(
         && user_id != &user.id
     {
         // Only uploaders can delete their files
-        let api_error = ApiError::new("Failed to write file".to_owned(), StatusCode::UNAUTHORIZED);
+        let api_error = ApiError::new("Cannot delete another's file".to_owned(), StatusCode::UNAUTHORIZED);
         return api_error.into_response();
     }
 

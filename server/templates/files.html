@@ -9,132 +9,63 @@
 
 {% if !is_empty %}
 <tree-menu default-key="files">
-    <ul id="file-list" class="file-list">
+    <section class="settings-page" menu-key="files">
+        <ul id="file-list" class="file-list">
+        {% for file in files %}
+            <li id="file-{{ file.id }}" class="file-item" menu-navigate-to="file-{{ file.id }}">
+                <div class="file-item-main">
+                    <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
+                    <div class="file-info">
+                        <span class="file-name">{{ file.name }}</span>
+                        <span class="file-size">{{ file.get_formatted_size() }}</span>
+                    </div>
+                </div>
+                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
+                    <md-icon>more_vert</md-icon>
+                </md-icon-button>
+                <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
+                    <delete-file file-id="{{ file.id }}">
+                        <md-menu-item>
+                            <div slot="headline" class="menu-item text-danger">
+                                <md-icon>delete</md-icon>
+                                <span>Delete</span></div>
+                        </md-menu-item>
+                    </delete-file>
+                </md-menu>
+            </li>
+        {% endfor %}
+      </ul>
+    </section>
     {% for file in files %}
-        <li id="file-{{ file.id }}" class="file-item">
-            <div class="file-item-main">
-                <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
-                <div class="file-info">
-                    <span class="file-name">{{ file.name }}</span>
-                    <span class="file-size">{{ file.get_formatted_size() }}</span>
+        <section id="file-detail" class="settings-page" menu-key="file-{{ file.id }}">
+            <div class="file-details-container">
+                <div class="form">
+                    <div class="form-row">
+                        <span class="form-label">File Name</span>
+                        <h3 id="file-detail-name" class="form-header no-margin">{{ file.name }}</h3>
+                    </div>
+                    <div class="form-row">
+                        <span class="form-label">File Size</span>
+                        <span id="file-detail-size" class="form-value">{{ file.get_formatted_size() }}</span>
+                    </div>
+              
+                    <div class="form-row">
+                        <span class="form-label">Uploaded By</span>
+                        <span id="file-detail-uploaded-by" class="form-value">{{ file.get_creator_name() }}</span>
+                    </div>
+                  
+                    <div class="form-row">
+                        <span class="form-label">Upload Date</span>
+                        <span id="file-detail-uploaded-at" class="form-value">{{ file.expires_at_slash_date() }}</span>
+                    </div>
+                  
+                    <div class="form-row">
+                        <span class="form-label">Downloads Remaining</span>
+                        <span id="file-detail-remaining-downloads" class="form-value badge">{{ file.get_remaining_downloads() }}</span>
+                    </div>
                 </div>
             </div>
-            <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options">
-                <md-icon>more_vert</md-icon>
-            </md-icon-button>
-            <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
-                <delete-file file-id="{{ file.id }}">
-                    <md-menu-item>
-                        <div slot="headline" class="menu-item text-danger">
-                            <md-icon>delete</md-icon>
-                            <span>Delete</span></div>
-                    </md-menu-item>
-                </delete-file>
-            </md-menu>
-            <script type="module">
-                const fileList = document.querySelector("#file-list");
-                const listItem = document.querySelector(`#file-{{ file.id }}`);
-                const button = document.querySelector(`#file-actions-{{ file.id }}`);
-                const menu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
-
-                if (button && menu) {
-                    button.addEventListener("click", () => {
-                        menu.open = !menu.open;
-                    });
-                }
-
-                if (listItem) {
-                    listItem.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const { target, currentTarget } = e;
-                        const isButtonClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}`) || target.closest(`#file-actions-{{ file.id }}`) !== null);
-                        const isMenuClick = target instanceof HTMLElement && (target.matches(`#file-actions-{{ file.id }}-menu`) || target.closest(`#file-actions-{{ file.id }}-menu`) !== null);
-
-                        if (isButtonClick || isMenuClick) {
-                            return;
-                        }
-
-                        const detail = document.querySelector("#file-detail");
-                        if (detail) {
-                            detail.removeAttribute("hidden");
-                        }
-
-                        const detailName = document.querySelector("#file-detail-name");
-                        if (detailName) {
-                            detailName.textContent = `{{ file.name }}`;
-                        }
-
-                        const detailSize = document.querySelector("#file-detail-size");
-                        if (detailSize) {
-                            detailSize.textContent = `{{ file.get_formatted_size() }}`;
-                        }
-
-                        const detailUploadedBy = document.querySelector("#file-detail-uploaded-by");
-                        if (detailUploadedBy) {
-                            detailUploadedBy.textContent = `{{ file.get_creator_name() }}`;
-                        }
-
-                        const detailUploadAt = document.querySelector("#file-detail-upload-at");
-                        if (detailUploadAt) {
-                            detailUploadAt.textContent = "March 8, 2026 at 7:34 PM";
-                        }
-
-                        const detailRemainingDownloads = document.querySelector("#file-detail-remaining-downloads");
-                        if (detailRemainingDownloads) {
-                            detailRemainingDownloads.textContent = `{{ file.get_remaining_downloads() }}`;
-                        }
-
-                        fileList.setAttribute("hidden", "");
-                    });
-                }
-            </script>
-        </li>
-    {% endfor %}
-  </ul>
-  <section id="file-detail" class="settings-page" hidden>
-      <md-icon-button id="file-back" class="popover-back-button">
-          <md-icon>arrow_back</md-icon>
-      </md-icon-button>
-      <div class="file-details-container">
-      
-          <div class="form">
-              <div class="form-row">
-                  <span class="form-label">File Name</span>
-                  <h3 id="file-detail-name" class="form-header no-margin"></h3>
-              </div>
-              <div class="form-row">
-                  <span class="form-label">File Size</span>
-                  <span id="file-detail-size" class="form-value"></span>
-              </div>
-        
-              <div class="form-row">
-                  <span class="form-label">Uploaded By</span>
-                  <span id="file-detail-uploaded-by" class="form-value"></span>
-              </div>
-            
-              <div class="form-row">
-                  <span class="form-label">Upload Date</span>
-                  <span id="file-detail-uploaded-at" class="form-value"></span>
-              </div>
-            
-              <div class="form-row">
-                  <span class="form-label">Downloads Remaining</span>
-                  <span id="file-detail-remaining-downloads" class="form-value badge"></span>
-              </div>
-          </div>
-      </div>
-  </section>
-  <script type="module">
-      const backButton = document.querySelector("#file-back");
-      const fileList = document.querySelector("#file-list");
-      const detail = document.querySelector("#file-detail");
-
-      if (backButton && fileList && detail) {
-          backButton.addEventListener("click", () => {
-              detail.setAttribute("hidden", "");
-              fileList.removeAttribute("hidden");
-          });
-      }
-  </script>
+      </section>
+  {% endfor %}
 </tree-menu>
 {% endif %}

@@ -61,6 +61,10 @@ impl File {
             .clone()
             .unwrap_or("Unknown".to_string())
     }
+
+    pub fn expires_at_slash_date(&self) -> String {
+        format!("{}", self.expires_at.format("%d/%m/%Y"))
+    }
 }
 
 pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
