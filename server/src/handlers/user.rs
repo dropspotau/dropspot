@@ -14,7 +14,7 @@ use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
-    auth::password::{hash_password, verify_password},
+    auth::password::{hash_password, validate_password, verify_password},
     db::{
         User, create_user, get_organisation_for_user, get_user_by_email, get_user_by_id,
         get_user_password,
@@ -69,6 +69,17 @@ pub async fn handle_create_user(
 
     if let Ok(existing) = get_user_by_email(pool, &payload.email).await {
         return Json(ApiUser::from(existing)).into_response();
+    }
+
+    let (is_password_valid, password_errors) = validate_password(&payload.password);
+
+    if !is_password_valid {
+        let error_messages = password_errors
+            .iter()
+            .map(|e| e.to_string())
+            .collect::<Vec<String>>();
+        let api_error = ApiError::new(error_messages.join("\n"), StatusCode::BAD_REQUEST);
+        return api_error.into_response();
     }
 
     let Ok(password_hash) = hash_password(&payload.password) else {
