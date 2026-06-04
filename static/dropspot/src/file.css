@@ -81,7 +81,6 @@
 .file-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 1rem 1.5rem;
   gap: 1rem;
   color: var(--dropspot-primary); /* Material Blue Text */
@@ -91,6 +90,11 @@
   &:hover {
     background-color: var(--dropspot-hover);
     cursor: pointer;
+  }
+
+  &:has(.file-item-main) {
+    /* Split main display from options on the right-hand side. i.e. File name + size and then actions menu on the right */
+    justify-content: space-between;
   }
 }
 

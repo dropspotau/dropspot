@@ -27,25 +27,12 @@ export class LoginControllerElement extends LitElement {
     }
 
     .container {
-      display: flex;
-      flex-flow: column;
-      place-items: center;
-      gap: 1rem;
-      min-width: 32dvh;
-      color: var(--dropspot-primary);
-    }
+      width: 24rem;
+      align-items: center;
 
-    .form {
-      display: flex;
-      flex-flow: column;
-      place-items: center;
-      gap: 1rem;
-    }
-
-    .form-row {
-      display: flex;
-      place-items: center;
-      gap: 1rem;
+      & > .form-row {
+        width: 100%;
+      }
     }
   `;
 
@@ -140,46 +127,65 @@ export class LoginControllerElement extends LitElement {
   };
 
   private renderSignin = (): TemplateResult<1> => html`
-    <md-filled-text-field type="email" name="email" label="Email">
-    </md-filled-text-field>
-    <md-filled-text-field
-      type="password"
-      name="password"
-      label="Password"
-      required
-    >
-    </md-filled-text-field>
+    <div class="form-row">
+      <md-filled-text-field
+        type="email"
+        name="email"
+        label="Email"
+      ></md-filled-text-field>
+    </div>
+    <div class="form-row">
+      <md-filled-text-field
+        type="password"
+        name="password"
+        label="Password"
+        required
+      >
+      </md-filled-text-field>
+    </div>
   `;
 
   private renderSignup = (): TemplateResult<1> => html`
-    <md-filled-text-field type="email" name="email" label="Email" required>
-    </md-filled-text-field>
-    <md-filled-text-field
-      type="text"
-      name="first_name"
-      label="First name"
-      pattern="[A-Za-z]{1,32}"
-      required
-    >
-    </md-filled-text-field>
-    <md-filled-text-field
-      type="text"
-      name="last_name"
-      label="Last name"
-      pattern="[A-Za-z]{1,32}"
-      required
-    >
-    </md-filled-text-field>
-    <md-filled-text-field
-      type="password"
-      name="password"
-      label="Password"
-      minlength="8"
-      pattern="${PASSWORD_PATTERN}"
-      autocomplete="current-password"
-      required
-    >
-    </md-filled-text-field>
+    <div class="form-row">
+      <md-filled-text-field
+        type="email"
+        name="email"
+        label="Email"
+        required
+      ></md-filled-text-field>
+    </div>
+    <div class="form-row">
+      <md-filled-text-field
+        type="text"
+        name="first_name"
+        label="First name"
+        pattern="[A-Za-z]{1,32}"
+        required
+      >
+      </md-filled-text-field>
+    </div>
+    <div class="form-row">
+      <md-filled-text-field
+        type="text"
+        name="last_name"
+        label="Last name"
+        pattern="[A-Za-z]{1,32}"
+        required
+      >
+      </md-filled-text-field>
+    </div>
+    <div class="form-row">
+      <md-filled-text-field
+        type="password"
+        name="password"
+        label="Password"
+        minlength="8"
+        pattern="${PASSWORD_PATTERN}"
+        autocomplete="current-password"
+        required
+      >
+      </md-filled-text-field>
+    </div>
   `;
 
   render() {
@@ -193,21 +199,19 @@ export class LoginControllerElement extends LitElement {
         Login
       </md-filled-button>
       <dropspot-modal .open="${this.isOpen}" @close="${this.handleModalClose}">
-        <form class="container" @submit="${this.handleLogin}">
-          <section class="form">
-            ${this.isSigningUp
-              ? html`
-                  <h3>Sign up</h3>
-                  ${this.renderSignup()}
-                `
-              : html`
-                  <h3>Sign in</h3>
-                  ${this.renderSignin()}
-                `}
-          </section>
+        <form class="form container text-primary" @submit="${this.handleLogin}">
+          ${this.isSigningUp
+            ? html`
+                <h3>Sign up</h3>
+                ${this.renderSignup()}
+              `
+            : html`
+                <h3>Sign in</h3>
+                ${this.renderSignin()}
+              `}
           <hr />
           <section class="form-row">
-            <p class="no-margin">
+            <p class="no-margin text-primary">
               <span>${subtitleText}</span>
               <span class="microlink" @click="${this.handleToggleSignup}"
                 >${actionText}</span
