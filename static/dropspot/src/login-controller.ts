@@ -5,6 +5,9 @@ import { setTokens, type LoginEvent } from "./auth";
 import { ToastElement } from "./toast";
 import { applyGlobalStyles } from "./style";
 
+const PASSWORD_PATTERN =
+  "[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]{8,64}";
+
 @customElement("login-controller")
 export class LoginControllerElement extends LitElement {
   static styles = css`
@@ -79,8 +82,6 @@ export class LoginControllerElement extends LitElement {
     const lastName = formData.get("last_name");
     const password = formData.get("password");
 
-    console.debug(email, firstName, lastName, password);
-
     const isValid =
       typeof email === "string" &&
       (!this.isSigningUp || typeof firstName === "string") &&
@@ -145,7 +146,7 @@ export class LoginControllerElement extends LitElement {
       type="password"
       name="password"
       label="Password"
-      pattern="[A-Za-z0-9]{8,}"
+      required
     >
     </md-filled-text-field>
   `;
@@ -173,7 +174,10 @@ export class LoginControllerElement extends LitElement {
       type="password"
       name="password"
       label="Password"
-      pattern="[A-Za-z0-9]{8,}"
+      minlength="8"
+      pattern="${PASSWORD_PATTERN}"
+      autocomplete="current-password"
+      required
     >
     </md-filled-text-field>
   `;
