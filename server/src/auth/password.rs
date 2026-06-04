@@ -16,7 +16,7 @@ pub enum PasswordError {
 
 #[derive(Error, Debug)]
 pub enum PasswordValidationError {
-    #[error("Password is invalid")]
+    #[error("Passwords require a minimum length of eight characters")]
     TooShort,
 
     #[error("Password requires a number")]
