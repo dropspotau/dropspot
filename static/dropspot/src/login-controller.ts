@@ -75,8 +75,30 @@ export class LoginControllerElement extends LitElement {
     }
 
     .password-errors {
-      background-color: var(--dropspot-danger);
-      border-radius: 1rem;
+      display: flex;
+      flex-flow: column;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 1rem 2rem;
+      background-color: var(--dropspot-danger-light);
+      border-left: 0.25rem solid var(--dropspot-danger);
+      border-radius: 0.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .password-error-icon {
+      color: var(--dropspot-danger);
+      font-size: 1.25rem;
+      --md-icon-size: 1.25rem;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
+
+    .password-error {
+      color: var(--dropspot-danger);
+      font-size: 0.875rem;
+      line-height: 1.25;
     }
   `;
 
@@ -90,7 +112,11 @@ export class LoginControllerElement extends LitElement {
   private isSigningUp: boolean = false;
 
   @state()
-  private passwordErrors: string[] = [];
+  private passwordErrors: string[] = [
+    "lmao",
+    "Password requires at least eight characters",
+    "Password requires at least one symbol",
+  ];
 
   private submitButtonRef: Ref<MdFilledButton> = createRef();
 
@@ -207,8 +233,8 @@ export class LoginControllerElement extends LitElement {
 
   private renderPasswordErrors = (errors: string[]): TemplateResult<1> => html`
     <ul class="password-errors">
-      ${errors.map((error) => html`<li>${error}</li>`)}
-    </ul;>
+      ${errors.map((error) => html`<li class="password-error">${error}</li>`)}
+    </ul>
   `;
 
   private renderSignin = (): TemplateResult<1> => html`
@@ -301,9 +327,6 @@ export class LoginControllerElement extends LitElement {
                 <h3>Sign in</h3>
                 ${this.renderSignin()}
               `}
-          ${this.passwordErrors.length > 0
-            ? this.renderPasswordErrors(this.passwordErrors)
-            : ""}
           <hr />
           <section class="form-row">
             <p class="no-margin text-primary">
@@ -329,6 +352,9 @@ export class LoginControllerElement extends LitElement {
                   </div>
                 `}
           </md-filled-button>
+          ${this.passwordErrors.length > 0
+            ? this.renderPasswordErrors(this.passwordErrors)
+            : ""}
         </form>
       </dropspot-modal>
     `;
