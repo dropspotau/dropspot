@@ -19,14 +19,13 @@
           config = {
             allowUnfree = true;
             permittedInsecurePackages = [];
-            cudaSupport = true; # For llama-cpp to allow GPU usage
           };
         };
 
         # Google Cloud to test bucket uploads
-        gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
-          gke-gcloud-auth-plugin
-        ]);
+        # gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
+        #   gke-gcloud-auth-plugin
+        # ]);
 
         gcloud-login = pkgs.writeShellScriptBin "glogin" ''
           unset GOOGLE_APPLICATION_CREDENTIALS # Remove in case it tries to set service account details
@@ -55,14 +54,10 @@
         deps = with pkgs; [
           psql
           direnv
-          gdk
+          # libtcl failing?
+          # gdk
           gcloud-login
           opencode
-
-          (llama-cpp.override { 
-            # Pass your config value here if the derivation supports it
-            cudaSupport = true; # Compiele with GPU usage
-          })
         ] ++ rustDeps ++ tsDeps ++ editorDeps;
       in
       {
