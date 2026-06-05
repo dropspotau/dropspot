@@ -1,10 +1,14 @@
 import { createUser, login, type LoginResult } from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { createRef, ref, type Ref } from "lit/directives/ref.js";
+import type { MdFilledButton } from "@material/web/button/filled-button";
+
 import { setTokens, type LoginEvent } from "./auth";
 import { ToastElement } from "./toast";
 import { applyGlobalStyles } from "./style";
 
+// Characters, numbers and symbols within a length of 8 and 64
 const PASSWORD_PATTERN =
   "[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]{8,64}";
 
@@ -44,6 +48,8 @@ export class LoginControllerElement extends LitElement {
 
   @state()
   private isSigningUp: boolean = false;
+
+  private submitButtonRef: Ref<MdFilledButton> = createRef();
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -118,6 +124,25 @@ export class LoginControllerElement extends LitElement {
     this.isOpen = true;
   };
 
+  /** Submits the form if "Enter" was pressed
+   * @param e The key press event
+   */
+  private handleKeyUp = (e: KeyboardEvent): void => {
+    e.preventDefault();
+
+    if (e.key !== "Enter") {
+      return;
+    }
+
+    const { value: submitButton } = this.submitButtonRef;
+
+    if (submitButton) {
+      // NOTE(alec): We can't call requestSubmit on a form ref because submitButton isn't an HTMLButtonElement
+      // Manually clicking works fine
+      submitButton.click();
+    }
+  };
+
   private handleModalClose = (): void => {
     this.isOpen = false;
   };
@@ -132,6 +157,8 @@ export class LoginControllerElement extends LitElement {
         type="email"
         name="email"
         label="Email"
+        required
+        @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
     </div>
     <div class="form-row">
@@ -140,6 +167,7 @@ export class LoginControllerElement extends LitElement {
         name="password"
         label="Password"
         required
+        @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
     </div>
@@ -152,6 +180,7 @@ export class LoginControllerElement extends LitElement {
         name="email"
         label="Email"
         required
+        @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
     </div>
     <div class="form-row">
@@ -161,6 +190,7 @@ export class LoginControllerElement extends LitElement {
         label="First name"
         pattern="[A-Za-z]{1,32}"
         required
+        @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
     </div>
@@ -171,6 +201,7 @@ export class LoginControllerElement extends LitElement {
         label="Last name"
         pattern="[A-Za-z]{1,32}"
         required
+        @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
     </div>
@@ -183,6 +214,7 @@ export class LoginControllerElement extends LitElement {
         pattern="${PASSWORD_PATTERN}"
         autocomplete="current-password"
         required
+        @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
     </div>
@@ -218,7 +250,11 @@ export class LoginControllerElement extends LitElement {
               >
             </p>
           </section>
-          <md-filled-button class="button-primary" type="submit">
+          <md-filled-button
+            class="button-primary"
+            ${ref(this.submitButtonRef)}
+            type="submit"
+          >
             ${this.isSubmitting
               ? html`<md-circular-progress
                   indeterminate
