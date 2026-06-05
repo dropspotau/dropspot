@@ -38,7 +38,9 @@ const validatePassword = (password: string): [boolean, string[]] => {
     errors.push("Password requires at least one number");
   }
 
-  const symbolRegex = new RegExp("!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?");
+  const symbolRegex = new RegExp(
+    "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]",
+  );
   if (!symbolRegex.test(password)) {
     isValid = false;
     errors.push("Password requires at least one symbol");
@@ -112,11 +114,7 @@ export class LoginControllerElement extends LitElement {
   private isSigningUp: boolean = false;
 
   @state()
-  private passwordErrors: string[] = [
-    "lmao",
-    "Password requires at least eight characters",
-    "Password requires at least one symbol",
-  ];
+  private passwordErrors: string[] = [];
 
   private submitButtonRef: Ref<MdFilledButton> = createRef();
 
@@ -293,7 +291,7 @@ export class LoginControllerElement extends LitElement {
     </div>
     <div class="form-row">
       <md-filled-text-field
-        type="text"
+        type="password"
         name="password"
         label="Password"
         minlength="8"
