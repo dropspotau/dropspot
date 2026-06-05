@@ -9,8 +9,43 @@ import { ToastElement } from "./toast";
 import { applyGlobalStyles } from "./style";
 
 // Characters, numbers and symbols within a length of 8 and 64
-const PASSWORD_PATTERN =
-  "[A-Za-z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]{8,64}";
+const PASSWORD_PATTERN = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#]).{8,64}";
+
+/** Checks if a given password contains at least eight characters, with at least one letter, number and symbol
+ *
+ * This should match the password validation in server/src/auth/password.rs
+ * @param password The password
+ * @returns A tuple with a first boolean being whether the password is valid or not, and a list of any errors
+ */
+const validatePassword = (password: string): [boolean, string[]] => {
+  let isValid = true;
+  const errors: string[] = [];
+
+  if (password.length < 8) {
+    isValid = false;
+    errors.push("Password requires at least eight characters");
+  }
+
+  const textRegex = new RegExp("[A-Za-z]");
+  if (!textRegex.test(password)) {
+    isValid = false;
+    errors.push("Password requires at least one letter");
+  }
+
+  const numberRegex = new RegExp("[0-9]");
+  if (!numberRegex.test(password)) {
+    isValid = false;
+    errors.push("Password requires at least one number");
+  }
+
+  const symbolRegex = new RegExp("!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?");
+  if (!symbolRegex.test(password)) {
+    isValid = false;
+    errors.push("Password requires at least one symbol");
+  }
+
+  return [isValid, errors];
+};
 
 @customElement("login-controller")
 export class LoginControllerElement extends LitElement {
@@ -38,6 +73,11 @@ export class LoginControllerElement extends LitElement {
         width: 100%;
       }
     }
+
+    .password-errors {
+      background-color: var(--dropspot-danger);
+      border-radius: 1rem;
+    }
   `;
 
   @state()
@@ -48,6 +88,9 @@ export class LoginControllerElement extends LitElement {
 
   @state()
   private isSigningUp: boolean = false;
+
+  @state()
+  private passwordErrors: string[] = [];
 
   private submitButtonRef: Ref<MdFilledButton> = createRef();
 
@@ -81,9 +124,19 @@ export class LoginControllerElement extends LitElement {
       (!this.isSigningUp || typeof lastName === "string") &&
       typeof password === "string";
 
-    // Date testing
     if (!isValid) {
       return false;
+    }
+
+    // Validate whether the password is valid on creation
+    if (this.isSigningUp && typeof password === "string") {
+      const [isPasswordValid, passwordErrors] = validatePassword(password);
+
+      if (!isPasswordValid) {
+        // Show password errors and return
+        this.passwordErrors = passwordErrors;
+        return false;
+      }
     }
 
     this.isSubmitting = true;
@@ -106,6 +159,7 @@ export class LoginControllerElement extends LitElement {
       );
     } finally {
       this.isSubmitting = false;
+      this.passwordErrors = [];
     }
 
     if (result) {
@@ -150,6 +204,12 @@ export class LoginControllerElement extends LitElement {
   private handleToggleSignup = (): void => {
     this.isSigningUp = !this.isSigningUp;
   };
+
+  private renderPasswordErrors = (errors: string[]): TemplateResult<1> => html`
+    <ul class="password-errors">
+      ${errors.map((error) => html`<li>${error}</li>`)}
+    </ul;>
+  `;
 
   private renderSignin = (): TemplateResult<1> => html`
     <div class="form-row">
@@ -207,7 +267,7 @@ export class LoginControllerElement extends LitElement {
     </div>
     <div class="form-row">
       <md-filled-text-field
-        type="password"
+        type="text"
         name="password"
         label="Password"
         minlength="8"
@@ -241,6 +301,9 @@ export class LoginControllerElement extends LitElement {
                 <h3>Sign in</h3>
                 ${this.renderSignin()}
               `}
+          ${this.passwordErrors.length > 0
+            ? this.renderPasswordErrors(this.passwordErrors)
+            : ""}
           <hr />
           <section class="form-row">
             <p class="no-margin text-primary">

@@ -19,6 +19,9 @@ pub enum PasswordValidationError {
     #[error("Passwords require a minimum length of eight characters")]
     TooShort,
 
+    #[error("Password requires a letter")]
+    NoLetter,
+
     #[error("Password requires a number")]
     NoNumber,
 
@@ -34,13 +37,20 @@ pub fn validate_password(password: &str) -> (bool, Vec<PasswordValidationError>)
         errors.push(PasswordValidationError::TooShort);
     }
 
-    let number_regex = Regex::new(r"[0-9]").unwrap();
+    let letter_regex = Regex::new(r"[A-Za-z]").expect("Password validation letter regex failed");
+
+    if !letter_regex.is_match(password) {
+        errors.push(PasswordValidationError::NoLetter);
+    }
+
+    let number_regex = Regex::new(r"[0-9]").expect("Password validation number regex failed");
 
     if !number_regex.is_match(password) {
         errors.push(PasswordValidationError::NoNumber);
     }
 
-    let symbol_regex = Regex::new(r#"[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]"#).unwrap();
+    let symbol_regex = Regex::new(r#"[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]"#)
+        .expect("Password validation symbol regex failed");
 
     if !symbol_regex.is_match(password) {
         errors.push(PasswordValidationError::NoSymbol);
