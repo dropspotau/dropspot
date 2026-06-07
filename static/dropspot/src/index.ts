@@ -34,12 +34,13 @@ const filesDialogButton = document.querySelector("#files-popover-toggle");
 
 if (settingsDialogButton) {
   settingsDialogButton.addEventListener("click", () => {
-    document.dispatchEvent(
+    settingsDialogButton.dispatchEvent(
       new CustomEvent("popover-toggle", {
         detail: {
           selector: "#settings-popover",
           srcElement: settingsDialogButton,
         },
+        bubbles: true,
       }),
     );
   });
@@ -47,9 +48,10 @@ if (settingsDialogButton) {
 
 if (filesDialogButton) {
   filesDialogButton.addEventListener("click", () => {
-    document.dispatchEvent(
+    filesDialogButton.dispatchEvent(
       new CustomEvent("popover-toggle", {
         detail: { selector: "#files-popover", srcElement: filesDialogButton },
+        bubbles: true,
       }),
     );
   });
