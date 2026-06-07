@@ -295,10 +295,6 @@ async fn main() -> Result<(), ()> {
                         return Err(());
                     }
                 };
-                println!(
-                    "{} {}",
-                    login_result.tokens.access_token, login_result.tokens.refresh_token
-                );
 
                 if let Err(e) = save_login(&login_result.tokens.refresh_token) {
                     eprintln!("Failed to save login token: {e}");
