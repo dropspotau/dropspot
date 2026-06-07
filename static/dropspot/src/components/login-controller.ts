@@ -9,9 +9,9 @@ import { customElement, state } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import type { MdFilledButton } from "@material/web/button/filled-button";
 
-import { setTokens, type LoginEvent } from "./auth";
+import { setTokens, type LoginEvent } from "../auth";
+import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
-import { applyGlobalStyles } from "./style";
 
 // Characters, numbers and symbols within a length of 8 and 64
 const PASSWORD_PATTERN = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#]).{8,64}";

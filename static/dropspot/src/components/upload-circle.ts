@@ -1,5 +1,7 @@
-import { getAuth } from "./auth";
-import { UploadBarElement } from "./components";
+import { getAuth } from "../auth";
+import { UploadBarElement } from "./upload-bar";
+
+import "./upload-circle.css";
 
 const upload = document.querySelector("#upload");
 const fileInput = document.querySelector("#file-input");

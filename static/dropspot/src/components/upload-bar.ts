@@ -11,8 +11,8 @@ import { customElement, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 
 import { getAuth } from "../auth";
-import { ToastElement } from "../toast";
 import { applyGlobalStyles } from "../style";
+import { ToastElement } from "./toast";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);

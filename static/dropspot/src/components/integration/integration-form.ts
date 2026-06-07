@@ -7,12 +7,12 @@ import {
 } from "dropspot-core";
 import { MdSwitch } from "@material/web/switch/switch";
 import { MdFilledTextField } from "@material/web/textfield/filled-text-field";
-
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
 import { getAuth } from "../../auth";
 import { applyGlobalStyles } from "../../style";
-import { ToastElement } from "../../toast";
+import { ToastElement } from "../toast";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {

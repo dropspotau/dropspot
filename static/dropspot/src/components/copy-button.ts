@@ -1,5 +1,6 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+
 import "./copy-button.css";
 
 @customElement("copy-button")

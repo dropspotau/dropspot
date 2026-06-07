@@ -16,23 +16,13 @@ import "./form.css";
 import "./menu.css";
 import "./settings.css";
 import "./theme.css";
-import "./upload-circle.css";
 import "./uploads.css";
 import "./utils.css";
 
 import { loginAtStartup } from "./auth";
-import "./copy-button";
-import "./file-icon";
-import "./file-preview";
-import "./login-controller";
-import "./modal";
-import "./my-element";
-import "./popover";
-import "./toast";
-import "./upload-circle";
 
 // Import all components
-import "./components";
+export * from "./components";
 
 init().then(() => {
   console.log("DropSpot initialised");

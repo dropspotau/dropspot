@@ -1,6 +1,6 @@
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { download } from "./download";
+import { download } from "../../download";
 
 @customElement("file-preview")
 export class FilePreviewElement extends LitElement {
