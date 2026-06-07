@@ -128,7 +128,7 @@ async fn main() -> Result<(), ()> {
                 let upload = upload(
                     file_name.clone(),
                     buffer,
-                    authentication,
+                    authentication.as_ref(),
                     StorageType::Local,
                 )
                 .await;
@@ -174,7 +174,7 @@ async fn main() -> Result<(), ()> {
 
                 let encryption = Encryption { key, nonce };
 
-                let Ok(file) = get_file(&id, None).await else {
+                let Ok(file) = get_file(&id, authentication.as_ref()).await else {
                     eprintln!("Failed to retrieve file details");
                     return Err(());
                 };
@@ -187,7 +187,9 @@ async fn main() -> Result<(), ()> {
                 };
 
                 let stream_writer = BufWriter::new(local_file);
-                if let Err(e) = download(id, &encryption, stream_writer, authentication).await {
+                if let Err(e) =
+                    download(id, &encryption, stream_writer, authentication.as_ref()).await
+                {
                     eprintln!("Failed to download file: {e}");
                     return Err(());
                 }
@@ -202,7 +204,7 @@ async fn main() -> Result<(), ()> {
                     Err(_e) => None,
                 };
 
-                let files = list_files(authentication).await;
+                let files = list_files(authentication.as_ref()).await;
 
                 if let Err(e) = files {
                     eprintln!("Failed to list files: {e}");
@@ -220,7 +222,7 @@ async fn main() -> Result<(), ()> {
                     Err(_e) => None,
                 };
 
-                let file = get_file(id, authentication).await;
+                let file = get_file(id, authentication.as_ref()).await;
 
                 if let Err(e) = file {
                     eprintln!("Failed to get file: {e}");

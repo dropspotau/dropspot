@@ -38,7 +38,7 @@ pub struct UploadResult {
 pub async fn upload(
     name: String,
     contents: Vec<u8>,
-    auth: Option<Authentication>,
+    auth: Option<&Authentication>,
     storage: StorageType,
 ) -> Result<UploadResult, UploadError> {
     let size = contents.len();
@@ -48,7 +48,7 @@ pub async fn upload(
 
     let encryption = encrypt_file(reader, writer).map_err(|e| UploadError::EncryptionError(e))?;
 
-    let mut headers = get_auth_headers(auth.as_ref());
+    let mut headers = get_auth_headers(auth);
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     // Request an upload
@@ -68,7 +68,7 @@ pub async fn upload(
         .map_err(|e| UploadError::RequestError(e))?;
 
     // Upload the file body
-    let mut headers = get_auth_headers(auth.as_ref());
+    let mut headers = get_auth_headers(auth);
     headers.insert("Content-Type", "application/octet-stream".parse().unwrap());
 
     let file_stream = reqwest::Client::new()
@@ -94,7 +94,7 @@ pub async fn upload_js(
     auth: Option<Authentication>,
     storage: StorageType,
 ) -> Result<UploadResult, JsError> {
-    let upload = upload(name, contents, auth, storage).await;
+    let upload = upload(name, contents, auth.as_ref(), storage).await;
 
     if let Err(e) = upload {
         return Err(JsError::new(&format!("{e}")));
@@ -124,10 +124,10 @@ pub struct PreviewUploadResult {
 }
 
 pub async fn preview_upload(
-    auth: Option<Authentication>,
+    auth: Option<&Authentication>,
     payload: PreviewUploadRequest,
 ) -> Result<PreviewUploadResult, reqwest::Error> {
-    let headers = get_auth_headers(auth.as_ref());
+    let headers = get_auth_headers(auth);
 
     reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/upload/preview"))
@@ -144,7 +144,7 @@ pub async fn preview_upload_js(
     auth: Option<Authentication>,
     payload: PreviewUploadRequest,
 ) -> Result<PreviewUploadResult, JsError> {
-    preview_upload(auth, payload)
+    preview_upload(auth.as_ref(), payload)
         .map_err(|e| JsError::new(&format!("{e}")))
         .await
 }
