@@ -18,13 +18,14 @@ use base64::engine::GeneralPurpose;
 use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
+use dropspot_core::auth::Authentication;
 use dropspot_core::storage::StorageType;
-use dropspot_core::user::login;
+use dropspot_core::user::{create_user, login};
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
-use crate::auth::storage::save_login;
+use crate::auth::storage::{get_access_token, save_login};
 use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
@@ -117,7 +118,20 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 }
 
-                let upload = upload(file_name.clone(), buffer, None, StorageType::GCS).await;
+                let authentication = match get_access_token().await {
+                    Ok(access_token) => Some(Authentication {
+                        token: access_token,
+                    }),
+                    Err(_e) => None,
+                };
+
+                let upload = upload(
+                    file_name.clone(),
+                    buffer,
+                    authentication,
+                    StorageType::Local,
+                )
+                .await;
 
                 if let Err(e) = upload {
                     eprintln!("Failed to upload file: {e:?}");
@@ -147,6 +161,13 @@ async fn main() -> Result<(), ()> {
                     return Err(());
                 };
 
+                let authentication = match get_access_token().await {
+                    Ok(access_token) => Some(Authentication {
+                        token: access_token,
+                    }),
+                    Err(_e) => None,
+                };
+
                 let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
                 let key = engine.decode(key).unwrap();
                 let nonce = engine.decode(nonce).unwrap();
@@ -166,7 +187,7 @@ async fn main() -> Result<(), ()> {
                 };
 
                 let stream_writer = BufWriter::new(local_file);
-                if let Err(e) = download(id, &encryption, stream_writer, None).await {
+                if let Err(e) = download(id, &encryption, stream_writer, authentication).await {
                     eprintln!("Failed to download file: {e}");
                     return Err(());
                 }
@@ -174,7 +195,14 @@ async fn main() -> Result<(), ()> {
                 println!("Download complete");
             }
             FileCommands::List {} => {
-                let files = list_files(None).await;
+                let authentication = match get_access_token().await {
+                    Ok(access_token) => Some(Authentication {
+                        token: access_token,
+                    }),
+                    Err(_e) => None,
+                };
+
+                let files = list_files(authentication).await;
 
                 if let Err(e) = files {
                     eprintln!("Failed to list files: {e}");
@@ -185,7 +213,14 @@ async fn main() -> Result<(), ()> {
                 println!("{files:?}");
             }
             FileCommands::Get { id } => {
-                let file = get_file(id, None).await;
+                let authentication = match get_access_token().await {
+                    Ok(access_token) => Some(Authentication {
+                        token: access_token,
+                    }),
+                    Err(_e) => None,
+                };
+
+                let file = get_file(id, authentication).await;
 
                 if let Err(e) = file {
                     eprintln!("Failed to get file: {e}");
@@ -286,7 +321,6 @@ async fn main() -> Result<(), ()> {
                     .expect("Could not read password")
                     .trim()
                     .to_owned();
-                println!("Email: {email}    Password: {password}");
 
                 let login_result = match login(email, password).await {
                     Ok(result) => result,
@@ -296,12 +330,79 @@ async fn main() -> Result<(), ()> {
                     }
                 };
 
+                println!("Logged in as {}!", login_result.user.email);
+
                 if let Err(e) = save_login(&login_result.tokens.refresh_token) {
                     eprintln!("Failed to save login token: {e}");
                     return Err(());
                 }
             }
-            AuthCommands::Create {} => {}
+            AuthCommands::Create {} => {
+                let mut stdout = std::io::stdout().lock();
+                let mut stdin = std::io::stdin().lock();
+
+                write!(stdout, "Please enter your email: ").expect("Could not prompt for email");
+                stdout.flush().expect("Could not flush terminal");
+
+                let mut email = String::new();
+                stdin
+                    .read_line(&mut email)
+                    .expect("Could not read terminal input");
+                email = email.trim().to_owned();
+
+                write!(stdout, "Please enter your first name: ")
+                    .expect("Could not prompt for first name");
+                stdout.flush().expect("Could not flush terminal");
+
+                let mut first_name = String::new();
+                stdin
+                    .read_line(&mut first_name)
+                    .expect("Could not read terminal input");
+                first_name = first_name.trim().to_owned();
+
+                write!(stdout, "Please enter your last name: ")
+                    .expect("Could not prompt for last name");
+                stdout.flush().expect("Could not flush terminal");
+
+                let mut last_name = String::new();
+                stdin
+                    .read_line(&mut last_name)
+                    .expect("Could not read terminal input");
+                last_name = last_name.trim().to_owned();
+
+                write!(stdout, "Please enter your password: ")
+                    .expect("Could not prompt for password");
+                stdout.flush().expect("Could not flush terminal");
+
+                let config = rpassword::ConfigBuilder::new()
+                    .output_discard()
+                    .password_feedback_mask('*')
+                    .output_writer(stdout) // Passing in input_reader causes the password to display in the terminal
+                    .build();
+
+                let password = rpassword::read_password_with_config(config)
+                    .expect("Could not read password")
+                    .trim()
+                    .to_owned();
+
+                let login_result = match create_user(email, password, first_name, last_name).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("User creation error: {e}");
+                        return Err(());
+                    }
+                };
+
+                println!(
+                    "Created user {}! All DropSpot commands will now be undertaken as this user",
+                    login_result.user.email
+                );
+
+                if let Err(e) = save_login(&login_result.tokens.refresh_token) {
+                    eprintln!("Failed to save login token: {e}");
+                    return Err(());
+                }
+            }
         },
     }
 
