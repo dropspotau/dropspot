@@ -161,6 +161,7 @@ pub async fn handle_login(
     State(state): State<AppState>,
     Json(payload): Json<LoginPayload>,
 ) -> impl IntoResponse {
+    println!("{} {}", payload.email, payload.password);
     let pool = state.get_pool();
     let user = get_user_by_email(pool, &payload.email).await;
 

@@ -19,10 +19,12 @@ use base64::engine::general_purpose::NO_PAD;
 use base64::prelude::*;
 use clap::{Parser, Subcommand};
 use dropspot_core::storage::StorageType;
+use dropspot_core::user::login;
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
+use crate::auth::storage::save_login;
 use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
@@ -268,6 +270,7 @@ async fn main() -> Result<(), ()> {
                 stdin
                     .read_line(&mut email)
                     .expect("Could not read terminal input");
+                email = email.trim().to_owned();
 
                 write!(stdout, "Please enter your password: ")
                     .expect("Could not prompt for password");
@@ -279,9 +282,28 @@ async fn main() -> Result<(), ()> {
                     .output_writer(stdout) // Passing in input_reader causes the password to display in the terminal
                     .build();
 
-                let password =
-                    rpassword::read_password_with_config(config).expect("Could not read password");
+                let password = rpassword::read_password_with_config(config)
+                    .expect("Could not read password")
+                    .trim()
+                    .to_owned();
                 println!("Email: {email}    Password: {password}");
+
+                let login_result = match login(email, password).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("Login error: {e}");
+                        return Err(());
+                    }
+                };
+                println!(
+                    "{} {}",
+                    login_result.tokens.access_token, login_result.tokens.refresh_token
+                );
+
+                if let Err(e) = save_login(&login_result.tokens.refresh_token) {
+                    eprintln!("Failed to save login token: {e}");
+                    return Err(());
+                }
             }
             AuthCommands::Create {} => {}
         },
