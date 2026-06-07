@@ -16,6 +16,7 @@ export const applyGlobalStyles = (shadowRoot: ShadowRoot): void => {
     const sheet = new CSSStyleSheet();
     const css = Array.from(x.cssRules)
       .map((rule) => rule.cssText)
+      .filter((text) => !text.startsWith("@import")) // https://github.com/WICG/construct-stylesheets/issues/119#issuecomment-588352418
       .join(" ");
     sheet.replaceSync(css);
 

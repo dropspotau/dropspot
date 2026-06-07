@@ -65,7 +65,6 @@ export class TreeMenuElement extends LitElement {
    */
   private handleClick = (e: MouseEvent): void => {
     const { target } = e;
-    console.debug(target, e.currentTarget);
 
     if (
       !(target instanceof Element) ||
