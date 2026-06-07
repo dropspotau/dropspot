@@ -7,14 +7,15 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::user::{
-    AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser,
+use dropspot_core::{
+    auth::validate_password,
+    user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
 };
 use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
-    auth::password::{hash_password, validate_password, verify_password},
+    auth::password::{hash_password, verify_password},
     db::{
         User, create_user, get_organisation_for_user, get_user_by_email, get_user_by_id,
         get_user_password,
@@ -71,10 +72,11 @@ pub async fn handle_create_user(
         return Json(ApiUser::from(existing)).into_response();
     }
 
-    let (is_password_valid, password_errors) = validate_password(&payload.password);
+    let password_validation = validate_password(&payload.password);
 
-    if !is_password_valid {
-        let error_messages = password_errors
+    if !password_validation.ok {
+        let error_messages = password_validation
+            .errors
             .iter()
             .map(|e| e.to_string())
             .collect::<Vec<String>>();

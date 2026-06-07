@@ -19,6 +19,7 @@ chrono = { version = "0.4.42", features = ["serde"] , workspace = true }
 clap = { version = "4.5.53", features = ["derive"] , workspace = true }
 futures-util = { version = "0.3.31", workspace = true }
 http-serde = { version = "2.1.1", workspace = true }
+regex = { version = "1.12.3", workspace = true }
 reqwest = { version = "0.13.1", features = ["json", "stream", "query"] , workspace = true }
 serde = { version = "1.0.228", features = ["derive"], workspace = true }
 sqlx = { version = "0.8.6", features = ["chrono", "derive", "postgres", "runtime-tokio", "uuid", "json"] , workspace = true }

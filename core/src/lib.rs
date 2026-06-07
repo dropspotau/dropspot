@@ -1,4 +1,4 @@
-pub(crate) mod auth;
+pub mod auth;
 mod constants;
 pub mod download;
 pub mod encryption;

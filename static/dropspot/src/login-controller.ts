@@ -1,4 +1,9 @@
-import { createUser, login, type LoginResult } from "dropspot-core";
+import {
+  createUser,
+  login,
+  validatePassword,
+  type LoginResult,
+} from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
@@ -10,44 +15,6 @@ import { applyGlobalStyles } from "./style";
 
 // Characters, numbers and symbols within a length of 8 and 64
 const PASSWORD_PATTERN = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#]).{8,64}";
-
-/** Checks if a given password contains at least eight characters, with at least one letter, number and symbol
- *
- * This should match the password validation in server/src/auth/password.rs
- * @param password The password
- * @returns A tuple with a first boolean being whether the password is valid or not, and a list of any errors
- */
-const validatePassword = (password: string): [boolean, string[]] => {
-  let isValid = true;
-  const errors: string[] = [];
-
-  if (password.length < 8) {
-    isValid = false;
-    errors.push("Password requires at least eight characters");
-  }
-
-  const textRegex = new RegExp("[A-Za-z]");
-  if (!textRegex.test(password)) {
-    isValid = false;
-    errors.push("Password requires at least one letter");
-  }
-
-  const numberRegex = new RegExp("[0-9]");
-  if (!numberRegex.test(password)) {
-    isValid = false;
-    errors.push("Password requires at least one number");
-  }
-
-  const symbolRegex = new RegExp(
-    "[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]",
-  );
-  if (!symbolRegex.test(password)) {
-    isValid = false;
-    errors.push("Password requires at least one symbol");
-  }
-
-  return [isValid, errors];
-};
 
 @customElement("login-controller")
 export class LoginControllerElement extends LitElement {
@@ -154,7 +121,8 @@ export class LoginControllerElement extends LitElement {
 
     // Validate whether the password is valid on creation
     if (this.isSigningUp && typeof password === "string") {
-      const [isPasswordValid, passwordErrors] = validatePassword(password);
+      const { ok: isPasswordValid, errors: passwordErrors } =
+        validatePassword(password);
 
       if (!isPasswordValid) {
         // Show password errors and return
