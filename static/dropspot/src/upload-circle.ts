@@ -55,5 +55,9 @@ if (upload instanceof HTMLElement && fileInput instanceof HTMLInputElement) {
     for (const file of files) {
       triggerUpload(file);
     }
+
+    if (fileInput) {
+      fileInput.value = ""; // Clear files
+    }
   });
 }
