@@ -8,7 +8,7 @@ mod types;
 mod watch;
 
 use std::fs::File;
-use std::io::{BufWriter, Read};
+use std::io::{BufRead, BufWriter, Read, Write};
 use std::sync::Arc;
 
 use axum::Router;
@@ -74,12 +74,23 @@ enum ServerCommands {
 }
 
 #[derive(Subcommand)]
+enum AuthCommands {
+    #[command(about = "Log into DropSpot")]
+    Login,
+    #[command(about = "Create a user")]
+    Create,
+}
+
+#[derive(Subcommand)]
 enum Commands {
     #[command(subcommand)]
     File(FileCommands),
 
     #[command(subcommand)]
     Server(ServerCommands),
+
+    #[command(subcommand)]
+    Auth(AuthCommands),
 }
 
 #[tokio::main]
@@ -244,6 +255,35 @@ async fn main() -> Result<(), ()> {
                     eprintln!("Server run error: {e}");
                 }
             }
+        },
+        Commands::Auth(auth_commands) => match auth_commands {
+            AuthCommands::Login {} => {
+                let mut stdout = std::io::stdout().lock();
+                let mut stdin = std::io::stdin().lock();
+
+                write!(stdout, "Please enter your email: ").expect("Could not prompt for email");
+                stdout.flush().expect("Could not flush terminal");
+
+                let mut email = String::new();
+                stdin
+                    .read_line(&mut email)
+                    .expect("Could not read terminal input");
+
+                write!(stdout, "Please enter your password: ")
+                    .expect("Could not prompt for password");
+                stdout.flush().expect("Could not flush terminal");
+
+                let config = rpassword::ConfigBuilder::new()
+                    .output_discard()
+                    .password_feedback_mask('*')
+                    .output_writer(stdout) // Passing in input_reader causes the password to display in the terminal
+                    .build();
+
+                let password =
+                    rpassword::read_password_with_config(config).expect("Could not read password");
+                println!("Email: {email}    Password: {password}");
+            }
+            AuthCommands::Create {} => {}
         },
     }
 
