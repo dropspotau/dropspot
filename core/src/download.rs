@@ -29,7 +29,7 @@ pub enum DownloadError {
 }
 
 pub async fn download(
-    file_id: Uuid,
+    file_id: &Uuid,
     encryption: &Encryption,
     writer: impl Write,
     auth: Option<&Authentication>,

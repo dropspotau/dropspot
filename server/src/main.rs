@@ -8,26 +8,23 @@ mod storage;
 mod types;
 mod watch;
 
-use std::fs::File;
-use std::io::{BufWriter, Read};
 use std::sync::Arc;
 
 use axum::Router;
 use axum::routing::{delete, get, patch, post};
-use base64::alphabet::URL_SAFE;
-use base64::engine::GeneralPurpose;
-use base64::engine::general_purpose::NO_PAD;
-use base64::prelude::*;
 use clap::{Parser, Subcommand};
 use dropspot_core::auth::Authentication;
-use dropspot_core::storage::StorageType;
 use tokio::net::TcpListener;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
 use crate::auth::storage::get_access_token;
-use crate::cli::auth::{
-    handle_create_user as handle_cli_create_user, handle_login as handle_cli_login,
+use crate::cli::{
+    auth::{handle_create_user as handle_cli_create_user, handle_login as handle_cli_login},
+    file::{
+        handle_download as handle_cli_download, handle_get_file as handle_cli_get_file,
+        handle_list_files as handle_cli_list_files, handle_upload as handle_cli_upload,
+    },
 };
 use crate::db::connect;
 use crate::handlers::{
@@ -39,13 +36,7 @@ use crate::handlers::{
 };
 use crate::state::AppState;
 use crate::watch::watch_for_files;
-use dropspot_core::encryption::Encryption;
-use dropspot_core::{
-    download::download,
-    file::{get_file, list_files},
-    upload::upload,
-    validation::validate_file,
-};
+use dropspot_core::file::{get_file, list_files};
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
@@ -61,7 +52,7 @@ enum FileCommands {
     Upload { file: String },
     #[command(about = "Download a file")]
     Download {
-        id: String,
+        id: Uuid,
         key: String,
         nonce: String,
     },
@@ -105,136 +96,12 @@ async fn main() -> Result<(), ()> {
 
     match &cli.command {
         Commands::File(file_commands) => match file_commands {
-            FileCommands::Upload { file: file_name } => {
-                // Simulate generating an upload URL
-                let validation = validate_file(file_name);
-
-                if let Err(e) = validation {
-                    eprintln!("Failed to validate file: {e:?}");
-                    return Err(());
-                }
-
-                let mut file = validation.unwrap();
-                let mut buffer = Vec::new();
-                if let Err(e) = file.read_to_end(&mut buffer) {
-                    eprintln!("Failed to upload file: {e:?}");
-                    return Err(());
-                }
-
-                let authentication = match get_access_token().await {
-                    Ok(access_token) => Some(Authentication {
-                        token: access_token,
-                    }),
-                    Err(_e) => None,
-                };
-
-                let upload = upload(
-                    file_name.clone(),
-                    buffer,
-                    authentication.as_ref(),
-                    StorageType::Local,
-                )
-                .await;
-
-                if let Err(e) = upload {
-                    eprintln!("Failed to upload file: {e:?}");
-                    return Err(());
-                }
-
-                let upload = upload.unwrap();
-
-                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
-                let key_base64 = engine.encode(&upload.encryption.key);
-                let nonce_base64 = engine.encode(&upload.encryption.nonce);
-
-                println!("Uploaded file {}", &upload.file.id);
-                println!("Key: {key_base64}");
-                println!("Key: {:?}", upload.encryption.key);
-                println!("Nonce: {nonce_base64}");
-                println!("Nonce: {:?}", upload.encryption.nonce);
-
-                println!(
-                    "cargo run file download {} {key_base64} {nonce_base64}",
-                    upload.file.id
-                );
-            }
+            FileCommands::Upload { file: file_name } => return handle_cli_upload(file_name).await,
             FileCommands::Download { id, key, nonce } => {
-                let Ok(id) = Uuid::parse_str(id) else {
-                    eprintln!("Invalid UUID");
-                    return Err(());
-                };
-
-                let authentication = match get_access_token().await {
-                    Ok(access_token) => Some(Authentication {
-                        token: access_token,
-                    }),
-                    Err(_e) => None,
-                };
-
-                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
-                let key = engine.decode(key).unwrap();
-                let nonce = engine.decode(nonce).unwrap();
-
-                let encryption = Encryption { key, nonce };
-
-                let Ok(file) = get_file(&id, authentication.as_ref()).await else {
-                    eprintln!("Failed to retrieve file details");
-                    return Err(());
-                };
-
-                // Decrypt the file
-                let local_file_name = format!("download_{}", &file.name);
-                let Ok(local_file) = File::create(&local_file_name) else {
-                    eprintln!("Failed to open local file to save");
-                    return Err(());
-                };
-
-                let stream_writer = BufWriter::new(local_file);
-                if let Err(e) =
-                    download(id, &encryption, stream_writer, authentication.as_ref()).await
-                {
-                    eprintln!("Failed to download file: {e}");
-                    return Err(());
-                }
-
-                println!("Download complete");
+                return handle_cli_download(id, key, nonce).await;
             }
-            FileCommands::List {} => {
-                let authentication = match get_access_token().await {
-                    Ok(access_token) => Some(Authentication {
-                        token: access_token,
-                    }),
-                    Err(_e) => None,
-                };
-
-                let files = list_files(authentication.as_ref()).await;
-
-                if let Err(e) = files {
-                    eprintln!("Failed to list files: {e}");
-                    return Err(());
-                }
-
-                let files = files.unwrap();
-                println!("{files:?}");
-            }
-            FileCommands::Get { id } => {
-                let authentication = match get_access_token().await {
-                    Ok(access_token) => Some(Authentication {
-                        token: access_token,
-                    }),
-                    Err(_e) => None,
-                };
-
-                let file = get_file(id, authentication.as_ref()).await;
-
-                if let Err(e) = file {
-                    eprintln!("Failed to get file: {e}");
-                    return Err(());
-                }
-
-                let file = file.unwrap();
-                println!("{file:?}");
-            }
+            FileCommands::List {} => return handle_cli_list_files().await,
+            FileCommands::Get { id } => return handle_cli_get_file(id).await,
         },
         Commands::Server(server_commands) => match server_commands {
             ServerCommands::Watch {} => {
@@ -299,12 +166,8 @@ async fn main() -> Result<(), ()> {
             }
         },
         Commands::Auth(auth_commands) => match auth_commands {
-            AuthCommands::Login {} => {
-                return handle_cli_login().await;
-            }
-            AuthCommands::Create {} => {
-                return handle_cli_create_user().await;
-            }
+            AuthCommands::Login {} => return handle_cli_login().await,
+            AuthCommands::Create {} => return handle_cli_create_user().await,
         },
     }
 
