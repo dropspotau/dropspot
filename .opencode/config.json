@@ -26,6 +26,7 @@
     "grep": "allow",
     "bash": {
       "*": "ask",
+      "ls *": "allow",
       "grep *": "allow",
       "find *": "allow",
       "touch *": "ask",

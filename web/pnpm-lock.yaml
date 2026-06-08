@@ -12,8 +12,8 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
       dropspot-core:
-        specifier: file:../../core/pkg
-        version: file:../../core/pkg
+        specifier: file:../core/pkg
+        version: file:../core/pkg
       htmx.org:
         specifier: 4.0.0-beta4
         version: 4.0.0-beta4
@@ -571,8 +571,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  dropspot-core@file:../../core/pkg:
-    resolution: {directory: ../../core/pkg, type: directory}
+  dropspot-core@file:../core/pkg:
+    resolution: {directory: ../core/pkg, type: directory}
 
   esbuild@0.27.3:
     resolution: {integrity: sha512-8VwMnyGCONIs6cWue2IdpHxHnAjzxnw2Zr7MkVxB2vjmQ2ivqGFb4LEG3SMnv0Gb2F/G/2yA8zUaiL1gywDCCg==}
@@ -1104,7 +1104,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  dropspot-core@file:../../core/pkg: {}
+  dropspot-core@file:../core/pkg: {}
 
   esbuild@0.27.3:
     optionalDependencies:

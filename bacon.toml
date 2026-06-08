@@ -78,13 +78,11 @@ need_stdout = false
 on_success = "back" # so that we don't open the browser at each change
 
 [jobs.build-web]
-command = ["pnpm", "--dir", "static/dropspot", "build"]
+command = ["pnpm", "--dir", "web", "build"]
 need_stdout = true
 allow_warnings = true
 background = true
-watch = ["static/dropspot/src"]
-# on_success = "job:run-server"
-# workdir = "static/dropspot"
+watch = ["web/src"]
 
 # You can run your application and have the result displayed in bacon,
 # if it makes sense for this crate.
