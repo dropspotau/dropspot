@@ -98,7 +98,7 @@ pub async fn download_js(
     let mut buffer = Vec::<u8>::new();
     let writer = BufWriter::new(&mut buffer);
 
-    if let Err(e) = download(file_id, &encryption, writer, auth.as_ref()).await {
+    if let Err(e) = download(&file_id, &encryption, writer, auth.as_ref()).await {
         return Err(JsError::new(&format!("Download error: {e:?}")));
     };
 
