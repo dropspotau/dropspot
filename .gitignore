@@ -7,7 +7,7 @@
 # SQLx files
 /.sqlx
 
-# Build web portal files
+# Built web portal files
 /static/dist
 
 # Test files
