@@ -3,6 +3,8 @@ mod file;
 mod integration;
 mod upload;
 mod user;
+
+#[cfg(feature = "web")]
 mod web;
 
 pub use download::{handle_file_download, handle_file_request_download};
@@ -12,6 +14,8 @@ pub use integration::{
 };
 pub use upload::{handle_file_request_upload, handle_file_upload, handle_preview_upload};
 pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
+
+#[cfg(feature = "web")]
 pub use web::file::handle_files;
 pub use web::header::handle_header;
 pub use web::index::handle_index;
