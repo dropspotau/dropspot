@@ -10,7 +10,7 @@ pub enum UserError {
     #[error("Encryption error: {0}")]
     LoginError(reqwest::Error),
 
-    #[error("Upload error: {0}")]
+    #[error("User creation error: {0}")]
     CreateError(reqwest::Error),
 }
 

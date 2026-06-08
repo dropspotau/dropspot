@@ -2,10 +2,10 @@ create extension if not exists "uuid-ossp";
 
 create table users (
     id uuid primary key default uuid_generate_v4(),
-    first_name text not null,
-    last_name text not null,
     email text not null,
     password text not null,
+    first_name text not null,
+    last_name text not null,
     created_at timestamptz not null default now()
 );
 

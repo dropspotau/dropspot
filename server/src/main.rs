@@ -1,4 +1,5 @@
 mod auth;
+mod cli;
 mod db;
 mod handlers;
 mod middleware;
@@ -7,38 +8,13 @@ mod storage;
 mod types;
 mod watch;
 
-use std::fs::File;
-use std::io::{BufWriter, Read};
-use std::sync::Arc;
-
-use axum::Router;
-use axum::routing::{delete, get, patch, post};
-use base64::alphabet::URL_SAFE;
-use base64::engine::GeneralPurpose;
-use base64::engine::general_purpose::NO_PAD;
-use base64::prelude::*;
 use clap::{Parser, Subcommand};
-use dropspot_core::storage::StorageType;
-use tokio::net::TcpListener;
-use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
 
-use crate::db::connect;
-use crate::handlers::{
-    handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
-    handle_file_request_upload, handle_file_upload, handle_files, handle_get_file,
-    handle_get_integration_by_slug, handle_get_integrations, handle_header, handle_index,
-    handle_list_files, handle_login, handle_preview_upload, handle_refresh_tokens, handle_settings,
-    handle_update_settings, handle_update_user, handle_upsert_integration,
-};
-use crate::state::AppState;
-use crate::watch::watch_for_files;
-use dropspot_core::encryption::Encryption;
-use dropspot_core::{
-    download::download,
-    file::{get_file, list_files},
-    upload::upload,
-    validation::validate_file,
+use crate::cli::{
+    auth::{handle_create_user, handle_login},
+    file::{handle_download, handle_get_file, handle_list_files, handle_upload},
+    server::{handle_run_server, handle_watch},
 };
 
 #[derive(Parser)]
@@ -55,7 +31,7 @@ enum FileCommands {
     Upload { file: String },
     #[command(about = "Download a file")]
     Download {
-        id: String,
+        id: Uuid,
         key: String,
         nonce: String,
     },
@@ -74,12 +50,23 @@ enum ServerCommands {
 }
 
 #[derive(Subcommand)]
+enum AuthCommands {
+    #[command(about = "Log into DropSpot")]
+    Login,
+    #[command(about = "Create a user")]
+    Create,
+}
+
+#[derive(Subcommand)]
 enum Commands {
     #[command(subcommand)]
     File(FileCommands),
 
     #[command(subcommand)]
     Server(ServerCommands),
+
+    #[command(subcommand)]
+    Auth(AuthCommands),
 }
 
 #[tokio::main]
@@ -88,164 +75,18 @@ async fn main() -> Result<(), ()> {
 
     match &cli.command {
         Commands::File(file_commands) => match file_commands {
-            FileCommands::Upload { file: file_name } => {
-                // Simulate generating an upload URL
-                let validation = validate_file(file_name);
-
-                if let Err(e) = validation {
-                    eprintln!("Failed to validate file: {e:?}");
-                    return Err(());
-                }
-
-                let mut file = validation.unwrap();
-                let mut buffer = Vec::new();
-                if let Err(e) = file.read_to_end(&mut buffer) {
-                    eprintln!("Failed to upload file: {e:?}");
-                    return Err(());
-                }
-
-                let upload = upload(file_name.clone(), buffer, None, StorageType::GCS).await;
-
-                if let Err(e) = upload {
-                    eprintln!("Failed to upload file: {e:?}");
-                    return Err(());
-                }
-
-                let upload = upload.unwrap();
-
-                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
-                let key_base64 = engine.encode(&upload.encryption.key);
-                let nonce_base64 = engine.encode(&upload.encryption.nonce);
-
-                println!("Uploaded file {}", &upload.file.id);
-                println!("Key: {key_base64}");
-                println!("Key: {:?}", upload.encryption.key);
-                println!("Nonce: {nonce_base64}");
-                println!("Nonce: {:?}", upload.encryption.nonce);
-
-                println!(
-                    "cargo run file download {} {key_base64} {nonce_base64}",
-                    upload.file.id
-                );
-            }
-            FileCommands::Download { id, key, nonce } => {
-                let Ok(id) = Uuid::parse_str(id) else {
-                    eprintln!("Invalid UUID");
-                    return Err(());
-                };
-
-                let engine = GeneralPurpose::new(&URL_SAFE, NO_PAD);
-                let key = engine.decode(key).unwrap();
-                let nonce = engine.decode(nonce).unwrap();
-
-                let encryption = Encryption { key, nonce };
-
-                let Ok(file) = get_file(&id, None).await else {
-                    eprintln!("Failed to retrieve file details");
-                    return Err(());
-                };
-
-                // Decrypt the file
-                let local_file_name = format!("download_{}", &file.name);
-                let Ok(local_file) = File::create(&local_file_name) else {
-                    eprintln!("Failed to open local file to save");
-                    return Err(());
-                };
-
-                let stream_writer = BufWriter::new(local_file);
-                if let Err(e) = download(id, &encryption, stream_writer, None).await {
-                    eprintln!("Failed to download file: {e}");
-                    return Err(());
-                }
-
-                println!("Download complete");
-            }
-            FileCommands::List {} => {
-                let files = list_files(None).await;
-
-                if let Err(e) = files {
-                    eprintln!("Failed to list files: {e}");
-                    return Err(());
-                }
-
-                let files = files.unwrap();
-                println!("{files:?}");
-            }
-            FileCommands::Get { id } => {
-                let file = get_file(id, None).await;
-
-                if let Err(e) = file {
-                    eprintln!("Failed to get file: {e}");
-                    return Err(());
-                }
-
-                let file = file.unwrap();
-                println!("{file:?}");
-            }
+            FileCommands::Upload { file: file_name } => handle_upload(file_name).await,
+            FileCommands::Download { id, key, nonce } => handle_download(id, key, nonce).await,
+            FileCommands::List {} => handle_list_files().await,
+            FileCommands::Get { id } => handle_get_file(id).await,
         },
         Commands::Server(server_commands) => match server_commands {
-            ServerCommands::Watch {} => {
-                let Ok(pool) = connect().await else {
-                    return Err(());
-                };
-
-                let state = AppState::new(Arc::new(pool));
-                watch_for_files(state).await;
-            }
-            ServerCommands::Run => {
-                let Ok(pool) = connect().await else {
-                    return Err(());
-                };
-
-                let state = AppState::new(Arc::new(pool));
-                let serve_dir = ServeDir::new("static")
-                    .not_found_service(ServeFile::new("static/not_found.html"));
-
-                let app = Router::new()
-                    .route("/api/upload", post(handle_file_request_upload))
-                    .route("/api/upload/preview", get(handle_preview_upload))
-                    .route("/api/upload/{file_id}/upload", post(handle_file_upload))
-                    .route("/api/file", get(handle_list_files))
-                    .route("/api/file/{id}", get(handle_get_file))
-                    .route("/api/file/{id}/delete", delete(handle_delete_file))
-                    .route(
-                        "/api/file/{file_id}/download",
-                        get(handle_file_request_download),
-                    )
-                    .route(
-                        "/api/download/{download_id}/download",
-                        get(handle_file_download),
-                    )
-                    .route("/api/user/login", post(handle_login))
-                    .route("/api/user/create", post(handle_create_user))
-                    .route("/api/user/refresh", post(handle_refresh_tokens))
-                    .route("/api/integrations", get(handle_get_integrations))
-                    .route(
-                        "/api/integrations/{slug}",
-                        get(handle_get_integration_by_slug),
-                    )
-                    .route(
-                        "/api/integrations/{slug}/upsert",
-                        patch(handle_upsert_integration),
-                    )
-                    .route("/app", get(handle_index))
-                    .route("/app/header", get(handle_header))
-                    .route("/app/files", get(handle_files))
-                    .route("/app/settings", get(handle_settings))
-                    .route("/app/settings/update", patch(handle_update_settings))
-                    .route("/app/settings/user/{id}/update", patch(handle_update_user))
-                    .nest_service("/static", serve_dir.clone())
-                    .fallback_service(serve_dir)
-                    .with_state(state);
-
-                println!("Listening on port 8000");
-                let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
-                if let Err(e) = axum::serve(listener, app).await {
-                    eprintln!("Server run error: {e}");
-                }
-            }
+            ServerCommands::Watch {} => handle_watch().await,
+            ServerCommands::Run => handle_run_server().await,
+        },
+        Commands::Auth(auth_commands) => match auth_commands {
+            AuthCommands::Login {} => handle_login().await,
+            AuthCommands::Create {} => handle_create_user().await,
         },
     }
-
-    Ok(())
 }

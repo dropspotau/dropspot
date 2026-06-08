@@ -29,13 +29,13 @@ pub enum DownloadError {
 }
 
 pub async fn download(
-    file_id: Uuid,
+    file_id: &Uuid,
     encryption: &Encryption,
     writer: impl Write,
-    auth: Option<Authentication>,
+    auth: Option<&Authentication>,
 ) -> Result<(), DownloadError> {
     // Request a download URL
-    let headers = get_auth_headers(auth.as_ref());
+    let headers = get_auth_headers(auth);
     let download = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file/{file_id}/download"))
         .headers(headers)
@@ -47,7 +47,7 @@ pub async fn download(
         .map_err(DownloadError::RequestError)?;
 
     // Actually download the file
-    let headers = get_auth_headers(auth.as_ref());
+    let headers = get_auth_headers(auth);
     let download_id = download.id;
     let mut stream = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/download/{download_id}/download"))
@@ -98,7 +98,7 @@ pub async fn download_js(
     let mut buffer = Vec::<u8>::new();
     let writer = BufWriter::new(&mut buffer);
 
-    if let Err(e) = download(file_id, &encryption, writer, auth).await {
+    if let Err(e) = download(&file_id, &encryption, writer, auth.as_ref()).await {
         return Err(JsError::new(&format!("Download error: {e:?}")));
     };
 

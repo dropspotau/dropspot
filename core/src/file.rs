@@ -23,8 +23,8 @@ pub struct File {
     pub remaining_downloads: i32,
 }
 
-pub async fn list_files(auth: Option<Authentication>) -> Result<Vec<File>, reqwest::Error> {
-    let mut headers = get_auth_headers(auth.as_ref());
+pub async fn list_files(auth: Option<&Authentication>) -> Result<Vec<File>, reqwest::Error> {
+    let mut headers = get_auth_headers(auth);
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let files = reqwest::Client::new()
@@ -39,8 +39,8 @@ pub async fn list_files(auth: Option<Authentication>) -> Result<Vec<File>, reqwe
     Ok(files)
 }
 
-pub async fn get_file(id: &Uuid, auth: Option<Authentication>) -> Result<File, reqwest::Error> {
-    let mut headers = get_auth_headers(auth.as_ref());
+pub async fn get_file(id: &Uuid, auth: Option<&Authentication>) -> Result<File, reqwest::Error> {
+    let mut headers = get_auth_headers(auth);
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     let file = reqwest::Client::new()
@@ -55,8 +55,8 @@ pub async fn get_file(id: &Uuid, auth: Option<Authentication>) -> Result<File, r
     Ok(file)
 }
 
-pub async fn delete_file(id: &Uuid, auth: Authentication) -> Result<(), reqwest::Error> {
-    let mut headers = get_auth_headers(Some(&auth));
+pub async fn delete_file(id: &Uuid, auth: &Authentication) -> Result<(), reqwest::Error> {
+    let mut headers = get_auth_headers(Some(auth));
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     reqwest::Client::new()
@@ -118,7 +118,7 @@ pub fn parse_link_js(link: &str) -> Result<Link, JsError> {
 #[wasm_bindgen(js_name = getFile)]
 pub async fn get_file_js(file_id: String, auth: Option<Authentication>) -> Result<File, JsError> {
     let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
-    get_file(&file_id, auth)
+    get_file(&file_id, auth.as_ref())
         .await
         .map_err(|e| JsError::new(&format!("{e}")))
 }
@@ -126,7 +126,7 @@ pub async fn get_file_js(file_id: String, auth: Option<Authentication>) -> Resul
 #[wasm_bindgen(js_name = deleteFile)]
 pub async fn delete_file_js(file_id: String, auth: Authentication) -> Result<(), JsError> {
     let file_id = Uuid::parse_str(&file_id).map_err(|e| JsError::new(&format!("{e}")))?;
-    delete_file(&file_id, auth)
+    delete_file(&file_id, &auth)
         .await
         .map_err(|e| JsError::new(&format!("{e}")))
 }

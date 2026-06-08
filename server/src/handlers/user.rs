@@ -68,8 +68,12 @@ pub async fn handle_create_user(
 ) -> impl IntoResponse {
     let pool = state.get_pool();
 
-    if let Ok(existing) = get_user_by_email(pool, &payload.email).await {
-        return Json(ApiUser::from(existing)).into_response();
+    if let Ok(_existing) = get_user_by_email(pool, &payload.email).await {
+        let api_error = ApiError::new(
+            "A user with that email already exists".to_owned(),
+            StatusCode::CONFLICT,
+        );
+        return api_error.into_response();
     }
 
     let password_validation = validate_password(&payload.password);
