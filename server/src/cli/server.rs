@@ -55,6 +55,12 @@ pub fn get_api_router() -> Router<AppState> {
         )
 }
 
+#[cfg(not(feature = "web"))]
+pub fn get_web_router() -> Router<AppState> {
+    Router::new()
+}
+
+#[cfg(feature = "web")]
 pub fn get_web_router() -> Router<AppState> {
     Router::new()
         .route("/", get(handle_index))
