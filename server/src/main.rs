@@ -72,7 +72,8 @@ enum Commands {
 #[tokio::main]
 async fn main() -> Result<(), ()> {
     let cli = Cli::parse();
-    let result = match &cli.command {
+
+    match &cli.command {
         Commands::File(file_commands) => match file_commands {
             FileCommands::Upload { file: file_name } => handle_upload(file_name).await,
             FileCommands::Download { id, key, nonce } => handle_download(id, key, nonce).await,
@@ -87,7 +88,5 @@ async fn main() -> Result<(), ()> {
             AuthCommands::Login {} => handle_login().await,
             AuthCommands::Create {} => handle_create_user().await,
         },
-    };
-
-    result
+    }
 }
