@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "./build.sh",
     "preview": "vite preview"
   },
   "dependencies": {
     "@material/web": "2.4.1",
-    "dropspot-core": "file:../../core/pkg",
+    "dropspot-core": "file:../core/pkg",
     "htmx.org": "4.0.0-beta4",
     "lit": "3.3.3"
   },
@@ -22,5 +22,5 @@
     "vite-plugin-top-level-await": "1.6.0",
     "vite-plugin-wasm": "3.6.0"
   },
-  "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916"
+  "packageManager": "pnpm@11.5.2"
 }
