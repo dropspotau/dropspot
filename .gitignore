@@ -7,6 +7,9 @@
 # SQLx files
 /.sqlx
 
+# Build web portal files
+/static/dist
+
 # Test files
 test.*
 download_test.*
