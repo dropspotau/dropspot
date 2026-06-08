@@ -30,3 +30,9 @@ argon2 = "0.5.3"
 async-trait = "0.1.89"
 google-cloud-storage = "1.12.0"
 rpassword = "7.5.4"
+
+[features]
+default = ["web"] # Might remove this
+
+# When selected, compiles DropSpot web features into the server
+web = []
