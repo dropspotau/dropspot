@@ -67,21 +67,16 @@ pub(crate) struct UpdateSettingsTemplate {
 
 #[derive(Deserialize)]
 pub struct UpdateSettingsPayload {
-    file_expiry_minutes: Option<i32>,
-    download_limit: Option<i32>,
+    file_expiry_minutes: i32,
+    download_limit: i32,
 }
 
 pub async fn handle_update_settings(
     _user: User,
     Form(payload): Form<UpdateSettingsPayload>,
 ) -> Response {
-    if let Some(ref file_expiry_minutes) = payload.file_expiry_minutes {
-        println!("file_expiry_minutes: {file_expiry_minutes}");
-    }
-
-    if let Some(ref download_limit) = payload.download_limit {
-        println!("download_limit: {download_limit}");
-    }
+    println!("file_expiry_minutes: {}", payload.file_expiry_minutes);
+    println!("download_limit: {}", payload.download_limit);
 
     let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()
