@@ -1,4 +1,3 @@
-import { getAuth } from "../auth";
 import { UploadBarElement } from "./upload-bar";
 
 import "./upload-circle.css";
@@ -8,12 +7,6 @@ const fileInput = document.querySelector("#file-input");
 
 /** Triggers a file to be uploaded */
 const triggerUpload = (file: File): void => {
-  const auth = getAuth();
-
-  if (!auth) {
-    return;
-  }
-
   UploadBarElement.create(file);
 };
 
