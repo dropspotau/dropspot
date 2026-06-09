@@ -74,6 +74,7 @@ pub async fn get_organisation_for_user(
     .await
 }
 
+#[allow(dead_code)]
 pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisation, sqlx::Error> {
     let id = sqlx::query_as!(
         Id,

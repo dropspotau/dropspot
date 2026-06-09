@@ -81,3 +81,22 @@ create index idx_file_created_by_id on file (created_by_id);
 create index idx_upload_file_id on upload (file_id);
 create index idx_download_file_id on download (file_id);
 create index idx_download_created_by_id on download (created_by_id);
+
+--
+-- Data
+--
+
+
+-- Create an initial organisation with one local file integration
+with default_organisation_id as (
+    insert into organisation (name)
+    values ('Default')
+    returning id
+)
+insert into integration (slug, organisation_id, is_active, data)
+values (
+	'local'::storage,
+    (select id from default_organisation_id limit 1),
+	true,
+	'{"folder": "files"}'::jsonb
+);
