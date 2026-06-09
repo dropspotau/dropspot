@@ -5,6 +5,7 @@ import {
   type User,
 } from "dropspot-core";
 import htmx from "htmx.org";
+import { ToastElement } from "./components";
 
 const LOCALSTORAGE_KEY = "dropspot-auth";
 let tokens: TokenPair | null = null;
@@ -45,8 +46,13 @@ export const loginAtStartup = async (): Promise<void> => {
 
   const parsedCachedTokens = JSON.parse(cachedTokens);
 
-  const loginResult = await refreshTokens(parsedCachedTokens.refresh_token);
-  setTokens(loginResult.tokens);
+  try {
+    const loginResult = await refreshTokens(parsedCachedTokens.refresh_token);
+    setTokens(loginResult.tokens);
+  } catch (e) {
+    ToastElement.create("Error logging back in", "danger");
+    localStorage.removeItem(LOCALSTORAGE_KEY);
+  }
 };
 
 htmx.on("htmx:config:request", (event) => {
