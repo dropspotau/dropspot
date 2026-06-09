@@ -21,6 +21,7 @@ pub struct File {
     pub name: String,
     pub size: i64,
     pub remaining_downloads: i32,
+    pub is_expired: bool,
 }
 
 pub async fn list_files(auth: Option<&Authentication>) -> Result<Vec<File>, reqwest::Error> {

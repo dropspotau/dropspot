@@ -42,6 +42,7 @@ impl From<File> for ApiFile {
             name: file.name.clone(),
             size: file.size,
             remaining_downloads: file.get_remaining_downloads(),
+            is_expired: file.is_expired(),
         }
     }
 }
@@ -94,7 +95,10 @@ pub async fn handle_delete_file(
         && user_id != &user.id
     {
         // Only uploaders can delete their files
-        let api_error = ApiError::new("Cannot delete another's file".to_owned(), StatusCode::UNAUTHORIZED);
+        let api_error = ApiError::new(
+            "Cannot delete another's file".to_owned(),
+            StatusCode::UNAUTHORIZED,
+        );
         return api_error.into_response();
     }
 
