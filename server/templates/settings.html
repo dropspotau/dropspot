@@ -154,6 +154,7 @@
         </section>
     {% endfor %}
 
+    <!-- File limits -->
     <section class="settings-page" menu-key="limits">
         <div class="file-details-container">
             <h3 class="form-header">File Settings</h3>
@@ -172,11 +173,10 @@
                                               suffix-text="minutes"
                                               hx-patch="/app/settings/update"
                                               hx-trigger="input delay:750ms"
-                                              hx-target="#expiry-limit-result"
+                                              hx-target="#settings-update-result"
                                               hx-swap="innerHTML"
                                               class="settings-field-update-input">
                         </md-filled-text-field>
-                        <div id="expiry-limit-result" class="settings-field-update-result"></div>
                     </div>
                 </div>
           
@@ -193,13 +193,13 @@
                                               suffix-text="times"
                                               hx-patch="/app/settings/update"
                                               hx-trigger="input delay:750ms"
-                                              hx-target="#download-limit-result"
+                                              hx-target="#settings-update-result"
                                               hx-swap="innerHTML"
                                               class="settings-field-update-input">
                         </md-filled-text-field>
-                        <div id="download-limit-result" class="settings-field-update-result"></div>
                     </div>
                 </div>
+                <div id="settings-update-result"></div>
             </div>
         </div>
     </section>
