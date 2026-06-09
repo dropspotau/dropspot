@@ -10,7 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Integration, User, get_integrations, get_organisation_for_user, get_users, update_user_name,
+        Integration, User, get_integrations, get_organisation_for_user, get_organisation_settings,
+        get_users, update_organisation_settings, update_user_name,
     },
     state::AppState,
 };
@@ -38,16 +39,19 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     }
 
     let pool = state.get_pool();
-    let users = get_users(pool).await.unwrap();
-
-    let file_expiry_minutes = 60;
-    let download_limit = 3;
     let current_user = user.unwrap();
+    let users = get_users(pool).await.unwrap();
 
     let organisation = get_organisation_for_user(pool, &current_user.id)
         .await
-        .unwrap();
+        .expect("Could not retrieve organisation for user");
     let integrations = get_integrations(pool, &organisation.id).await.unwrap();
+    let settings = get_organisation_settings(pool, &organisation.id)
+        .await
+        .expect("Could not retrieve settings for organisation");
+
+    let file_expiry_minutes = settings.default_file_expiry_minutes;
+    let download_limit = settings.default_download_limit;
 
     let template = SettingsTemplate {
         users,
@@ -72,11 +76,23 @@ pub struct UpdateSettingsPayload {
 }
 
 pub async fn handle_update_settings(
-    _user: User,
+    State(state): State<AppState>,
+    user: User,
     Form(payload): Form<UpdateSettingsPayload>,
 ) -> Response {
-    println!("file_expiry_minutes: {}", payload.file_expiry_minutes);
-    println!("download_limit: {}", payload.download_limit);
+    let pool = state.get_pool();
+    let organisation = get_organisation_for_user(pool, &user.id)
+        .await
+        .expect("Could not retrieve organisation for settings update");
+
+    update_organisation_settings(
+        pool,
+        &organisation.id,
+        payload.file_expiry_minutes,
+        payload.download_limit,
+    )
+    .await
+    .expect("Could not update organisation settings");
 
     let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()

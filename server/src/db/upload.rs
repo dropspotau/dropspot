@@ -36,12 +36,12 @@ pub async fn get_upload_by_file_id(pool: &PgPool, id: &Uuid) -> Result<Upload, s
 
 pub async fn create_upload(pool: &PgPool, file_id: &Uuid) -> Result<Upload, sqlx::Error> {
     let created_at = Utc::now();
-    let expires_at = Utc::now() + Duration::minutes(3);
+    let expires_at = Utc::now() + Duration::minutes(3); // Three minute leeway to upload
 
     sqlx::query_as!(
         Upload,
         r#"
-            insert into upload (file_id , created_at, expires_at)
+            insert into upload (file_id, created_at, expires_at)
             values ($1, $2, $3)
             returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
         "#,

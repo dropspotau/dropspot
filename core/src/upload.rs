@@ -26,6 +26,8 @@ pub struct CreateFileBody {
     pub name: String,
     pub size: i64,
     pub storage: StorageType,
+    // TODO(alec): Allow expiry and download limits be specified at upload, rather than defaulting
+    // to settings
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
