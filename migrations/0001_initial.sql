@@ -71,6 +71,13 @@ create table integration (
     unique(slug, organisation_id) -- One integration per type per organisation
 );
 
+create table settings (
+    id uuid primary key default uuid_generate_v4(),
+    organisation_id uuid references organisation (id) on delete cascade not null unique,
+    default_file_expiry_minutes int not null,
+    default_download_limit int not null
+);
+
 --
 -- Indexes
 --
@@ -81,6 +88,7 @@ create index idx_file_created_by_id on file (created_by_id);
 create index idx_upload_file_id on upload (file_id);
 create index idx_download_file_id on download (file_id);
 create index idx_download_created_by_id on download (created_by_id);
+create index idx_settings_organisation_id on settings (organisation_id);
 
 --
 -- Data
