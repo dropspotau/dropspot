@@ -19,7 +19,11 @@ const tryDetectIdentifier = (): Link | null => {
   const file = url.searchParams.get("file");
 
   if (file) {
-    return parseLink(file);
+    try {
+      return parseLink(file);
+    } catch (e) {
+      return null;
+    }
   }
 
   return null;
@@ -27,10 +31,11 @@ const tryDetectIdentifier = (): Link | null => {
 
 const showFileNotFound = (linkedFileElement: Element): void => {
   linkedFileElement.innerHTML = `
-    <md-icon>error</md-icon>
-    <h3 class="text-white no-margin">
-        The file you're looking for doesn't exist.
-    </h3>
+    <dropspot-alert variant="danger">
+      <h3 class="text-white no-margin">
+          The file you're looking for doesn't exist.
+      </h3>
+    </dropspot-alert>
   `;
 };
 
@@ -55,6 +60,7 @@ const initialiseDownload = async (): Promise<void> => {
   }
 
   linkedFileElement.innerHTML = `
+    <dropspot-alert variant="info">
       <span class="text-white">You've been sent</span>
       <h3 class="text-white no-margin">${file.name}</h3>
       <md-filled-button class="button-white download-button">
@@ -64,6 +70,7 @@ const initialiseDownload = async (): Promise<void> => {
           <md-circular-progress indeterminate></md-circular-progress>
         </div>
       </md-filled-button>
+    </dropspot-alert>
   `;
 
   const button = linkedFileElement.querySelector("md-filled-button");

@@ -41,7 +41,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let users = get_users(pool).await.unwrap();
 
     let file_expiry_minutes = 60;
-    let download_limit = 100;
+    let download_limit = 3;
     let current_user = user.unwrap();
 
     let organisation = get_organisation_for_user(pool, &current_user.id)
