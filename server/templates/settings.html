@@ -159,7 +159,11 @@
         <div class="file-details-container">
             <h3 class="form-header">File Settings</h3>
         
-            <div class="form">
+            <form class="form"
+                  hx-patch="/app/settings/update"
+                  hx-trigger="submit, change delay:750ms"
+                  hx-target="#settings-update-result"
+                  hx-swap="innerHTML">
                 <div class="form-row">
                     <span class="form-label">File Expiry</span>
                     <div class="form-value-row">
@@ -171,10 +175,6 @@
                                               max="60" 
                                               pattern="\d+"
                                               suffix-text="minutes"
-                                              hx-patch="/app/settings/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#settings-update-result"
-                                              hx-swap="innerHTML"
                                               class="settings-field-update-input">
                         </md-filled-text-field>
                     </div>
@@ -191,15 +191,17 @@
                                               max="100" 
                                               pattern="\d+"
                                               suffix-text="times"
-                                              hx-patch="/app/settings/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#settings-update-result"
-                                              hx-swap="innerHTML"
                                               class="settings-field-update-input">
                         </md-filled-text-field>
                     </div>
                 </div>
                 <div id="settings-update-result"></div>
+                <div class="form-row">
+                  <span class="form-label">Save</span>
+                  <div class="form-value-row">
+                    <md-filled-button type="submit" class="button-success">Submit</md-filled-button>
+                  </div>
+                </div>
             </div>
         </div>
     </section>
