@@ -144,6 +144,8 @@ export class LoginControllerElement extends LitElement {
       } else {
         result = await login(email, password);
       }
+
+      ToastElement.create("Successfully logged in", "success");
     } catch (e) {
       ToastElement.create(
         "Sorry, there was an issue logging in. Please try again",

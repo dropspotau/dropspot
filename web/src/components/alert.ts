@@ -41,7 +41,7 @@ export class AlertElement extends LitElement {
 
     switch (this.variant) {
       case "success":
-        icon = "check";
+        icon = "check_circle";
         break;
       case "info":
         icon = "info";
