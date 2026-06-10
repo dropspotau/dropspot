@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Integration, User, get_integrations, get_organisation_for_user, get_organisation_settings,
-        get_users, update_organisation_settings, update_user_name,
+        Integration, User, get_integrations, get_organisation_for_user, get_organisation_member,
+        get_organisation_settings, get_users, update_organisation_settings, update_user_name,
     },
     state::AppState,
 };
@@ -81,9 +81,20 @@ pub async fn handle_update_settings(
     Form(payload): Form<UpdateSettingsPayload>,
 ) -> Response {
     let pool = state.get_pool();
-    let organisation = get_organisation_for_user(pool, &user.id)
-        .await
-        .expect("Could not retrieve organisation for settings update");
+    let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    };
+    let Ok(member) = get_organisation_member(pool, &organisation.id, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    };
+
+    let can_edit = member.is_admin;
+    if !can_edit {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    }
 
     update_organisation_settings(
         pool,

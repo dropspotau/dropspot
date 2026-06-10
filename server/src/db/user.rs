@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db::organisation::get_default_organisation;
+use crate::db::{create_organisation_member, member::get_organisation_members};
 
 use super::types::Id;
 
@@ -133,34 +133,28 @@ pub async fn create_user(
     last_name: &str,
     email: &str,
     password: &str,
+    organisation_id: &Uuid,
 ) -> Result<User, sqlx::Error> {
-    let organisation = match get_default_organisation(pool).await {
-        Ok(org) => org,
-        Err(e) => return Err(e),
-    };
-
-    let id = sqlx::query_as!(
+    let user_id = sqlx::query_as!(
         Id,
         r#"
-            with inserted_user as (
-                insert into users (first_name, last_name, email, password)
-                values ($1, $2, $3, $4)
-                returning id
-            )
-            insert into member (organisation_id, user_id)
-            values ($5, (select id from inserted_user))
-            returning user_id id
+            insert into users (first_name, last_name, email, password)
+            values ($1, $2, $3, $4)
+            returning id
         "#,
         first_name,
         last_name,
         email,
-        password,
-        &organisation.id
+        password
     )
     .fetch_one(pool)
     .await?;
 
-    get_user_by_id(pool, &id.id).await
+    let existing_members = get_organisation_members(pool, organisation_id).await?;
+    let is_admin = existing_members.is_empty(); // The first user becomes an administrator
+
+    create_organisation_member(pool, organisation_id, &user_id.id, is_admin).await?;
+    get_user_by_id(pool, &user_id.id).await
 }
 
 pub async fn update_user_name(

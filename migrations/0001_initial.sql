@@ -20,6 +20,7 @@ create table member (
     organisation_id uuid not null references organisation (id) on delete cascade,
     user_id uuid not null references users on delete cascade,
     created_at timestamptz not null default now(),
+    is_admin boolean not null,
 
     unique (organisation_id, user_id)
 );

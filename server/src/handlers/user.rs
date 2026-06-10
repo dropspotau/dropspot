@@ -17,8 +17,8 @@ use thiserror::Error;
 use crate::{
     auth::password::{hash_password, verify_password},
     db::{
-        User, create_user, get_organisation_for_user, get_user_by_email, get_user_by_id,
-        get_user_password,
+        User, create_user, get_default_organisation, get_organisation_for_user, get_user_by_email,
+        get_user_by_id, get_user_password,
     },
     state::AppState,
     types::ApiError,
@@ -96,12 +96,21 @@ pub async fn handle_create_user(
     let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
     let password_base64 = engine.encode(password_hash);
 
+    let Ok(organisation) = get_default_organisation(pool).await else {
+        return ApiError::new(
+            "Could not retrieve default organisation for user creation".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
+
     let user = create_user(
         pool,
         &payload.first_name,
         &payload.last_name,
         &payload.email,
         &password_base64,
+        &organisation.id,
     )
     .await
     .unwrap();
