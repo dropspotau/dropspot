@@ -32,13 +32,27 @@
   margin-bottom: 2.25rem;
 }
 
+/** Form title */
+.form-header {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /** A form row */
 .form-row {
   display: flex;
   flex-flow: row;
-  gap: 6px;
-  padding-bottom: 16px;
+  gap: 1rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid #f0f0f0;
+}
+
+/** An individual form field */
+.form-field {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+    gap: 6px;
 }
 
 /** Form field label */
@@ -50,33 +64,9 @@
   font-weight: 600;
 }
 
-/** Form title */
-.form-header {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/** An individual form field */
-.form-field {
-    flex: 1;
-    display: flex;
-    flex-flow: column;
-}
-
 /** Form field value. Used to display a value when a field can't be edited */
 .form-value {
   font-size: 16px;
   color: #333;
   font-weight: 500;
-}
-
-/** A row used to contain an input and a tick or cross based on whether it succeeded or not */
-.form-value-row {
-  display: flex;
-  place-items: center;
-  gap: 1rem;
-
-  &:has(.settings-field-update-result) {
-      justify-content: space-between;
-  };
 }

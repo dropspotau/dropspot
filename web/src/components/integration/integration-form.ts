@@ -110,17 +110,19 @@ export class IntegrationFormElement extends LitElement {
 
     return html`
       <div class="form-row">
-        <span class="form-label">Folder</span>
-        <md-filled-text-field
-          type="text"
-          name="folder"
-          value="${data.folder}"
-          pattern="w+"
-          placeholder="Make sure this folder exists!"
-          class="settings-field-update-input"
-          @change="${this.handleChange("folder", (value) => value)}"
-        >
-        </md-filled-text-field>
+        <div class="form-field">
+          <span class="form-label">Folder</span>
+          <md-filled-text-field
+            type="text"
+            name="folder"
+            value="${data.folder}"
+            pattern="w+"
+            placeholder="Make sure this folder exists!"
+            class="settings-field-update-input"
+            @change="${this.handleChange("folder", (value) => value)}"
+          >
+          </md-filled-text-field>
+        </div>
       </div>
     `;
   };
@@ -130,18 +132,20 @@ export class IntegrationFormElement extends LitElement {
 
     return html`
       <div class="form-row">
-        <span class="form-label">Folder</span>
-        <md-filled-text-field
-          type="text"
-          name="bucket"
-          label="Bucket"
-          value="${data.bucket_name}"
-          pattern="w+"
-          placeholder="Make sure this bucket exists!"
-          class="settings-field-update-input"
-          @change="${this.handleChange("bucket_name", (value) => value)}"
-        >
-        </md-filled-text-field>
+        <div class="form-field">
+          <span class="form-label">Folder</span>
+          <md-filled-text-field
+            type="text"
+            name="bucket"
+            label="Bucket"
+            value="${data.bucket_name}"
+            pattern="w+"
+            placeholder="Make sure this bucket exists!"
+            class="settings-field-update-input"
+            @change="${this.handleChange("bucket_name", (value) => value)}"
+          >
+          </md-filled-text-field>
+        </div>
       </div>
     `;
   };
@@ -165,21 +169,27 @@ export class IntegrationFormElement extends LitElement {
     return html`
       <div class="form">
         <div class="form-row">
-          <span class="form-label">Active</span>
-          <md-switch
-            icons
-            .selected=${this.isActive}
-            @change=${this.handleActiveChange}
-          ></md-switch>
+          <div class="form-field">
+            <span class="form-label">Active</span>
+            <md-switch
+              icons
+              .selected=${this.isActive}
+              @change=${this.handleActiveChange}
+            ></md-switch>
+          </div>
         </div>
         ${this.slug === "local" ? this.renderLocal() : ""}
         ${this.slug === "gcs" ? this.renderGcs() : ""}
         <div class="form-row">
-          <span class="form-label">Save</span>
-          <div class="form-value-row">
-            <md-filled-button class="button-success" @click=${this.handleSubmit}
-              >Submit</md-filled-button
-            >
+          <div class="form-field">
+            <span class="form-label">Save</span>
+            <div class="form-value-row">
+              <md-filled-button
+                class="button-success"
+                @click=${this.handleSubmit}
+                >Submit</md-filled-button
+              >
+            </div>
           </div>
         </div>
       </div>
