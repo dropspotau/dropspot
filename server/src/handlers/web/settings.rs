@@ -75,6 +75,12 @@ pub struct UpdateSettingsPayload {
     download_limit: i32,
 }
 
+impl UpdateSettingsPayload {
+    pub fn validate(&self) -> bool {
+        self.file_expiry_minutes > 0 && self.download_limit > 0
+    }
+}
+
 pub async fn handle_update_settings(
     State(state): State<AppState>,
     user: User,
@@ -91,7 +97,7 @@ pub async fn handle_update_settings(
     };
 
     let can_edit = member.is_admin;
-    if !can_edit {
+    if !can_edit || !payload.validate() {
         let template = UpdateSettingsTemplate { success: false };
         return HtmlTemplate(template).into_response();
     }

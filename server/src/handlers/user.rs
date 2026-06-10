@@ -104,7 +104,7 @@ pub async fn handle_create_user(
         .into_response();
     };
 
-    let user = create_user(
+    let Ok(user) = create_user(
         pool,
         &payload.first_name,
         &payload.last_name,
@@ -113,7 +113,13 @@ pub async fn handle_create_user(
         &organisation.id,
     )
     .await
-    .unwrap();
+    else {
+        return ApiError::new(
+            "Could not create user".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
 
     let organisation = get_organisation_for_user(pool, &user.id).await;
 
