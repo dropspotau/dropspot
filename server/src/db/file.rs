@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -165,10 +165,10 @@ pub async fn create_file(
     size: i64,
     created_by_id: Option<Uuid>,
     storage: &StorageType,
+    expires_at: DateTime<Utc>,
+    max_downloads: i32,
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
-    let expires_at = Utc::now() + Duration::minutes(60);
-    let max_downloads = 100;
 
     let id = sqlx::query_as!(
         Id,

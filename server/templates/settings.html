@@ -75,132 +75,20 @@
         {% let is_current_user = user.id == current_user_id %}
         <section class="settings-page" menu-key="user-{{ user.id }}">
             <div class="file-details-container">
-                <div class="form">
-                    <div class="form-row">
-                        {% if is_current_user %}
-                            <div class="form-row">
-                                <span class="form-label">Name</span>
-                                <div class="form-value-row">
-                                    <div style="display: flex; place-items: center; gap: 0.25rem";>
-                                        <md-filled-text-field type="text" 
-                                                              name="first_name"
-                                                              label="First name" 
-                                                              value="{{ user.first_name }}" 
-                                                              pattern="\W+"
-                                                              hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                              hx-trigger="input delay:750ms"
-                                                              hx-target="#user-first-name-result"
-                                                              hx-swap="innerHTML"
-                                                              class="settings-field-update-input"
-                                                              style="flex: 1;">
-                                        </md-filled-text-field>
-                                        <div id="user-first-name-result" class="settings-field-update-result"></div>
-                                    </div>
-                                    <div style="display: flex; place-items: center; gap: 0.25rem";>
-                                        <md-filled-text-field type="text" 
-                                                              name="last_name"
-                                                              label="Last name" 
-                                                              value="{{ user.last_name }}" 
-                                                              pattern="\W+"
-                                                              hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                              hx-trigger="input, delay:750ms"
-                                                              hx-target="#user-last-name-result"
-                                                              hx-swap="innerHTML"
-                                                              class="settings-field-update-input"
-                                                              style="flex: 1;">
-                                        </md-filled-text-field>
-                                        <div id="user-last-name-result" class="settings-field-update-result"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <h3 class="form-header no-margin">{{ user.get_name() }}</h3>
-                        {% endif %}
-                    </div>
-                    <div class="form-row">
-                        {% if is_current_user %}
-                            <span class="form-label">Email</span>
-                            <div class="form-value-row">
-                                <md-filled-text-field type="email" 
-                                                      name="email"
-                                                      label="Email" 
-                                                      value="{{ user.email }}" 
-                                                      pattern="\W+"
-                                                      hx-patch="/app/settings/user/{{ user.id }}/update"
-                                                      hx-trigger="input delay:750ms"
-                                                      hx-target="#user-email-result"
-                                                      hx-swap="innerHTML"
-                                                      class="settings-field-update-input"
-                                                      style="flex: 1;">
-                                </md-filled-text-field>
-                                <div id="user-email-result" class="settings-field-update-result"></div>
-                            </div>
-                        {% else %}
-                            <span class="form-label">Email</span>
-                            <span class="form-value">{{ user.email }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-row">
-                        <span class="form-label">Joined At</span>
-                        <span class="form-value">{{ user.created_at_slash_date() }}</span>
-                    </div>
-                  
-                    <div class="form-row">
-                        <span class="form-label">Files Created</span>
-                        <span class="form-value badge">{{ user.file_count }}</span>
-                    </div>
-                </div>
+                {% if is_current_user %}
+                    {% include "user_edit.html" %}
+                {% else %}
+                    {% include "user_view.html" %}
+                {% endif %}
             </div>
         </section>
     {% endfor %}
 
+    <!-- File limits -->
     <section class="settings-page" menu-key="limits">
         <div class="file-details-container">
             <h3 class="form-header">File Settings</h3>
-        
-            <div class="form">
-                <div class="form-row">
-                    <span class="form-label">File Expiry</span>
-                    <div class="form-value-row">
-                        <md-filled-text-field type="number" 
-                                              name="file_expiry_minutes"
-                                              label="Expire after" 
-                                              value="{{ file_expiry_minutes }}" 
-                                              min="1" 
-                                              max="60" 
-                                              pattern="\d+"
-                                              suffix-text="minutes"
-                                              hx-patch="/app/settings/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#expiry-limit-result"
-                                              hx-swap="innerHTML"
-                                              class="settings-field-update-input">
-                        </md-filled-text-field>
-                        <div id="expiry-limit-result" class="settings-field-update-result"></div>
-                    </div>
-                </div>
-          
-                <div class="form-row">
-                    <span class="form-label">Download Limit</span>
-                    <div class="form-value-row">
-                        <md-filled-text-field type="number" 
-                                              name="download_limit"
-                                              label="Downloadable" 
-                                              value="{{ download_limit }}" 
-                                              min="1" 
-                                              max="100" 
-                                              pattern="\d+"
-                                              suffix-text="times"
-                                              hx-patch="/app/settings/update"
-                                              hx-trigger="input delay:750ms"
-                                              hx-target="#download-limit-result"
-                                              hx-swap="innerHTML"
-                                              class="settings-field-update-input">
-                        </md-filled-text-field>
-                        <div id="download-limit-result" class="settings-field-update-result"></div>
-                    </div>
-                </div>
-            </div>
+            {% include "limits.html" %}
         </div>
     </section>
 
@@ -225,11 +113,9 @@
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
             <div class="file-details-container">
                 <div class="form">
-                    <div class="form-row">
-                        <div class="form-value-row">
-                            <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
-                            <h3>{{ integration.slug.full_name() }}</h3>
-                        </div>
+                    <div class="form-row" style="align-items: center;">
+                        <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                        <h3>{{ integration.slug.full_name() }}</h3>
                     </div>
 
                     <integration-form 

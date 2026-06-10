@@ -7,21 +7,57 @@ export class ModalElement extends LitElement {
   static styles = css`
     :host {
       display: contents;
+      --modal-max-height: 80dvh;
+      --modal-max-width: 80dvw;
     }
 
     dialog {
-      flex-flex: column;
+      flex-flow: column;
+      gap: 2rem;
       background-color: #ffffff;
-      padding: 1rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
-      max-height: 80%;
-      max-width: 80%;
+      max-height: var(--modal-max-height);
+      max-width: var(--modal-max-width);
       padding: 2rem;
 
       &[open] {
         display: flex;
       }
+    }
+
+    .modal-header {
+      display: flex;
+      position: relative;
+      flex-flow: column;
+      align-items: center;
+      flex: 0 0 2rem;
+    }
+
+    .title-wrapper {
+      max-width: calc(100% - 2rem);
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      overflow: auto;
+    }
+
+    .modal-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      flex: 0 0 2rem;
+    }
+
+    .close-button {
+      align-self: flex-end;
+      position: absolute;
+      top: 0;
     }
   `;
 
@@ -53,7 +89,20 @@ export class ModalElement extends LitElement {
       closedby="any"
       @close="${this.handleClose}"
     >
-      <slot></slot>
+      <div class="modal-header">
+        <div class="title-wrapper">
+          <slot name="title"></slot>
+        </div>
+        <md-icon-button class="close-button" @click=${this.handleClose}>
+          <md-icon>close</md-icon>
+        </md-icon-button>
+      </div>
+      <div class="modal-body">
+        <slot></slot>
+      </div>
+      <div class="modal-footer">
+        <slot name="footer"></slot>
+      </div>
     </dialog>`;
   }
 }

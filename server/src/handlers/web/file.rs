@@ -34,7 +34,10 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
             eprintln!("Error getting files: {e:?}");
             vec![]
         }
-    };
+    }
+    .into_iter()
+    .filter(|file| !file.is_expired())
+    .collect::<Vec<File>>();
     let is_empty = files.is_empty();
 
     let template = FilesTemplate { files, is_empty };

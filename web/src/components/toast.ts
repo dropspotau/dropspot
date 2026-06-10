@@ -51,7 +51,7 @@ export class ToastElement extends LitElement {
 
   render() {
     return html`
-      <dropspot-alert .variant="${this.variant}" style="padding: 0.5rem 1rem;">
+      <dropspot-alert variant="${this.variant}" style="padding: 0.5rem 1rem;">
         <slot></slot>
       </dropspot-alert>
     `;

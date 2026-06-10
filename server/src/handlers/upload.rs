@@ -3,6 +3,7 @@ use axum::{
     extract::{Json, Path, Query, State},
     response::{IntoResponse, Response},
 };
+use chrono::{Duration, Utc};
 use dropspot_core::upload::CreateFileBody;
 use dropspot_core::{file::File as ApiFile, upload::PreviewUploadRequest};
 use futures_util::StreamExt;
@@ -12,10 +13,11 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, create_file, delete_files, finish_upload, get_default_organisation,
-        get_file_by_id, get_integration_by_slug, get_organisation_for_user, get_upload_by_file_id,
-        preview_upload, start_upload,
+        Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
+        get_integration_by_slug, get_organisation_for_user, get_organisation_settings,
+        get_upload_by_file_id, preview_upload, start_upload,
     },
+    handlers::utils::get_organisation_from_request_user,
     state::AppState,
     storage::{StorageType, get_storage},
     types::ApiError,
@@ -26,13 +28,37 @@ pub async fn handle_file_request_upload(
     user: Option<User>,
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
+    let pool = state.get_pool();
+    let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
+
+    if let Err(e) = organisation {
+        return ApiError::new(
+            format!("Failed to retrieve organisation: {e}"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    }
+
+    let Ok(settings) = get_organisation_settings(pool, &organisation.unwrap().id).await else {
+        return ApiError::new(
+            format!("Failed to retrieve settings for organisation"),
+            StatusCode::NOT_FOUND,
+        )
+        .into_response();
+    };
+
+    let expires_at = Utc::now() + Duration::minutes(settings.default_file_expiry_minutes as i64);
+    let max_downloads = settings.default_download_limit;
+
     let file = create_file(
-        state.get_pool(),
+        pool,
         &payload.name,
         &payload.name,
         payload.size,
         user.map(|u| u.id),
         &StorageType::from(payload.storage),
+        expires_at,
+        max_downloads,
     )
     .await
     .map(ApiFile::from);
@@ -52,6 +78,7 @@ pub async fn handle_file_upload(
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
+    let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
@@ -59,11 +86,6 @@ pub async fn handle_file_upload(
     };
 
     let mut reader_stream = body.into_data_stream();
-
-    let organisation = match &user {
-        Some(u) => get_organisation_for_user(pool, &u.id).await,
-        None => get_default_organisation(pool).await,
-    };
 
     if let Err(e) = organisation {
         return ApiError::new(

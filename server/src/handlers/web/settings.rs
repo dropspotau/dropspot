@@ -10,7 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Integration, User, get_integrations, get_organisation_for_user, get_users, update_user_name,
+        Integration, User, get_integrations, get_organisation_for_user, get_organisation_member,
+        get_organisation_settings, get_users, update_organisation_settings, update_user_name,
     },
     state::AppState,
 };
@@ -38,16 +39,19 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     }
 
     let pool = state.get_pool();
-    let users = get_users(pool).await.unwrap();
-
-    let file_expiry_minutes = 60;
-    let download_limit = 3;
     let current_user = user.unwrap();
+    let users = get_users(pool).await.unwrap();
 
     let organisation = get_organisation_for_user(pool, &current_user.id)
         .await
-        .unwrap();
+        .expect("Could not retrieve organisation for user");
     let integrations = get_integrations(pool, &organisation.id).await.unwrap();
+    let settings = get_organisation_settings(pool, &organisation.id)
+        .await
+        .expect("Could not retrieve settings for organisation");
+
+    let file_expiry_minutes = settings.default_file_expiry_minutes;
+    let download_limit = settings.default_download_limit;
 
     let template = SettingsTemplate {
         users,
@@ -67,31 +71,52 @@ pub(crate) struct UpdateSettingsTemplate {
 
 #[derive(Deserialize)]
 pub struct UpdateSettingsPayload {
-    file_expiry_minutes: Option<i32>,
-    download_limit: Option<i32>,
+    file_expiry_minutes: i32,
+    download_limit: i32,
+}
+
+impl UpdateSettingsPayload {
+    pub fn validate(&self) -> bool {
+        self.file_expiry_minutes > 0 && self.download_limit > 0
+    }
 }
 
 pub async fn handle_update_settings(
-    _user: User,
+    State(state): State<AppState>,
+    user: User,
     Form(payload): Form<UpdateSettingsPayload>,
 ) -> Response {
-    if let Some(ref file_expiry_minutes) = payload.file_expiry_minutes {
-        println!("file_expiry_minutes: {file_expiry_minutes}");
+    let pool = state.get_pool();
+    let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    };
+    let Ok(member) = get_organisation_member(pool, &organisation.id, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    };
+
+    let can_edit = member.is_admin;
+    if !can_edit || !payload.validate() {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
     }
 
-    if let Some(ref download_limit) = payload.download_limit {
-        println!("download_limit: {download_limit}");
+    if update_organisation_settings(
+        pool,
+        &organisation.id,
+        payload.file_expiry_minutes,
+        payload.download_limit,
+    )
+    .await
+    .is_err()
+    {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
     }
 
     let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()
-}
-
-#[derive(Template)]
-#[template(path = "settings_user_update.html")]
-struct UpdateUserTemplate {
-    // The updated value
-    success: bool,
 }
 
 #[derive(Deserialize)]
@@ -111,7 +136,7 @@ pub async fn handle_update_user(
 
     // TOOD(alec): Admins should be able to update other users, not just themselves
     if !is_same_user {
-        let template = UpdateUserTemplate { success: false };
+        let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::UNAUTHORIZED, HtmlTemplate(template)).into_response();
     }
 
@@ -123,10 +148,10 @@ pub async fn handle_update_user(
 
     if let Err(e) = update_user_name(pool, &id, &first_name, &last_name, &email).await {
         eprintln!("Failed to update user: {e}");
-        let template = UpdateUserTemplate { success: false };
+        let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::INTERNAL_SERVER_ERROR, HtmlTemplate(template)).into_response();
     }
 
-    let template = UpdateUserTemplate { success: true };
+    let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()
 }

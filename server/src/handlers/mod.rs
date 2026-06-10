@@ -3,6 +3,7 @@ mod file;
 mod integration;
 mod upload;
 mod user;
+mod utils;
 
 #[cfg(feature = "web")]
 mod web;

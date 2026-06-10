@@ -1,0 +1,42 @@
+<form class="form"
+      hx-patch="/app/settings/update"
+      hx-trigger="submit, change delay:750ms"
+      hx-swap="afterend">
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">File Expiry</span>
+            <md-filled-text-field type="number" 
+                                  name="file_expiry_minutes"
+                                  label="Expire after" 
+                                  value="{{ file_expiry_minutes }}" 
+                                  min="1" 
+                                  max="60" 
+                                  pattern="\d+"
+                                  suffix-text="minutes"
+            ></md-filled-text-field>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Download Limit</span>
+            <md-filled-text-field type="number" 
+                                  name="download_limit"
+                                  label="Downloadable" 
+                                  value="{{ download_limit }}" 
+                                  min="1" 
+                                  max="100" 
+                                  pattern="\d+"
+                                  suffix-text="times"
+            ></md-filled-text-field>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Save</span>
+            <div>
+                <md-filled-button type="submit" class="button-success">Submit</md-filled-button>
+            </div>
+        </div>
+    </div>
+</form>

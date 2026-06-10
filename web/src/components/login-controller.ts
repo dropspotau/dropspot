@@ -212,6 +212,7 @@ export class LoginControllerElement extends LitElement {
         name="email"
         label="Email"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
     </div>
@@ -221,6 +222,7 @@ export class LoginControllerElement extends LitElement {
         name="password"
         label="Password"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
@@ -234,30 +236,9 @@ export class LoginControllerElement extends LitElement {
         name="email"
         label="Email"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
-    </div>
-    <div class="form-row">
-      <md-filled-text-field
-        type="text"
-        name="first_name"
-        label="First name"
-        pattern="[A-Za-z]{1,32}"
-        required
-        @keyup=${this.handleKeyUp}
-      >
-      </md-filled-text-field>
-    </div>
-    <div class="form-row">
-      <md-filled-text-field
-        type="text"
-        name="last_name"
-        label="Last name"
-        pattern="[A-Za-z]{1,32}"
-        required
-        @keyup=${this.handleKeyUp}
-      >
-      </md-filled-text-field>
     </div>
     <div class="form-row">
       <md-filled-text-field
@@ -268,6 +249,28 @@ export class LoginControllerElement extends LitElement {
         pattern="${PASSWORD_PATTERN}"
         autocomplete="current-password"
         required
+        class="form-field"
+        @keyup=${this.handleKeyUp}
+      >
+      </md-filled-text-field>
+    </div>
+    <span style="align-self: flex-start;">Add your name (optional)</span>
+    <div class="form-row">
+      <md-filled-text-field
+        type="text"
+        name="first_name"
+        label="First name"
+        pattern="[A-Za-z-]{0,32}"
+        class="form-field"
+        @keyup=${this.handleKeyUp}
+      >
+      </md-filled-text-field>
+      <md-filled-text-field
+        type="text"
+        name="last_name"
+        label="Last name"
+        pattern="[A-Za-z-]{0,32}"
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
@@ -285,16 +288,11 @@ export class LoginControllerElement extends LitElement {
         Login
       </md-filled-button>
       <dropspot-modal .open="${this.isOpen}" @close="${this.handleModalClose}">
+        <h3 slot="title" class="no-margin text-primary">
+          ${this.isSigningUp ? "Sign up" : "Sign in"}
+        </h3>
         <form class="form container text-primary" @submit="${this.handleLogin}">
-          ${this.isSigningUp
-            ? html`
-                <h3>Sign up</h3>
-                ${this.renderSignup()}
-              `
-            : html`
-                <h3>Sign in</h3>
-                ${this.renderSignin()}
-              `}
+          ${this.isSigningUp ? this.renderSignup() : this.renderSignin()}
           <hr />
           <section class="form-row">
             <p class="no-margin text-primary">

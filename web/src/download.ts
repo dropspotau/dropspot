@@ -6,6 +6,7 @@ import {
   type File,
 } from "dropspot-core";
 import { getAuth } from "./auth";
+import { ToastElement } from "./components";
 
 export const download = (name: string, blobUrl: string) => {
   const link = document.createElement("a");
@@ -59,6 +60,15 @@ const initialiseDownload = async (): Promise<void> => {
     return;
   }
 
+  if (file.is_expired) {
+    linkedFileElement.innerHTML = `
+      <dropspot-alert variant="danger">
+        <h3 class="text-white no-margin">${file.name} has expired</h3>
+      </dropspot-alert>
+    `;
+    return;
+  }
+
   linkedFileElement.innerHTML = `
     <dropspot-alert variant="info">
       <span class="text-white">You've been sent</span>
@@ -97,6 +107,10 @@ const initialiseDownload = async (): Promise<void> => {
         } catch (e) {
           console.error(e);
           button.removeAttribute("is-downloading");
+          ToastElement.create(
+            "Sorry, there was an error viewing the file. Please try again.",
+            "danger",
+          );
           return;
         } finally {
           button.removeAttribute("is-downloading");
