@@ -108,17 +108,12 @@ export class LoginControllerElement extends LitElement {
     const firstName = formData.get("first_name");
     const lastName = formData.get("last_name");
     const password = formData.get("password");
-    console.debug(formData);
 
     const isValid =
       typeof email === "string" &&
       (!this.isSigningUp || typeof firstName === "string") &&
       (!this.isSigningUp || typeof lastName === "string") &&
       typeof password === "string";
-
-    if (email || password) {
-      return false;
-    }
 
     if (!isValid) {
       return false;
