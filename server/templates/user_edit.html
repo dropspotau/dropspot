@@ -1,6 +1,6 @@
 <form class="form"
       hx-patch="/app/settings/user/{{ user.id }}/update"
-      hx-trigger="change delay:750ms"
+      hx-trigger="submit, change delay:750ms"
       hx-swap="afterend">
     <div class="form-row">
         <div class="form-field">
@@ -29,7 +29,6 @@
                                   name="email"
                                   label="Email" 
                                   value="{{ user.email }}" 
-                                  pattern="[A-Za-z\-]{0,32}"
             ></md-filled-text-field>
         </div>
     </div>
