@@ -219,11 +219,9 @@
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
             <div class="file-details-container">
                 <div class="form">
-                    <div class="form-row">
-                        <div class="form-field">
-                            <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
-                            <h3>{{ integration.slug.full_name() }}</h3>
-                        </div>
+                    <div class="form-row" style="align-items: center;">
+                        <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                        <h3>{{ integration.slug.full_name() }}</h3>
                     </div>
 
                     <integration-form 
