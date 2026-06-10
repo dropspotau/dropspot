@@ -9,7 +9,7 @@
                                   name="first_name"
                                   label="First name" 
                                   value="{{ user.first_name }}" 
-                                  pattern="\W+"
+                                  pattern="[A-Za-z\-]{0,32}"
             ></md-filled-text-field>
         </div>
         <div class="form-field">
@@ -18,7 +18,7 @@
                                   name="last_name"
                                   label="Last name" 
                                   value="{{ user.last_name }}" 
-                                  pattern="\W+"
+                                  pattern="[A-Za-z\-]{0,32}"
             ></md-filled-text-field>
         </div>
     </div>
@@ -29,7 +29,7 @@
                                   name="email"
                                   label="Email" 
                                   value="{{ user.email }}" 
-                                  pattern="\W+"
+                                  pattern="[A-Za-z\-]{0,32}"
             ></md-filled-text-field>
         </div>
     </div>
@@ -43,6 +43,14 @@
         <div class="form-field">
             <span class="form-label">Files Created</span>
             <span class="form-value badge">{{ user.file_count }}</span>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Save</span>
+            <div>
+                <md-filled-button type="submit" class="button-success">Submit</md-filled-button>
+            </div>
         </div>
     </div>
 </form>

@@ -98,13 +98,6 @@ pub async fn handle_update_settings(
     HtmlTemplate(template).into_response()
 }
 
-#[derive(Template)]
-#[template(path = "settings_user_update.html")]
-struct UpdateUserTemplate {
-    // The updated value
-    success: bool,
-}
-
 #[derive(Deserialize)]
 pub struct UpdateUserPayload {
     first_name: Option<String>,
@@ -122,7 +115,7 @@ pub async fn handle_update_user(
 
     // TOOD(alec): Admins should be able to update other users, not just themselves
     if !is_same_user {
-        let template = UpdateUserTemplate { success: false };
+        let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::UNAUTHORIZED, HtmlTemplate(template)).into_response();
     }
 
@@ -134,10 +127,10 @@ pub async fn handle_update_user(
 
     if let Err(e) = update_user_name(pool, &id, &first_name, &last_name, &email).await {
         eprintln!("Failed to update user: {e}");
-        let template = UpdateUserTemplate { success: false };
+        let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::INTERNAL_SERVER_ERROR, HtmlTemplate(template)).into_response();
     }
 
-    let template = UpdateUserTemplate { success: true };
+    let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()
 }

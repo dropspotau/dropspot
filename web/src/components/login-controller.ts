@@ -245,7 +245,7 @@ export class LoginControllerElement extends LitElement {
         type="text"
         name="first_name"
         label="First name"
-        pattern="[A-Za-z]{0,32}"
+        pattern="[A-Za-z\-]{0,32}"
         class="form-field"
         @keyup=${this.handleKeyUp}
       >
@@ -254,7 +254,7 @@ export class LoginControllerElement extends LitElement {
         type="text"
         name="last_name"
         label="Last name"
-        pattern="[A-Za-z]{0,32}"
+        pattern="[A-Za-z\-]{0,32}"
         class="form-field"
         @keyup=${this.handleKeyUp}
       >
