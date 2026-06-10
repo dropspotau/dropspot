@@ -10,24 +10,24 @@ rust-version = "1.93.0"
 
 [workspace.dependencies]
 aes-gcm = { version = "0.10.3", features = ["std", "stream"] , workspace = true }
-askama = { version = "0.15.4", workspace = true }
-axum = { version = "0.8.8", workspace = true, features = ["macros"] }
-axum-extra = { version = "0.12.5", features = ["typed-header"], workspace = true }
+askama = { version = "0.16.0", workspace = true }
+axum = { version = "0.8.9", workspace = true, features = ["macros"] }
+axum-extra = { version = "0.12.6", features = ["typed-header"], workspace = true }
 base64 = { version = "0.22.1", workspace = true }
-bytes = { version = "1.11.0", features = ["serde"] , workspace = true }
-chrono = { version = "0.4.42", features = ["serde"] , workspace = true }
-clap = { version = "4.5.53", features = ["derive"] , workspace = true }
-futures-util = { version = "0.3.31", workspace = true }
+bytes = { version = "1.11.1", features = ["serde"] , workspace = true }
+chrono = { version = "0.4.45", features = ["serde"] , workspace = true }
+clap = { version = "4.6.1", features = ["derive"] , workspace = true }
+futures-util = { version = "0.3.32", workspace = true }
 http-serde = { version = "2.1.1", workspace = true }
-regex = { version = "1.12.3", workspace = true }
-reqwest = { version = "0.13.1", features = ["json", "stream", "query"] , workspace = true }
+regex = { version = "1.12.4", workspace = true }
+reqwest = { version = "0.13.4", features = ["json", "stream", "query"] , workspace = true }
 serde = { version = "1.0.228", features = ["derive"], workspace = true }
-sqlx = { version = "0.8.6", features = ["chrono", "derive", "postgres", "runtime-tokio", "uuid", "json"] , workspace = true }
-thiserror = { version = "2.0.17", workspace = true }
-tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread"] , workspace = true }
+sqlx = { version = "0.9.0", features = ["chrono", "derive", "postgres", "runtime-tokio", "uuid", "json"] , workspace = true }
+thiserror = { version = "2.0.18", workspace = true }
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] , workspace = true }
 tokio-util = { version = "0.7.18", workspace = true }
 tower = { version = "0.5.3", features = ["util"] , workspace = true }
-tower-http = { version = "0.6.8", features = ["fs"] , workspace = true }
-uuid = { version = "1.18.1", features = ["serde", "v4", "v8", "js"] , workspace = true }
-wasm-bindgen = { version = "0.2.111", workspace = true }
-wasm-bindgen-futures = { version = "0.4.61", workspace = true }
+tower-http = { version = "0.6.11", features = ["fs"] , workspace = true }
+uuid = { version = "1.23.3", features = ["serde", "v4", "v8", "js"] , workspace = true }
+wasm-bindgen = { version = "0.2.123", workspace = true }
+wasm-bindgen-futures = { version = "0.4.73", workspace = true }
