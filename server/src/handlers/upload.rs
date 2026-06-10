@@ -13,10 +13,11 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, create_file, delete_files, finish_upload, get_default_organisation,
-        get_file_by_id, get_integration_by_slug, get_organisation_for_user,
-        get_organisation_settings, get_upload_by_file_id, preview_upload, start_upload,
+        Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
+        get_integration_by_slug, get_organisation_for_user, get_organisation_settings,
+        get_upload_by_file_id, preview_upload, start_upload,
     },
+    handlers::utils::get_organisation_from_request_user,
     state::AppState,
     storage::{StorageType, get_storage},
     types::ApiError,
@@ -28,11 +29,7 @@ pub async fn handle_file_request_upload(
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
     let pool = state.get_pool();
-
-    let organisation = match &user {
-        Some(u) => get_organisation_for_user(pool, &u.id).await,
-        None => get_default_organisation(pool).await,
-    };
+    let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     if let Err(e) = organisation {
         return ApiError::new(
@@ -81,6 +78,7 @@ pub async fn handle_file_upload(
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
+    let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
@@ -88,11 +86,6 @@ pub async fn handle_file_upload(
     };
 
     let mut reader_stream = body.into_data_stream();
-
-    let organisation = match &user {
-        Some(u) => get_organisation_for_user(pool, &u.id).await,
-        None => get_default_organisation(pool).await,
-    };
 
     if let Err(e) = organisation {
         return ApiError::new(

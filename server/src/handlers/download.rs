@@ -8,9 +8,12 @@ use reqwest::StatusCode;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-use crate::db::{
-    Download, User, create_download, get_default_organisation, get_download_by_id, get_file_by_id,
-    get_integration_by_slug, get_organisation_for_user,
+use crate::{
+    db::{
+        Download, User, create_download, get_download_by_id, get_file_by_id,
+        get_integration_by_slug,
+    },
+    handlers::utils::get_organisation_from_request_user,
 };
 use crate::{state::AppState, storage::get_storage, types::ApiError};
 
@@ -62,6 +65,7 @@ pub async fn handle_file_download(
     user: Option<User>,
 ) -> Response {
     let pool = state.get_pool();
+    let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(download) = get_download_by_id(pool, &download_id).await else {
         let api_error = ApiError::new("Download not found".to_owned(), StatusCode::NOT_FOUND);
@@ -83,11 +87,6 @@ pub async fn handle_file_download(
     let Ok(file) = get_file_by_id(pool, &download.file_id).await else {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
-    };
-
-    let organisation = match &user {
-        Some(u) => get_organisation_for_user(pool, &u.id).await,
-        None => get_default_organisation(pool).await,
     };
 
     if let Err(e) = organisation {
