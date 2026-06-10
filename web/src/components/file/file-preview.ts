@@ -9,13 +9,6 @@ export class FilePreviewElement extends LitElement {
       display: flex;
     }
 
-    .modal-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
-    }
-
     .title {
       color: var(--dropspot-primary);
       margin: 0;
@@ -62,6 +55,7 @@ export class FilePreviewElement extends LitElement {
 
   private handleClose = (): void => {
     this.isModalOpen = false;
+    this.stopMedia();
   };
 
   private handleDownload = (): void => {
@@ -107,30 +101,16 @@ export class FilePreviewElement extends LitElement {
     }
 
     return html`
-      <dropspot-modal
-        .open="${this.isModalOpen}"
-        @close="${() => {
-          this.isModalOpen = false;
-          this.stopMedia();
-        }}"
-      >
-        <div class="modal-content">
-          <h3 class="title">${this.name}</h3>
-          ${this.blobUrl && previewHtml}
-          <div class="buttons">
-            <md-outlined-button @click="${this.handleClose}">
-              <div class="button-items">
-                <span>Close</span>
-                <md-icon>close</md-icon>
-              </div>
-            </md-outlined-button>
-            <md-filled-button @click="${this.handleDownload}">
-              <div class="button-items">
-                <span>Download</span>
-                <md-icon>download</md-icon>
-              </div>
-            </md-filled-button>
-          </div>
+      <dropspot-modal .open="${this.isModalOpen}" @close="${this.handleClose}">
+        <h3 slot="title" class="title">${this.name}</h3>
+        ${this.blobUrl && previewHtml}
+        <div slot="footer" class="buttons">
+          <md-filled-button @click="${this.handleDownload}">
+            <div class="button-items">
+              <span>Download</span>
+              <md-icon>download</md-icon>
+            </div>
+          </md-filled-button>
         </div>
       </dropspot-modal>
     `;
