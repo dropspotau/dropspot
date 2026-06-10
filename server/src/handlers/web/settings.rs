@@ -102,14 +102,18 @@ pub async fn handle_update_settings(
         return HtmlTemplate(template).into_response();
     }
 
-    update_organisation_settings(
+    if update_organisation_settings(
         pool,
         &organisation.id,
         payload.file_expiry_minutes,
         payload.download_limit,
     )
     .await
-    .expect("Could not update organisation settings");
+    .is_err()
+    {
+        let template = UpdateSettingsTemplate { success: false };
+        return HtmlTemplate(template).into_response();
+    }
 
     let template = UpdateSettingsTemplate { success: true };
     HtmlTemplate(template).into_response()
