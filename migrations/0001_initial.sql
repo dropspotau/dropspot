@@ -78,6 +78,7 @@ create table settings (
     default_download_limit int not null check (default_download_limit > 0)
 );
 
+
 --
 -- Indexes
 --
@@ -89,6 +90,7 @@ create index idx_upload_file_id on upload (file_id);
 create index idx_download_file_id on download (file_id);
 create index idx_download_created_by_id on download (created_by_id);
 create index idx_settings_organisation_id on settings (organisation_id);
+
 
 --
 -- Data
