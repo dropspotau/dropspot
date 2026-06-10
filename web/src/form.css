@@ -1,4 +1,28 @@
-/** TODO(alec): Rename this to be general form class names */
+/** Form styles
+ *
+ * Example usage for a form with two rows, the first containing an input field and the second containing two fields:
+ * the first having a label above the input field and the second having a label and a rendered value (no input).
+ *
+ * <form class="form">
+ *   <h3 class="form-header">Optional form title</h3>
+ *   <div class="form-row">
+ *     <div class="form-field">
+ *       <input />
+ *     </div>
+ *   </div>
+ *   <div class="form-row">
+ *     <div class="form-field">
+ *       <span class="form-label">Field name</span>
+ *       <input />
+ *     </div>
+ *     <div class="form-field">
+ *       <span class="form-label">Field name</span>
+ *       <span class="form-value">Field value</span>
+ *     </div>
+ *   </form-row>
+ *
+ * </form>
+ */
 
 /** Overarching form container */
 .form {
@@ -11,7 +35,7 @@
 /** A form row */
 .form-row {
   display: flex;
-  flex-direction: column;
+  flex-flow: row;
   gap: 6px;
   padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
@@ -30,6 +54,13 @@
 .form-header {
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/** An individual form field */
+.form-field {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
 }
 
 /** Form field value. Used to display a value when a field can't be edited */

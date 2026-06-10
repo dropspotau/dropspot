@@ -108,12 +108,17 @@ export class LoginControllerElement extends LitElement {
     const firstName = formData.get("first_name");
     const lastName = formData.get("last_name");
     const password = formData.get("password");
+    console.debug(formData);
 
     const isValid =
       typeof email === "string" &&
       (!this.isSigningUp || typeof firstName === "string") &&
       (!this.isSigningUp || typeof lastName === "string") &&
       typeof password === "string";
+
+    if (email || password) {
+      return false;
+    }
 
     if (!isValid) {
       return false;
@@ -212,6 +217,7 @@ export class LoginControllerElement extends LitElement {
         name="email"
         label="Email"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
     </div>
@@ -221,6 +227,7 @@ export class LoginControllerElement extends LitElement {
         name="password"
         label="Password"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
@@ -234,6 +241,7 @@ export class LoginControllerElement extends LitElement {
         name="email"
         label="Email"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       ></md-filled-text-field>
     </div>
@@ -242,19 +250,17 @@ export class LoginControllerElement extends LitElement {
         type="text"
         name="first_name"
         label="First name"
-        pattern="[A-Za-z]{1,32}"
-        required
+        pattern="[A-Za-z]{0,32}"
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
-    </div>
-    <div class="form-row">
       <md-filled-text-field
         type="text"
         name="last_name"
         label="Last name"
-        pattern="[A-Za-z]{1,32}"
-        required
+        pattern="[A-Za-z]{0,32}"
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
@@ -268,6 +274,7 @@ export class LoginControllerElement extends LitElement {
         pattern="${PASSWORD_PATTERN}"
         autocomplete="current-password"
         required
+        class="form-field"
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
