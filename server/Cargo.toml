@@ -25,12 +25,11 @@ uuid.workspace = true
 regex.workspace = true
 
 dropspot-core.path = "../core"
-jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
+jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 argon2 = "0.5.3"
 async-trait = "0.1.89"
-google-cloud-storage = "1.12.0"
+google-cloud-storage = "1.14.0"
 rpassword = "7.5.4"
-toml = "1.1.2"
 
 [features]
 default = ["web"] # Might remove this
