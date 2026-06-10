@@ -1,0 +1,48 @@
+<form class="form"
+      hx-patch="/app/settings/user/{{ user.id }}/update"
+      hx-trigger="change delay:750ms"
+      hx-swap="afterend">
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Name</span>
+            <md-filled-text-field type="text" 
+                                  name="first_name"
+                                  label="First name" 
+                                  value="{{ user.first_name }}" 
+                                  pattern="\W+"
+            ></md-filled-text-field>
+        </div>
+        <div class="form-field">
+            <span class="form-label">Last name</span>
+            <md-filled-text-field type="text" 
+                                  name="last_name"
+                                  label="Last name" 
+                                  value="{{ user.last_name }}" 
+                                  pattern="\W+"
+            ></md-filled-text-field>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Email</span>
+            <md-filled-text-field type="email" 
+                                  name="email"
+                                  label="Email" 
+                                  value="{{ user.email }}" 
+                                  pattern="\W+"
+            ></md-filled-text-field>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Joined At</span>
+            <span class="form-value">{{ user.created_at_slash_date() }}</span>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Files Created</span>
+            <span class="form-value badge">{{ user.file_count }}</span>
+        </div>
+    </div>
+</form>

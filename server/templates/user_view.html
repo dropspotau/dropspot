@@ -1,0 +1,18 @@
+<div class="form">
+    <div class="form-row">
+        <h3 class="form-header no-margin">{{ user.get_name() }}</h3>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Joined At</span>
+            <span class="form-value">{{ user.created_at_slash_date() }}</span>
+        </div>
+    </div>
+  
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Files Created</span>
+            <span class="form-value badge">{{ user.file_count }}</span>
+        </div>
+    </div>
+</div>
