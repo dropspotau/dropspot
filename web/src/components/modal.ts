@@ -8,14 +8,13 @@ export class ModalElement extends LitElement {
     :host {
       display: contents;
       --modal-max-height: 80dvh;
-      --modal-max-width: 80dvh;
+      --modal-max-width: 80dvw;
     }
 
     dialog {
       flex-flow: column;
       gap: 2rem;
       background-color: #ffffff;
-      padding: 1rem;
       border-radius: 0.5rem;
       box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.2);
       max-height: var(--modal-max-height);
@@ -32,7 +31,7 @@ export class ModalElement extends LitElement {
       position: relative;
       flex-flow: column;
       align-items: center;
-      gap: 0 0 2rem;
+      flex: 0 0 2rem;
     }
 
     .title-wrapper {

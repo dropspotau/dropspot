@@ -39,7 +39,7 @@ pub async fn create_organisation_settings(
         r#"
             insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit)
             values ($1, $2, $3)
-            returning id
+            returning organisation_id id
         "#,
         organisation_id,
         default_file_expiry_minutes,
