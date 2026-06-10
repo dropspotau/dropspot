@@ -23,5 +23,6 @@ wasm-bindgen-futures.workspace = true
 tsify = { version = "0.5.6", features = ["js"] }
 
 [target.wasm32-unknown-unknown.dependencies]
-getrandom = { version = "0.4.2", features = ["wasm_js"] }
+# NOTE(alec): Pinned to 0.2.11 as >=0.4.0 fails to compile with wasm-bindgen
+getrandom = { version = "0.2.11", features = ["js"] }
 uuid = { workspace = true, features = ["js"] }
