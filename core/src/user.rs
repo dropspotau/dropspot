@@ -43,6 +43,7 @@ pub struct LoginResult {
     pub tokens: TokenPair,
 }
 
+#[wasm_bindgen(js_name = createUser)]
 pub async fn create_user(
     email: String,
     password: String,

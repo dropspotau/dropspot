@@ -16,5 +16,6 @@ wasm-pack build --target web
 cd "$base_dir/web" || exit 1
 rm -rf node_modules
 pnpm install
+pnpm build
 
 echo "Built WASM package and installed to frontend!"

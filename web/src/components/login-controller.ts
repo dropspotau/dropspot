@@ -2,6 +2,7 @@ import {
   createUser,
   login,
   validatePassword,
+  type ApiError,
   type LoginResult,
 } from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
@@ -15,6 +16,11 @@ import { ToastElement } from "./toast";
 
 // Characters, numbers and symbols within a length of 8 and 64
 const PASSWORD_PATTERN = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#]).{8,64}";
+
+const isApiError = (error: any): error is ApiError =>
+  typeof error === "object" &&
+  error.type === "ApiError" &&
+  typeof error.message === "string";
 
 @customElement("login-controller")
 export class LoginControllerElement extends LitElement {
@@ -143,16 +149,18 @@ export class LoginControllerElement extends LitElement {
         result = await createUser(email, firstName, lastName, password);
       } else {
         result = await login(email, password);
-        console.debug(result);
       }
 
       ToastElement.create("Successfully logged in", "success");
-    } catch (e) {
-      console.debug(e);
-      ToastElement.create(
-        "Sorry, there was an issue logging in. Please try again",
-        "danger",
-      );
+    } catch (e: any) {
+      let errorMessage =
+        "Sorry, there was an issue logging in. Please try again";
+
+      if (isApiError(e)) {
+        errorMessage = e.message;
+      }
+
+      ToastElement.create(errorMessage, "danger");
     } finally {
       this.isSubmitting = false;
       this.passwordErrors = [];
