@@ -19,7 +19,7 @@ async fn delete_file(pool: &PgPool, file: &File) -> Result<(), ()> {
     let Ok(integration) =
         get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
     else {
-        eprintln!("Integration not found for organisation");
+        tracing::error!("Integration not found for organisation");
         return Err(());
     };
 
@@ -31,12 +31,12 @@ pub async fn watch_for_files(state: AppState) {
     let pool = state.get_pool();
 
     loop {
-        println!("Watching for files...");
+        tracing::info!("Watching for files...");
         sleep(Duration::new(1, 0));
 
         let expired_files = get_expired_files(pool).await;
         if let Err(e) = expired_files {
-            eprintln!("Failed to get expired files: {e}");
+            tracing::error!("Failed to get expired files: {e}");
             continue;
         };
 
@@ -44,7 +44,7 @@ pub async fn watch_for_files(state: AppState) {
 
         for file in expired_files {
             if delete_file(pool, &file).await.is_err() {
-                eprintln!("Failed to delete file: {}", file.id);
+                tracing::error!("Failed to delete file: {}", file.id);
             }
         }
     }
