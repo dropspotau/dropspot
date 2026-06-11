@@ -6,7 +6,6 @@ use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
-use bytes::Bytes;
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::services::{ServeDir, ServeFile};
@@ -90,6 +89,8 @@ pub fn get_web_router() -> Router<AppState> {
 }
 
 pub async fn handle_run_server() -> Result<(), ()> {
+    init_tracing();
+
     let Ok(pool) = connect().await else {
         return Err(());
     };
@@ -130,12 +131,9 @@ pub async fn handle_run_server() -> Result<(), ()> {
                 .on_response(|_response: &Response, _latency: Duration, _span: &Span| {
                     tracing::debug!("finished processing request")
                 })
-                .on_body_chunk(|_chunk: &Bytes, _latency: Duration, _span: &Span| {
-                    tracing::debug!("sending body chunk")
-                })
                 .on_failure(
                     |_error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {
-                        tracing::error!("something went wrong")
+                        tracing::error!(error = %_error, "request failed")
                     },
                 ),
         )
