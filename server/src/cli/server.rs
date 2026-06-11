@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::extract::MatchedPath;
-use axum::http::{HeaderMap, Request};
+use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
 use bytes::Bytes;
@@ -119,7 +119,6 @@ pub async fn handle_run_server() -> Result<(), ()> {
                         "http_request",
                         method = ?request.method(),
                         matched_path,
-                        some_other_field = tracing::field::Empty,
                     )
                 })
                 .on_request(|_request: &Request<_>, _span: &Span| {
@@ -134,11 +133,6 @@ pub async fn handle_run_server() -> Result<(), ()> {
                 .on_body_chunk(|_chunk: &Bytes, _latency: Duration, _span: &Span| {
                     tracing::debug!("sending body chunk")
                 })
-                .on_eos(
-                    |_trailers: Option<&HeaderMap>, _stream_duration: Duration, _span: &Span| {
-                        tracing::debug!("stream closed")
-                    },
-                )
                 .on_failure(
                     |_error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {
                         tracing::error!("something went wrong")
