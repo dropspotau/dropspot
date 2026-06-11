@@ -1,18 +1,13 @@
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use uuid::Uuid;
 use wasm_bindgen::{JsError, prelude::wasm_bindgen};
 
-use crate::constants::ENDPOINT;
-
-#[derive(Debug, thiserror::Error)]
-pub enum UserError {
-    #[error("Encryption error: {0}")]
-    LoginError(reqwest::Error),
-
-    #[error("User creation error: {0}")]
-    CreateError(reqwest::Error),
-}
+use crate::{
+    constants::ENDPOINT,
+    error::{ApiError, Error},
+};
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -53,22 +48,33 @@ pub async fn create_user(
     password: String,
     first_name: String,
     last_name: String,
-) -> Result<LoginResult, UserError> {
-    let result = reqwest::Client::new()
+) -> Result<LoginResult, Error> {
+    let response = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/create"))
         .header("Content-Type", "application/json")
         .json(&CreateUserPayload {
+            email,
             first_name,
             last_name,
-            email,
             password,
         })
         .send()
         .await
-        .map_err(UserError::CreateError)?
+        .map_err(Error::NetworkError)?;
+
+    if !response.status().is_success() {
+        return Err(response
+            .json::<ApiError>()
+            .await
+            .map(Error::UserError)
+            .map_err(Error::JsonError)
+            .unwrap());
+    }
+
+    let result = response
         .json::<LoginResult>()
-        .await
-        .map_err(UserError::CreateError)?;
+        .map_err(Error::JsonError)
+        .await?;
 
     Ok(result)
 }
@@ -80,17 +86,27 @@ pub struct LoginPayload {
     pub password: String,
 }
 
-pub async fn login(email: String, password: String) -> Result<LoginResult, UserError> {
-    let result = reqwest::Client::new()
+pub async fn login(email: String, password: String) -> Result<LoginResult, Error> {
+    let response = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/login"))
         .header("Content-Type", "application/json")
         .json(&LoginPayload { email, password })
         .send()
         .await
-        .map_err(UserError::LoginError)?
+        .map_err(Error::NetworkError)?;
+
+    if !response.status().is_success() {
+        return Err(response
+            .json::<ApiError>()
+            .await
+            .map(Error::UserError)
+            .map_err(Error::JsonError)?);
+    }
+
+    let result = response
         .json::<LoginResult>()
-        .await
-        .map_err(UserError::LoginError)?;
+        .map_err(Error::JsonError)
+        .await?;
 
     Ok(result)
 }
@@ -101,17 +117,29 @@ pub struct AccessTokenRequest {
     pub refresh_token: String,
 }
 
-pub async fn refresh_tokens(refresh_token: String) -> Result<LoginResult, UserError> {
-    let result = reqwest::Client::new()
+#[wasm_bindgen(js_name = refreshTokens)]
+pub async fn refresh_tokens(refresh_token: String) -> Result<LoginResult, Error> {
+    let response = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/refresh"))
         .header("Content-Type", "application/json")
         .json(&AccessTokenRequest { refresh_token })
         .send()
         .await
-        .map_err(UserError::LoginError)?
+        .map_err(Error::NetworkError)?;
+
+    if !response.status().is_success() {
+        return Err(response
+            .json::<ApiError>()
+            .await
+            .map(Error::UserError)
+            .map_err(Error::JsonError)
+            .unwrap());
+    }
+
+    let result = response
         .json::<LoginResult>()
-        .await
-        .map_err(UserError::LoginError)?;
+        .map_err(Error::JsonError)
+        .await?;
 
     Ok(result)
 }

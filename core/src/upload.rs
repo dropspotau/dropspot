@@ -8,18 +8,10 @@ use wasm_bindgen::prelude::*;
 use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
 use crate::encryption::{Encryption, EncryptionError, encrypt_file};
+use crate::error::{ApiError, Error};
 use crate::file::File;
 use crate::integration::integration::Integration;
 use crate::storage::StorageType;
-
-#[derive(Debug, thiserror::Error)]
-pub enum UploadError {
-    #[error("Encryption error: {0}")]
-    EncryptionError(EncryptionError),
-
-    #[error("Upload error: {0}")]
-    RequestError(reqwest::Error),
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateFileBody {
@@ -42,13 +34,13 @@ pub async fn upload(
     contents: Vec<u8>,
     auth: Option<&Authentication>,
     storage: StorageType,
-) -> Result<UploadResult, UploadError> {
+) -> Result<UploadResult, Error> {
     let size = contents.len();
     let reader = BufReader::new(contents.as_slice());
     let mut encrypted_contents = Vec::<u8>::new();
     let writer = BufWriter::new(&mut encrypted_contents);
 
-    let encryption = encrypt_file(reader, writer).map_err(|e| UploadError::EncryptionError(e))?;
+    let encryption = encrypt_file(reader, writer).map_err(|e| Error::EncryptionError(e))?;
 
     let mut headers = get_auth_headers(auth);
     headers.insert("Content-Type", "application/json".parse().unwrap());
@@ -64,10 +56,22 @@ pub async fn upload(
         })
         .send()
         .await
-        .map_err(|e| UploadError::RequestError(e))?
-        .json::<File>()
-        .await
-        .map_err(|e| UploadError::RequestError(e))?;
+        .map_err(Error::NetworkError)?;
+
+    if !file.status().is_success() {
+        return Err(file
+            .json::<ApiError>()
+            .await
+            .map(Error::UploadError)
+            .map_err(Error::JsonError)?);
+    }
+
+    let file = file.json::<File>().await.map_err(Error::JsonError)?;
+
+    // .map_err(|e| Error::RequestError(e))?
+    // .json::<File>()
+    // .await
+    // .map_err(|e| UploadError::RequestError(e))?;
 
     // Upload the file body
     let mut headers = get_auth_headers(auth);
@@ -79,10 +83,10 @@ pub async fn upload(
         .body(encrypted_contents)
         .send()
         .await
-        .map_err(|e| UploadError::RequestError(e))?;
+        .map_err(Error::NetworkError)?;
 
     if let Err(err) = file_stream.error_for_status() {
-        return Err(UploadError::RequestError(err));
+        return Err(Error::NetworkError(err));
     }
 
     Ok(UploadResult { file, encryption })
