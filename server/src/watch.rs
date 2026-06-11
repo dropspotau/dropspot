@@ -1,4 +1,4 @@
-use std::{thread::sleep, time::Duration};
+use std::time::Duration;
 
 use sqlx::PgPool;
 
@@ -14,6 +14,11 @@ async fn delete_file(pool: &PgPool, file: &File) -> Result<(), ()> {
         Some(id) => get_organisation_for_user(pool, &id).await,
         None => get_default_organisation(pool).await,
     };
+
+    if let Err(e) = organisation {
+        tracing::error!("Could not find organisation for file's uploader: {e}");
+        return Err(());
+    }
 
     let organisation = Some(organisation.unwrap());
     let Ok(integration) =
@@ -32,7 +37,7 @@ pub async fn watch_for_files(state: AppState) {
 
     loop {
         tracing::info!("Watching for files...");
-        sleep(Duration::new(1, 0));
+        tokio::time::sleep(Duration::new(1, 0)).await;
 
         let expired_files = get_expired_files(pool).await;
         if let Err(e) = expired_files {

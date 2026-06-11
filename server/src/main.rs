@@ -6,6 +6,7 @@ mod handlers;
 mod middleware;
 mod state;
 mod storage;
+mod tracing;
 mod types;
 mod watch;
 
