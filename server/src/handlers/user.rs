@@ -32,7 +32,7 @@ pub enum LoginError {
     #[error("Could not create user")]
     CreateUserPasswordError,
 
-    #[error("Could not find user")]
+    #[error("Invalid email or password")]
     UserLookupError(sqlx::Error),
 
     #[error("User not found")]
