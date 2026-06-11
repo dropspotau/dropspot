@@ -1,9 +1,19 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::Router;
-use axum::routing::{delete, get, patch, post};
+use axum::extract::MatchedPath;
+use axum::http::{HeaderMap, Request};
+use axum::response::Response;
+use axum::routing::{get, patch, post};
+use bytes::Bytes;
 use tokio::net::TcpListener;
+use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::services::{ServeDir, ServeFile};
+use tower_http::trace::TraceLayer;
+use tracing::{Span, info_span};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 use crate::db::connect;
 
@@ -37,10 +47,12 @@ pub fn get_api_router() -> Router<AppState> {
     Router::new()
         .route("/upload", post(handle_file_request_upload))
         .route("/upload/preview", get(handle_preview_upload))
-        .route("/upload/{file_id}/upload", post(handle_file_upload))
+        .route("/upload/{file_id}", post(handle_file_upload))
         .route("/file", get(handle_list_files))
-        .route("/file/{id}", get(handle_get_file))
-        .route("/file/{id}/delete", delete(handle_delete_file))
+        .route(
+            "/file/{id}",
+            get(handle_get_file).delete(handle_delete_file),
+        ) // TODO(alec): Update file
         .route(
             "/file/{file_id}/download",
             get(handle_file_request_download),
@@ -77,6 +89,21 @@ pub fn get_web_router() -> Router<AppState> {
 }
 
 pub async fn handle_run_server() -> Result<(), ()> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                // axum logs rejections from built-in extractors with the `axum::rejection`
+                // target, at `TRACE` level. `axum::rejection=trace` enables showing those events
+                format!(
+                    "{}=debug,tower_http=debug,axum::rejection=trace",
+                    env!("CARGO_CRATE_NAME")
+                )
+                .into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     let Ok(pool) = connect().await else {
         return Err(());
     };
@@ -92,13 +119,53 @@ pub async fn handle_run_server() -> Result<(), ()> {
         .nest("/api", api_router)
         .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(|request: &Request<_>| {
+                    // Log the matched route's path (with placeholders not filled in).
+                    // Use request.uri() or OriginalUri if you want the real path.
+                    let matched_path = request
+                        .extensions()
+                        .get::<MatchedPath>()
+                        .map(MatchedPath::as_str);
+
+                    info_span!(
+                        "http_request",
+                        method = ?request.method(),
+                        matched_path,
+                        some_other_field = tracing::field::Empty,
+                    )
+                })
+                .on_request(|_request: &Request<_>, _span: &Span| {
+                    // You can use `_span.record("some_other_field", value)` in one of these
+                    // closures to attach a value to the initially empty field in the info_span
+                    // created above.
+                    tracing::debug!("started processing request")
+                })
+                .on_response(|_response: &Response, _latency: Duration, _span: &Span| {
+                    tracing::debug!("finished processing request")
+                })
+                .on_body_chunk(|_chunk: &Bytes, _latency: Duration, _span: &Span| {
+                    tracing::debug!("sending body chunk")
+                })
+                .on_eos(
+                    |_trailers: Option<&HeaderMap>, _stream_duration: Duration, _span: &Span| {
+                        tracing::debug!("stream closed")
+                    },
+                )
+                .on_failure(
+                    |_error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {
+                        tracing::error!("something went wrong")
+                    },
+                ),
+        )
         .fallback_service(serve_dir)
         .with_state(state);
 
-    println!("Listening on port 8000");
+    tracing::info!("Listening on port 8000");
     let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
     if let Err(e) = axum::serve(listener, app).await {
-        eprintln!("Server run error: {e}");
+        tracing::error!("Server run error: {e}");
     }
 
     Ok(())

@@ -19,8 +19,6 @@ sqlx.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
-tower.workspace = true
-tower-http.workspace = true
 uuid.workspace = true
 regex.workspace = true
 
@@ -30,6 +28,10 @@ argon2 = "0.5.3"
 async-trait = "0.1.89"
 google-cloud-storage = "1.14.0"
 rpassword = "7.5.4"
+tower = { version = "0.5.3", features = ["util"] }
+tower-http = { version = "0.6.11", features = ["fs", "trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 [features]
 default = ["web"] # Might remove this

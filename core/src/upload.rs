@@ -74,7 +74,7 @@ pub async fn upload(
     headers.insert("Content-Type", "application/octet-stream".parse().unwrap());
 
     let file_stream = reqwest::Client::new()
-        .post(format!("{ENDPOINT}/api/upload/{}/upload", file.id))
+        .post(format!("{ENDPOINT}/api/upload/{}", file.id))
         .headers(headers)
         .body(encrypted_contents)
         .send()
