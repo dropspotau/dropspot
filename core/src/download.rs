@@ -8,7 +8,8 @@ use wasm_bindgen::prelude::*;
 
 use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
-use crate::encryption::{DecryptionError, Encryption, decrypt_file};
+use crate::encryption::{Encryption, decrypt_file};
+use crate::error::{ApiError, Error};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Download {
@@ -16,24 +17,12 @@ pub struct Download {
     pub expires_at: DateTime<Utc>,
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum DownloadError {
-    #[error("Encryption error: {0}")]
-    DecryptionError(DecryptionError),
-
-    #[error("Upload error: {0}")]
-    RequestError(reqwest::Error),
-
-    #[error("Server failure: {0}")]
-    ServerFailure(reqwest::StatusCode),
-}
-
 pub async fn download(
     file_id: &Uuid,
     encryption: &Encryption,
     writer: impl Write,
     auth: Option<&Authentication>,
-) -> Result<(), DownloadError> {
+) -> Result<(), Error> {
     // Request a download URL
     let headers = get_auth_headers(auth);
     let download = reqwest::Client::new()
@@ -41,10 +30,20 @@ pub async fn download(
         .headers(headers)
         .send()
         .await
-        .map_err(DownloadError::RequestError)?
+        .map_err(|_e| Error::NetworkError)?;
+
+    if !download.status().is_success() {
+        return Err(download
+            .json::<ApiError>()
+            .await
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)?);
+    }
+
+    let download = download
         .json::<Download>()
         .await
-        .map_err(DownloadError::RequestError)?;
+        .map_err(|_e| Error::JsonError)?;
 
     // Actually download the file
     let headers = get_auth_headers(auth);
@@ -54,7 +53,7 @@ pub async fn download(
         .headers(headers)
         .send()
         .await
-        .map_err(DownloadError::RequestError)?
+        .map_err(|_e| Error::NetworkError)?
         .bytes_stream()
         .map(move |bytes| {
             if let Err(e) = bytes {
@@ -67,9 +66,8 @@ pub async fn download(
     let mut massive_buffer = Vec::<u8>::new();
 
     while let Some(bytes) = stream.next().await {
-        if let Err(e) = bytes {
-            eprintln!("Failed to download file: {e:?}");
-            return Err(DownloadError::RequestError(e));
+        if let Err(_e) = bytes {
+            return Err(Error::NetworkError);
         };
 
         let bytes = bytes.unwrap();
@@ -78,9 +76,8 @@ pub async fn download(
 
     let reader = Cursor::new(massive_buffer);
 
-    if let Err(e) = decrypt_file(&encryption, reader, writer) {
-        eprintln!("Failed to decrypt file: {e:?}");
-        return Err(DownloadError::DecryptionError(e));
+    if let Err(_e) = decrypt_file(&encryption, reader, writer) {
+        return Err(Error::EncryptionError);
     };
 
     Ok(())

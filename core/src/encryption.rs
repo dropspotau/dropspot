@@ -11,11 +11,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tsify::Tsify;
 
-#[derive(Error, Debug)]
-pub enum EncryptionError {
-    #[error("Cipher error: {0}")]
-    CipherError(aes_gcm::Error),
-}
+use crate::error::EncryptionError;
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -65,9 +61,6 @@ pub(crate) fn encrypt_file(
         }
     }
 
-    println!("KEY: {aead:?}");
-    println!("NONCE: {nonce:?}");
-
     Ok(Encryption {
         key: aead.to_vec(),
         nonce: nonce.to_vec(),
@@ -107,7 +100,6 @@ pub(crate) fn decrypt_file(
             let result = stream_decryptor.decrypt_last(&buffer[..read_count]);
 
             if let Err(e) = result {
-                println!("Error decrypting last: {e:?}");
                 return Err(DecryptionError::CipherError(e));
             }
 
@@ -118,7 +110,6 @@ pub(crate) fn decrypt_file(
             let result = stream_decryptor.decrypt_next(buffer.as_ref());
 
             if let Err(e) = result {
-                println!("Error decrypting next: {e:?}");
                 return Err(DecryptionError::CipherError(e));
             }
 

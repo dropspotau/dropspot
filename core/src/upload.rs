@@ -1,13 +1,12 @@
 use std::io::{BufReader, BufWriter};
 
-use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
 use crate::auth::{Authentication, get_auth_headers};
 use crate::constants::ENDPOINT;
-use crate::encryption::{Encryption, EncryptionError, encrypt_file};
+use crate::encryption::{Encryption, encrypt_file};
 use crate::error::{ApiError, Error};
 use crate::file::File;
 use crate::integration::integration::Integration;
@@ -19,7 +18,7 @@ pub struct CreateFileBody {
     pub size: i64,
     pub storage: StorageType,
     // TODO(alec): Allow expiry and download limits be specified at upload, rather than defaulting
-    // to settings
+    // to settings limits
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
@@ -29,10 +28,11 @@ pub struct UploadResult {
     pub encryption: Encryption,
 }
 
+#[wasm_bindgen]
 pub async fn upload(
     name: String,
     contents: Vec<u8>,
-    auth: Option<&Authentication>,
+    auth: Option<Authentication>,
     storage: StorageType,
 ) -> Result<UploadResult, Error> {
     let size = contents.len();
@@ -40,9 +40,9 @@ pub async fn upload(
     let mut encrypted_contents = Vec::<u8>::new();
     let writer = BufWriter::new(&mut encrypted_contents);
 
-    let encryption = encrypt_file(reader, writer).map_err(|e| Error::EncryptionError(e))?;
+    let encryption = encrypt_file(reader, writer).map_err(|_e| Error::EncryptionError)?;
 
-    let mut headers = get_auth_headers(auth);
+    let mut headers = get_auth_headers(auth.as_ref());
     headers.insert("Content-Type", "application/json".parse().unwrap());
 
     // Request an upload
@@ -56,25 +56,20 @@ pub async fn upload(
         })
         .send()
         .await
-        .map_err(Error::NetworkError)?;
+        .map_err(|_e| Error::NetworkError)?;
 
     if !file.status().is_success() {
         return Err(file
             .json::<ApiError>()
             .await
-            .map(Error::UploadError)
-            .map_err(Error::JsonError)?);
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)?);
     }
 
-    let file = file.json::<File>().await.map_err(Error::JsonError)?;
-
-    // .map_err(|e| Error::RequestError(e))?
-    // .json::<File>()
-    // .await
-    // .map_err(|e| UploadError::RequestError(e))?;
+    let file = file.json::<File>().await.map_err(|_e| Error::JsonError)?;
 
     // Upload the file body
-    let mut headers = get_auth_headers(auth);
+    let mut headers = get_auth_headers(auth.as_ref());
     headers.insert("Content-Type", "application/octet-stream".parse().unwrap());
 
     let file_stream = reqwest::Client::new()
@@ -83,31 +78,13 @@ pub async fn upload(
         .body(encrypted_contents)
         .send()
         .await
-        .map_err(Error::NetworkError)?;
+        .map_err(|_e| Error::NetworkError)?;
 
-    if let Err(err) = file_stream.error_for_status() {
-        return Err(Error::NetworkError(err));
+    if let Err(_err) = file_stream.error_for_status() {
+        return Err(Error::NetworkError);
     }
 
     Ok(UploadResult { file, encryption })
-}
-
-#[wasm_bindgen(js_name = upload)]
-// #[cfg(target_arch = "wasm32")]
-pub async fn upload_js(
-    name: String,
-    contents: Vec<u8>,
-    auth: Option<Authentication>,
-    storage: StorageType,
-) -> Result<UploadResult, JsError> {
-    let upload = upload(name, contents, auth.as_ref(), storage).await;
-
-    if let Err(e) = upload {
-        return Err(JsError::new(&format!("{e}")));
-    };
-
-    let upload = upload.unwrap();
-    Ok(upload)
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
@@ -129,28 +106,33 @@ pub struct PreviewUploadResult {
     pub integrations: Vec<Integration>,
 }
 
+#[wasm_bindgen(js_name = previewUpload)]
 pub async fn preview_upload(
-    auth: Option<&Authentication>,
+    auth: Option<Authentication>,
     payload: PreviewUploadRequest,
-) -> Result<PreviewUploadResult, reqwest::Error> {
-    let headers = get_auth_headers(auth);
+) -> Result<PreviewUploadResult, Error> {
+    let headers = get_auth_headers(auth.as_ref());
 
-    reqwest::Client::new()
+    let response = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/upload/preview"))
         .query(&payload)
         .headers(headers)
         .send()
-        .await?
+        .await
+        .map_err(|_e| Error::NetworkError)?;
+
+    if !response.status().is_success() {
+        return Err(response
+            .json::<ApiError>()
+            .await
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)?);
+    }
+
+    let upload = response
         .json::<PreviewUploadResult>()
         .await
-}
+        .map_err(|_e| Error::JsonError)?;
 
-#[wasm_bindgen(js_name = previewUpload)]
-pub async fn preview_upload_js(
-    auth: Option<Authentication>,
-    payload: PreviewUploadRequest,
-) -> Result<PreviewUploadResult, JsError> {
-    preview_upload(auth.as_ref(), payload)
-        .map_err(|e| JsError::new(&format!("{e}")))
-        .await
+    Ok(upload)
 }

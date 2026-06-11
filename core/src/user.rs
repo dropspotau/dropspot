@@ -2,7 +2,7 @@ use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use uuid::Uuid;
-use wasm_bindgen::{JsError, prelude::wasm_bindgen};
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     constants::ENDPOINT,
@@ -60,20 +60,20 @@ pub async fn create_user(
         })
         .send()
         .await
-        .map_err(Error::NetworkError)?;
+        .map_err(|_e| Error::NetworkError)?;
 
     if !response.status().is_success() {
         return Err(response
             .json::<ApiError>()
             .await
-            .map(Error::UserError)
-            .map_err(Error::JsonError)
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)
             .unwrap());
     }
 
     let result = response
         .json::<LoginResult>()
-        .map_err(Error::JsonError)
+        .map_err(|_e| Error::JsonError)
         .await?;
 
     Ok(result)
@@ -86,6 +86,7 @@ pub struct LoginPayload {
     pub password: String,
 }
 
+#[wasm_bindgen(js_name = login)]
 pub async fn login(email: String, password: String) -> Result<LoginResult, Error> {
     let response = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/login"))
@@ -93,19 +94,19 @@ pub async fn login(email: String, password: String) -> Result<LoginResult, Error
         .json(&LoginPayload { email, password })
         .send()
         .await
-        .map_err(Error::NetworkError)?;
+        .map_err(|_e| Error::NetworkError)?;
 
     if !response.status().is_success() {
         return Err(response
             .json::<ApiError>()
             .await
-            .map(Error::UserError)
-            .map_err(Error::JsonError)?);
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)?);
     }
 
     let result = response
         .json::<LoginResult>()
-        .map_err(Error::JsonError)
+        .map_err(|_e| Error::JsonError)
         .await?;
 
     Ok(result)
@@ -125,62 +126,21 @@ pub async fn refresh_tokens(refresh_token: String) -> Result<LoginResult, Error>
         .json(&AccessTokenRequest { refresh_token })
         .send()
         .await
-        .map_err(Error::NetworkError)?;
+        .map_err(|_e| Error::NetworkError)?;
 
     if !response.status().is_success() {
         return Err(response
             .json::<ApiError>()
             .await
-            .map(Error::UserError)
-            .map_err(Error::JsonError)
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)
             .unwrap());
     }
 
     let result = response
         .json::<LoginResult>()
-        .map_err(Error::JsonError)
+        .map_err(|_e| Error::JsonError)
         .await?;
 
     Ok(result)
-}
-
-#[wasm_bindgen(js_name = createUser)]
-pub async fn create_user_js(
-    email: String,
-    first_name: String,
-    last_name: String,
-    password: String,
-) -> Result<LoginResult, JsError> {
-    let result = create_user(email, password, first_name, last_name).await;
-
-    if let Err(e) = result {
-        return Err(JsError::new(&format!("{e:?}")));
-    };
-
-    let user = result.unwrap();
-    Ok(user)
-}
-
-#[wasm_bindgen(js_name = login)]
-pub async fn login_js(email: String, password: String) -> Result<LoginResult, JsError> {
-    let result = login(email, password).await;
-
-    if let Err(e) = result {
-        return Err(JsError::new(&format!("{e:?}")));
-    };
-
-    let user = result.unwrap();
-    Ok(user)
-}
-
-#[wasm_bindgen(js_name = refreshTokens)]
-pub async fn refresh_tokens_js(refresh_token: String) -> Result<LoginResult, JsError> {
-    let result = refresh_tokens(refresh_token).await;
-
-    if let Err(e) = result {
-        return Err(JsError::new(&format!("{e:?}")));
-    };
-
-    let user = result.unwrap();
-    Ok(user)
 }

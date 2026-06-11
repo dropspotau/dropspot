@@ -47,7 +47,7 @@ pub async fn handle_upload(file_name: &str) -> Result<(), ()> {
     let upload = upload(
         file_name.to_owned(),
         buffer,
-        authentication.as_ref(),
+        authentication,
         StorageType::Local,
     )
     .await;
@@ -63,13 +63,13 @@ pub async fn handle_upload(file_name: &str) -> Result<(), ()> {
     let key_base64 = engine.encode(&upload.encryption.key);
     let nonce_base64 = engine.encode(&upload.encryption.nonce);
 
-    println!("Uploaded file {}", &upload.file.id);
-    println!("Key: {key_base64}");
-    println!("Key: {:?}", upload.encryption.key);
-    println!("Nonce: {nonce_base64}");
-    println!("Nonce: {:?}", upload.encryption.nonce);
+    tracing::info!("Uploaded file {}", &upload.file.id);
+    tracing::info!("Key: {key_base64}");
+    tracing::info!("Key: {:?}", upload.encryption.key);
+    tracing::info!("Nonce: {nonce_base64}");
+    tracing::info!("Nonce: {:?}", upload.encryption.nonce);
 
-    println!(
+    tracing::info!(
         "cargo run file download {} {key_base64} {nonce_base64}",
         upload.file.id
     );
