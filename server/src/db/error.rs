@@ -5,7 +5,7 @@ use crate::types::ApiError;
 
 #[derive(Error, Debug)]
 pub enum DatabaseError {
-    #[error("`DATABASE_URL` environent variable is not set")]
+    #[error("`DROPSPOT_DATABASE_URL` environent variable is not set")]
     MissingDatabaseUrlError,
 
     #[error("Database error: {0}")]

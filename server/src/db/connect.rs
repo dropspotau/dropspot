@@ -4,7 +4,7 @@ use super::error::DatabaseError;
 
 /// Returns a Postgres database connection pool.
 pub async fn connect() -> Result<PgPool, DatabaseError> {
-    let Ok(db_url) = std::env::var("DATABASE_URL") else {
+    let Ok(db_url) = std::env::var("DROPSPOT_DATABASE_URL") else {
         return Err(DatabaseError::MissingDatabaseUrlError);
     };
 

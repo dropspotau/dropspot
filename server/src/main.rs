@@ -36,7 +36,7 @@ use crate::cli::server::{handle_run_server, handle_watch};
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
-#[command(about = "A simple file sharing CLI")]
+#[command(about = "A simple file sharing tool")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
