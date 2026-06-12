@@ -1,16 +1,28 @@
 mod auth;
 mod cli;
+
+#[cfg(feature = "server")]
 mod config;
+
+#[cfg(feature = "server")]
 mod db;
+#[cfg(feature = "server")]
 mod handlers;
+#[cfg(feature = "server")]
 mod middleware;
+#[cfg(feature = "server")]
 mod state;
+#[cfg(feature = "server")]
 mod storage;
+#[cfg(feature = "server")]
 mod tracing;
+#[cfg(feature = "server")]
 mod types;
+#[cfg(feature = "server")]
 mod watch;
 
 use clap::{Parser, Subcommand};
+#[cfg(feature = "client")]
 use uuid::Uuid;
 
 #[cfg(feature = "client")]
@@ -82,6 +94,7 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
+    #[allow(unused)]
     let cli = Cli::parse();
 
     match &cli.command {
@@ -102,5 +115,12 @@ async fn main() -> Result<(), ()> {
             ServerCommands::Watch {} => handle_watch().await,
             ServerCommands::Run => handle_run_server().await,
         },
+        #[cfg(all(not(feature = "client"), not(feature = "server")))]
+        _ => {
+            eprintln!(
+                "It looks like you've tried to run DropSpot with neither the client CLI nor server features available"
+            );
+            return Err(());
+        }
     }
 }
