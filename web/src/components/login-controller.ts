@@ -146,7 +146,7 @@ export class LoginControllerElement extends LitElement {
         typeof firstName === "string" &&
         typeof lastName === "string"
       ) {
-        result = await createUser(email, firstName, lastName, password);
+        result = await createUser(email, password, firstName, lastName);
       } else {
         result = await login(email, password);
       }
