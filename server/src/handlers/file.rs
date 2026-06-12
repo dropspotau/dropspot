@@ -2,13 +2,13 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
-use dropspot_core::file::File as ApiFile;
+use dropspot_core::file::{File as ApiFile, UpdateFilePayload};
 use reqwest::StatusCode;
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::state::AppState;
 use crate::types::ApiError;
+use crate::{db::update_file, state::AppState};
 use crate::{
     db::{
         File, User, delete_files, get_file_by_id, get_files, get_integration_by_slug,
@@ -77,6 +77,37 @@ pub async fn handle_get_file(State(state): State<AppState>, Path(id): Path<Uuid>
     }
 
     Json(file.unwrap()).into_response()
+}
+
+pub async fn handle_update_file(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    user: User,
+    Json(payload): Json<UpdateFilePayload>,
+) -> Response {
+    let pool = state.get_pool();
+
+    let Ok(file) = get_file_by_id(pool, &id).await else {
+        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
+        return api_error.into_response();
+    };
+
+    if let Some(ref user_id) = file.created_by_id
+        && user_id != &user.id
+    {
+        // Only uploaders can update their files
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
+
+    let expires_at = payload.expires_at.unwrap_or(file.expires_at);
+    let max_downloads = payload.max_downloads.unwrap_or(file.max_downloads);
+
+    let Ok(file) = update_file(pool, &id, expires_at, max_downloads).await else {
+        return ApiError::new("Failed to update file".to_owned(), StatusCode::BAD_REQUEST)
+            .into_response();
+    };
+
+    Json(ApiFile::from(file)).into_response()
 }
 
 pub async fn handle_delete_file(

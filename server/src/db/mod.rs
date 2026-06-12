@@ -12,7 +12,9 @@ mod user;
 
 pub use connect::connect;
 pub use download::{Download, create_download, get_download_by_id};
-pub use file::{File, create_file, delete_files, get_expired_files, get_file_by_id, get_files};
+pub use file::{
+    File, create_file, delete_files, get_expired_files, get_file_by_id, get_files, update_file,
+};
 pub use integration::{Integration, get_integration_by_slug, get_integrations, upsert_integration};
 
 pub use member::create_organisation_member;

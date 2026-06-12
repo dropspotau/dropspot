@@ -25,22 +25,22 @@ pub async fn download(
 ) -> Result<(), Error> {
     // Request a download URL
     let headers = get_auth_headers(auth);
-    let download = reqwest::Client::new()
+    let response = reqwest::Client::new()
         .get(format!("{ENDPOINT}/api/file/{file_id}/download"))
         .headers(headers)
         .send()
         .await
         .map_err(|_e| Error::NetworkError)?;
 
-    if !download.status().is_success() {
-        return Err(download
+    if !response.status().is_success() {
+        return Err(response
             .json::<ApiError>()
             .await
             .map(Error::ApiError)
             .map_err(|_e| Error::JsonError)?);
     }
 
-    let download = download
+    let download = response
         .json::<Download>()
         .await
         .map_err(|_e| Error::JsonError)?;

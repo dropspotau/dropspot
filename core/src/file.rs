@@ -3,6 +3,8 @@ use base64::{
     alphabet::URL_SAFE,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
+use chrono::{DateTime, Utc};
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 use uuid::Uuid;
@@ -12,6 +14,7 @@ use crate::{
     auth::{Authentication, get_auth_headers},
     constants::ENDPOINT,
     encryption::Encryption,
+    error::{ApiError, Error},
 };
 
 #[derive(Serialize, Deserialize, Tsify, Debug)]
@@ -54,6 +57,40 @@ pub async fn get_file(id: &Uuid, auth: Option<&Authentication>) -> Result<File, 
         .await?;
 
     Ok(file)
+}
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct UpdateFilePayload {
+    pub expires_at: Option<DateTime<Utc>>,
+    pub max_downloads: Option<i32>,
+}
+
+pub async fn update_file(
+    id: &Uuid,
+    auth: &Authentication,
+    payload: &UpdateFilePayload,
+) -> Result<File, Error> {
+    let mut headers = get_auth_headers(Some(auth));
+    headers.insert("Content-Type", "application/json".parse().unwrap());
+
+    let response = reqwest::Client::new()
+        .patch(format!("{ENDPOINT}/api/file/{id}"))
+        .headers(headers)
+        .json(payload)
+        .send()
+        .map_err(|_e| Error::NetworkError)
+        .await?;
+
+    if !response.status().is_success() {
+        return Err(response
+            .json::<ApiError>()
+            .await
+            .map(Error::ApiError)
+            .map_err(|_e| Error::JsonError)?);
+    }
+
+    response.json::<File>().map_err(|_e| Error::JsonError).await
 }
 
 pub async fn delete_file(id: &Uuid, auth: &Authentication) -> Result<(), reqwest::Error> {
@@ -122,6 +159,16 @@ pub async fn get_file_js(file_id: String, auth: Option<Authentication>) -> Resul
     get_file(&file_id, auth.as_ref())
         .await
         .map_err(|e| JsError::new(&format!("{e}")))
+}
+
+#[wasm_bindgen(js_name = updateFile)]
+pub async fn update_file_js(
+    id: String,
+    auth: Authentication,
+    payload: UpdateFilePayload,
+) -> Result<File, Error> {
+    let file_id = Uuid::parse_str(&id).map_err(|_e| Error::WasmConversionError)?;
+    update_file(&file_id, &auth, &payload).await
 }
 
 #[wasm_bindgen(js_name = deleteFile)]

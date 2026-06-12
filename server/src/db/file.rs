@@ -193,6 +193,30 @@ pub async fn create_file(
     get_file_by_id(pool, &id.id).await
 }
 
+pub async fn update_file(
+    pool: &PgPool,
+    id: &Uuid,
+    expires_at: DateTime<Utc>,
+    max_downloads: i32,
+) -> Result<File, sqlx::Error> {
+    let id = sqlx::query_as!(
+        Id,
+        r#"
+            update file
+            set expires_at = $2, max_downloads = $3
+            where id = $1
+            returning id
+        "#,
+        id,
+        expires_at,
+        max_downloads
+    )
+    .fetch_one(pool)
+    .await?;
+
+    get_file_by_id(pool, &id.id).await
+}
+
 pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx::Error> {
     let ids = sqlx::query_as!(
         Id,

@@ -34,4 +34,7 @@ pub enum Error {
 
     #[error("API error")]
     ApiError(ApiError),
+
+    #[error("WASM conversion error")]
+    WasmConversionError,
 }

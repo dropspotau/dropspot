@@ -18,7 +18,7 @@ use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_get_file,
     handle_get_integration_by_slug, handle_get_integrations, handle_list_files, handle_login,
-    handle_preview_upload, handle_refresh_tokens, handle_upsert_integration,
+    handle_preview_upload, handle_refresh_tokens, handle_update_file, handle_upsert_integration,
 };
 
 #[cfg(feature = "web")]
@@ -52,7 +52,9 @@ pub fn get_api_router() -> Router<AppState> {
         .route("/file", get(handle_list_files))
         .route(
             "/file/{id}",
-            get(handle_get_file).delete(handle_delete_file),
+            get(handle_get_file)
+                .patch(handle_update_file)
+                .delete(handle_delete_file),
         ) // TODO(alec): Update file
         .route(
             "/file/{file_id}/download",

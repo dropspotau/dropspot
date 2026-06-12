@@ -9,7 +9,7 @@ mod utils;
 mod web;
 
 pub use download::{handle_file_download, handle_file_request_download};
-pub use file::{handle_delete_file, handle_get_file, handle_list_files};
+pub use file::{handle_delete_file, handle_get_file, handle_list_files, handle_update_file};
 pub use integration::{
     handle_get_integration_by_slug, handle_get_integrations, handle_upsert_integration,
 };
