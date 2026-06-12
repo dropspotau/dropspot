@@ -102,6 +102,14 @@ pub async fn handle_update_file(
     let expires_at = payload.expires_at.unwrap_or(file.expires_at);
     let max_downloads = payload.max_downloads.unwrap_or(file.max_downloads);
 
+    if max_downloads <= 0 {
+        return ApiError::new(
+            "Maximum downloads must be positive".to_owned(),
+            StatusCode::BAD_REQUEST,
+        )
+        .into_response();
+    }
+
     let Ok(file) = update_file(pool, &id, expires_at, max_downloads).await else {
         return ApiError::new("Failed to update file".to_owned(), StatusCode::BAD_REQUEST)
             .into_response();

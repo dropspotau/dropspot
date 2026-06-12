@@ -2,6 +2,7 @@ import {
   upload,
   createLink,
   previewUpload,
+  updateFile,
   type UploadResult,
   type Integration,
   type StorageType,
@@ -197,6 +198,23 @@ export class UploadBarElement extends LitElement {
     this.dispatchEvent(event);
   };
 
+  private handleUpdateDownloadLimit = async (
+    fileId: string,
+    maxDownloads: number,
+  ): Promise<void> => {
+    const auth = getAuth();
+
+    if (!auth) {
+      return;
+    }
+
+    const file = await updateFile(fileId, auth, {
+      expires_at: null,
+      max_downloads: maxDownloads,
+    });
+    console.debug(file);
+  };
+
   private renderIntegration = (integration: Integration): TemplateResult<1> => {
     const isUploading = this.uploadingIntegrationSlug === integration.slug;
     const isDisabled = this.uploadingIntegrationSlug !== null && !isUploading;
@@ -243,6 +261,15 @@ export class UploadBarElement extends LitElement {
         <h3 class="text-white no-margin">
           Uploaded ${this.uploadResult.file.name}
         </h3>
+        <md-filled-button
+          class="button-white"
+          @click="${() =>
+            this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 3)}"
+          >Update</md-filled-button
+        >
+
+        <!-- TODO(alec): Set expiry dropdown here -->
+        <!-- TODO(alec): Set download limit dropdown here -->
         <copy-button value="${url}" class="button-white"></copy-button>
       `;
     }
