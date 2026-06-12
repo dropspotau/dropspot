@@ -36,7 +36,9 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 [features]
 default = ["client", "server", "web"] # Might remove this
 
-# When selected, compiles DropSpot web features into the server
+# These features split up compilation based on what the end user wants to use
+# Server capabilities shouldn't be compiled if the executable only uses the client CLI tools
 client = []
 server = []
+# Enable web endpoints (not just REST)
 web = ["server"]
