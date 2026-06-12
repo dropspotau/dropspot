@@ -18,6 +18,9 @@ pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
 
 #[cfg(feature = "web")]
 pub use web::file::handle_files;
+#[cfg(feature = "web")]
 pub use web::header::handle_header;
+#[cfg(feature = "web")]
 pub use web::index::handle_index;
+#[cfg(feature = "web")]
 pub use web::settings::{handle_settings, handle_update_settings, handle_update_user};

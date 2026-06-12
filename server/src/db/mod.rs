@@ -14,11 +14,19 @@ pub use connect::connect;
 pub use download::{Download, create_download, get_download_by_id};
 pub use file::{File, create_file, delete_files, get_expired_files, get_file_by_id, get_files};
 pub use integration::{Integration, get_integration_by_slug, get_integrations, upsert_integration};
-pub use member::{create_organisation_member, get_organisation_member};
+
+pub use member::create_organisation_member;
+#[cfg(feature = "web")]
+pub use member::get_organisation_member;
+
 pub use organisation::{Organisation, get_default_organisation, get_organisation_for_user};
-pub use settings::{get_organisation_settings, update_organisation_settings};
+
+pub use settings::get_organisation_settings;
+#[cfg(feature = "web")]
+pub use settings::update_organisation_settings;
+
 pub use upload::{finish_upload, get_upload_by_file_id, preview_upload, start_upload};
-pub use user::{
-    User, create_user, get_user_by_email, get_user_by_id, get_user_password, get_users,
-    update_user_name,
-};
+
+pub use user::{User, create_user, get_user_by_email, get_user_by_id, get_user_password};
+#[cfg(feature = "web")]
+pub use user::{get_users, update_user_name};
