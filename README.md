@@ -1,5 +1,5 @@
 # DropSpot
-A self-hostable server for timed-ou t and limited file uploads.
+A self-hostable server for timed-out and limited file uploads.
 
 ## Contains:
 * A server for running a web server which handles file uploads, downloads and user authentication
@@ -7,7 +7,7 @@ A self-hostable server for timed-ou t and limited file uploads.
 * Rust library to use from your own program
 * JavaScript library to use from websites (the same Rust library, compiled to WebAssembly!)
 
-## Can upload to
+## Integrations
 * Local storage
 * Google Cloud Storage
 * AWS S3 (coming soon&trade;!)
@@ -29,14 +29,13 @@ Setup:
 ./scripts/migrate-database.sh
 
 # Run the server
-cargo run --package dropspot-server server run
+dropspot server run
 
 # Delete any files after they've been expired
-cargo run --package dropspot-server server watch
+dropspot server watch
 ```
 
 ### CLI:
-Or, even better, have a pre-compiled binary and simply execute that :)
 ```
 # Runs a local DropSpot server
 dropspot server run
