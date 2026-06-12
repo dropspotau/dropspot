@@ -34,7 +34,9 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 [features]
-default = ["web"] # Might remove this
+default = ["web", "server"] # Might remove this
 
 # When selected, compiles DropSpot web features into the server
-web = []
+client = []
+server = []
+web = ["server"]

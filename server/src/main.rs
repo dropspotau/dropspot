@@ -13,11 +13,14 @@ mod watch;
 use clap::{Parser, Subcommand};
 use uuid::Uuid;
 
+#[cfg(feature = "client")]
 use crate::cli::{
     auth::{handle_create_user, handle_login},
     file::{handle_download, handle_get_file, handle_list_files, handle_upload},
-    server::{handle_run_server, handle_watch},
 };
+
+#[cfg(feature = "server")]
+use crate::cli::server::{handle_run_server, handle_watch};
 
 #[derive(Parser)]
 #[command(name = "dropspot")]
@@ -27,6 +30,7 @@ struct Cli {
     command: Commands,
 }
 
+#[cfg(feature = "client")]
 #[derive(Subcommand)]
 enum FileCommands {
     #[command(about = "Upload a file")]
@@ -43,6 +47,16 @@ enum FileCommands {
     Get { id: Uuid },
 }
 
+#[cfg(feature = "client")]
+#[derive(Subcommand)]
+enum AuthCommands {
+    #[command(about = "Log into DropSpot")]
+    Login,
+    #[command(about = "Create a user")]
+    Create,
+}
+
+#[cfg(feature = "server")]
 #[derive(Subcommand)]
 enum ServerCommands {
     #[command(about = "Watch for files")]
@@ -52,23 +66,18 @@ enum ServerCommands {
 }
 
 #[derive(Subcommand)]
-enum AuthCommands {
-    #[command(about = "Log into DropSpot")]
-    Login,
-    #[command(about = "Create a user")]
-    Create,
-}
-
-#[derive(Subcommand)]
 enum Commands {
+    #[cfg(feature = "client")]
     #[command(subcommand)]
     File(FileCommands),
 
-    #[command(subcommand)]
-    Server(ServerCommands),
-
+    #[cfg(feature = "client")]
     #[command(subcommand)]
     Auth(AuthCommands),
+
+    #[cfg(feature = "server")]
+    #[command(subcommand)]
+    Server(ServerCommands),
 }
 
 #[tokio::main]
@@ -76,19 +85,22 @@ async fn main() -> Result<(), ()> {
     let cli = Cli::parse();
 
     match &cli.command {
+        #[cfg(feature = "client")]
         Commands::File(file_commands) => match file_commands {
             FileCommands::Upload { file: file_name } => handle_upload(file_name).await,
             FileCommands::Download { id, key, nonce } => handle_download(id, key, nonce).await,
             FileCommands::List {} => handle_list_files().await,
             FileCommands::Get { id } => handle_get_file(id).await,
         },
-        Commands::Server(server_commands) => match server_commands {
-            ServerCommands::Watch {} => handle_watch().await,
-            ServerCommands::Run => handle_run_server().await,
-        },
+        #[cfg(feature = "client")]
         Commands::Auth(auth_commands) => match auth_commands {
             AuthCommands::Login {} => handle_login().await,
             AuthCommands::Create {} => handle_create_user().await,
+        },
+        #[cfg(feature = "server")]
+        Commands::Server(server_commands) => match server_commands {
+            ServerCommands::Watch {} => handle_watch().await,
+            ServerCommands::Run => handle_run_server().await,
         },
     }
 }
