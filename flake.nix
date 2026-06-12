@@ -23,9 +23,9 @@
         };
 
         # Google Cloud to test bucket uploads
-        # gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
-        #   gke-gcloud-auth-plugin
-        # ]);
+        gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
+          gke-gcloud-auth-plugin
+        ]);
 
         gcloud-login = pkgs.writeShellScriptBin "glogin" ''
           unset GOOGLE_APPLICATION_CREDENTIALS # Remove in case it tries to set service account details
@@ -55,7 +55,7 @@
           psql
           direnv
           # libtcl failing?
-          # gdk
+          gdk
           gcloud-login
           opencode
         ] ++ rustDeps ++ tsDeps ++ editorDeps;
