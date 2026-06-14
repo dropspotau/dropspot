@@ -50,6 +50,9 @@
         <section id="linked-file"></section>
         <section id="recent-uploads"></section>
         <section id="toast-container"></section>
+        {% if should_show_onboarding %}
+            <dropspot-onboarding></dropspot-onboarding>
+        {% endif %}
     </main>
 </body>
 </html>

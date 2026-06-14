@@ -10,11 +10,17 @@ use super::template::HtmlTemplate;
 #[template(path = "index.html")]
 struct IndexTemplate {
     header: HeaderTemplate,
+    should_show_onboarding: bool,
 }
 
 pub async fn handle_index(user: Option<User>) -> impl IntoResponse {
     let header = get_header_template(user.as_ref());
 
-    let template = IndexTemplate { header };
+    let should_show_onboarding = user.is_some();
+
+    let template = IndexTemplate {
+        header,
+        should_show_onboarding,
+    };
     HtmlTemplate(template)
 }
