@@ -220,14 +220,21 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    const file = await updateFile(fileId, auth, {
-      expires_at: expiresAt.toISOString(),
-      max_downloads: undefined,
-    });
+    try {
+      const file = await updateFile(fileId, auth, {
+        expires_at: expiresAt.toISOString(),
+        max_downloads: undefined,
+      });
 
-    if (this.uploadResult) {
-      // Reflect any updated fields
-      this.uploadResult = { ...this.uploadResult, file };
+      if (this.uploadResult) {
+        // Reflect any updated fields
+        this.uploadResult = { ...this.uploadResult, file };
+      }
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an error updating the file. Please try again",
+        "danger",
+      );
     }
   };
 
@@ -241,14 +248,21 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    const file = await updateFile(fileId, auth, {
-      expires_at: undefined,
-      max_downloads: maxDownloads,
-    });
+    try {
+      const file = await updateFile(fileId, auth, {
+        expires_at: undefined,
+        max_downloads: maxDownloads,
+      });
 
-    if (this.uploadResult) {
-      // Reflect any updated fields
-      this.uploadResult = { ...this.uploadResult, file };
+      if (this.uploadResult) {
+        // Reflect any updated fields
+        this.uploadResult = { ...this.uploadResult, file };
+      }
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an error updating the file. Please try again",
+        "danger",
+      );
     }
   };
 
