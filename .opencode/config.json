@@ -64,6 +64,7 @@
       "git log *": "allow",
       "git show *": "allow",
       "git merge-base *": "allow",
+      "git diff *": "allow",
       "git push": "ask",
       "git reset --hard *": "ask",
       "git clean *": "ask",
