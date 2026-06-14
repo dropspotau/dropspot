@@ -23,6 +23,7 @@ pub struct File {
     pub id: Uuid,
     pub name: String,
     pub size: i64,
+    pub expires_at: String,
     pub remaining_downloads: i32,
     pub is_expired: bool,
 }

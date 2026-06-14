@@ -10,13 +10,14 @@
   },
   "dependencies": {
     "@material/web": "2.4.1",
+    "date-fns": "^4.4.0",
     "dropspot-core": "file:../core/pkg",
     "htmx.org": "4.0.0-beta4",
     "lit": "3.3.3"
   },
   "devDependencies": {
     "@tsconfig/recommended": "1.0.13",
-    "@types/node": "25.9.1",
+    "@types/node": "25.9.3",
     "typescript": "6.0.3",
     "vite": "8.0.16",
     "vite-plugin-top-level-await": "1.6.0",

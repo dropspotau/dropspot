@@ -72,6 +72,12 @@
 
           # TODO(alec): How to get RUST_SRC_PATH from the `rust` package we use from rust-overlay
           RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+
+          shellHook = ''
+            LOCAL_DIR=$(pwd)
+            export LOCAL_TYPESCRIPT_TSDK="$LOCAL_DIR/web/node_modules/typescript/lib"
+          '';
+
         };
       }
     );

@@ -41,6 +41,7 @@ impl From<File> for ApiFile {
             id: file.id,
             name: file.name.clone(),
             size: file.size,
+            expires_at: file.expires_at.to_rfc3339(),
             remaining_downloads: file.get_remaining_downloads(),
             is_expired: file.is_expired(),
         }

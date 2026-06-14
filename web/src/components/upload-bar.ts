@@ -16,6 +16,8 @@ import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
 import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
+import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
+import { addMinutes, parseISO } from "date-fns";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -23,8 +25,6 @@ const createDownloadUrl = (identifier: string): URL => {
 
   return url;
 };
-
-const getExpiresAtText = (date: Date): string => {};
 
 /**
  * A component which shows upload progress of a file, as well as options about which provider to upload with when multiple are available
@@ -212,7 +212,7 @@ export class UploadBarElement extends LitElement {
 
   private handleUpdateExpiry = async (
     fileId: string,
-    expiresAt: string,
+    expiresAt: Date,
   ): Promise<void> => {
     const auth = getAuth();
 
@@ -220,10 +220,15 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    await updateFile(fileId, auth, {
-      expires_at: expiresAt,
+    const file = await updateFile(fileId, auth, {
+      expires_at: expiresAt.toISOString(),
       max_downloads: undefined,
     });
+
+    if (this.uploadResult) {
+      // Reflect any updated fields
+      this.uploadResult = { ...this.uploadResult, file };
+    }
   };
 
   private handleUpdateDownloadLimit = async (
@@ -236,10 +241,15 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    await updateFile(fileId, auth, {
+    const file = await updateFile(fileId, auth, {
       expires_at: undefined,
       max_downloads: maxDownloads,
     });
+
+    if (this.uploadResult) {
+      // Reflect any updated fields
+      this.uploadResult = { ...this.uploadResult, file };
+    }
   };
 
   private renderIntegration = (integration: Integration): TemplateResult<1> => {
@@ -275,6 +285,16 @@ export class UploadBarElement extends LitElement {
     `;
   };
 
+  /** Renders the expires at option with one minute added so setting "1 hour" shows as that rather than immedtiately "59 minutes" */
+  private renderExpiryOption = (date: Date): TemplateResult<1> => html`
+    <md-menu-item
+      @click="${() =>
+        this.handleUpdateExpiry(this.uploadResult!.file.id, date)}"
+    >
+      ${getRemainingTimeText(addMinutes(date, 1))}
+    </md-menu-item>
+  `;
+
   render() {
     if (this.uploadResult) {
       // The file has uploaded
@@ -283,6 +303,12 @@ export class UploadBarElement extends LitElement {
         this.uploadResult.encryption,
       );
       const url = createDownloadUrl(link);
+
+      // Add one minute so the exact "59 minutes" actually becomes "1 hour"
+      const currentExpiresAt = addMinutes(
+        parseISO(this.uploadResult.file.expires_at),
+        1,
+      );
 
       return html`
         <div class="upload-result-row" style="place-content: space-between;">
@@ -304,37 +330,14 @@ export class UploadBarElement extends LitElement {
                 menu.open = !menu.open;
               }
             }}"
-            >Update</md-filled-button
+            >${getRemainingTimeText(currentExpiresAt)}</md-filled-button
           >
           <md-menu
             anchor="time-dropdown"
             positioning="fixed"
             ref="${ref(this.expiryDropdownMenuRef)}"
           >
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
-            >
-              1 hour
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
-            >
-              6 hours
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
-            >
-              1 day
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
-            >
-              3 days
-            </md-menu-item>
+            ${getExpiresAtOptions().map(this.renderExpiryOption)}
           </md-menu>
           <span>and can be downloaded</span>
           <md-filled-button
@@ -347,7 +350,7 @@ export class UploadBarElement extends LitElement {
                 menu.open = !menu.open;
               }
             }}"
-            >Update</md-filled-button
+            >${this.uploadResult.file.remaining_downloads}</md-filled-button
           >
           <!-- Max downloads -->
           <md-menu
