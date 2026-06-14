@@ -89,7 +89,6 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             left join users
             on users.id = file.created_by_id
             group by file.id, users.id
-            having file.max_downloads >= count(download.id) and now() < file.expires_at
             order by file.created_at asc
         "#
     )
@@ -149,7 +148,7 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
             left join users
             on users.id = file.created_by_id
             group by file.id, users.id
-            having file.id = $1 and file.max_downloads >= count(download.id) and now() < file.expires_at
+            having file.id = $1
             limit 1
         "#,
         id
