@@ -40,9 +40,11 @@
           wasm-pack # WebAssembly compilation
         ];
 
+        # Wrapper to use the project version of TypeScript
         tsDeps = with pkgs; [
           typescript
           vtsls
+          pnpm
         ];
 
         editorDeps = with pkgs; [
@@ -54,7 +56,6 @@
         deps = with pkgs; [
           psql
           direnv
-          # libtcl failing?
           gdk
           gcloud-login
           opencode
