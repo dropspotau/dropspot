@@ -2,6 +2,7 @@ use axum::{
     extract::{Json, Path, State},
     response::{IntoResponse, Response},
 };
+use chrono::Utc;
 use dropspot_core::file::{File as ApiFile, UpdateFilePayload};
 use reqwest::StatusCode;
 use thiserror::Error;
@@ -100,8 +101,17 @@ pub async fn handle_update_file(
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
+    let now = Utc::now();
     let expires_at = payload.expires_at.unwrap_or(file.expires_at);
     let max_downloads = payload.max_downloads.unwrap_or(file.max_downloads);
+
+    if expires_at <= now {
+        return ApiError::new(
+            "File expiry cannot be in the past".to_owned(),
+            StatusCode::BAD_REQUEST,
+        )
+        .into_response();
+    }
 
     if max_downloads <= 0 {
         return ApiError::new(
