@@ -1,6 +1,6 @@
 use std::io::{BufRead, Write};
 
-use dropspot_core::user::{create_user, login};
+use dropspot_core::user::{CreateUserPayload, create_user, login};
 
 use crate::auth::storage::save_login;
 
@@ -94,7 +94,14 @@ pub async fn handle_create_user() -> Result<(), ()> {
         .trim()
         .to_owned();
 
-    let login_result = match create_user(email, password, first_name, last_name).await {
+    let login_result = match create_user(CreateUserPayload {
+        email,
+        password,
+        first_name: Some(first_name),
+        last_name: Some(last_name),
+    })
+    .await
+    {
         Ok(result) => result,
         Err(e) => {
             eprintln!("User creation error: {e}");

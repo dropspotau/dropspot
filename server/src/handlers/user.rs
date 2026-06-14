@@ -104,12 +104,15 @@ pub async fn handle_create_user(
         .into_response();
     };
 
+    let first_name = payload.first_name.unwrap_or("".to_owned());
+    let last_name = payload.last_name.unwrap_or("".to_owned());
+
     let Ok(user) = create_user(
         pool,
-        &payload.first_name,
-        &payload.last_name,
         &payload.email,
         &password_base64,
+        &first_name,
+        &last_name,
         &organisation.id,
     )
     .await

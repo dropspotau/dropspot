@@ -129,23 +129,23 @@ pub async fn get_user_password(pool: &PgPool, id: &Uuid) -> Result<String, sqlx:
 
 pub async fn create_user(
     pool: &PgPool,
-    first_name: &str,
-    last_name: &str,
     email: &str,
     password: &str,
+    first_name: &str,
+    last_name: &str,
     organisation_id: &Uuid,
 ) -> Result<User, sqlx::Error> {
     let user_id = sqlx::query_as!(
         Id,
         r#"
-            insert into users (first_name, last_name, email, password)
+            insert into users (email, password, first_name, last_name)
             values ($1, $2, $3, $4)
             returning id
         "#,
+        email,
+        password,
         first_name,
         last_name,
-        email,
-        password
     )
     .fetch_one(pool)
     .await?;

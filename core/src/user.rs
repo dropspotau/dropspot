@@ -28,12 +28,13 @@ pub struct TokenPair {
     pub expires_in: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct CreateUserPayload {
-    pub first_name: String,
-    pub last_name: String,
     pub email: String,
     pub password: String,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
@@ -44,21 +45,11 @@ pub struct LoginResult {
 }
 
 #[wasm_bindgen(js_name = createUser)]
-pub async fn create_user(
-    email: String,
-    password: String,
-    first_name: String,
-    last_name: String,
-) -> Result<LoginResult, Error> {
+pub async fn create_user(payload: CreateUserPayload) -> Result<LoginResult, Error> {
     let response = reqwest::Client::new()
         .post(format!("{ENDPOINT}/api/user/create"))
         .header("Content-Type", "application/json")
-        .json(&CreateUserPayload {
-            email,
-            first_name,
-            last_name,
-            password,
-        })
+        .json(&payload)
         .send()
         .await
         .map_err(|_e| Error::NetworkError)?;
