@@ -14,6 +14,8 @@ import { classMap } from "lit/directives/class-map.js";
 import { getAuth } from "../auth";
 import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
+import type { MdMenu } from "@material/web/menu/menu";
+import { createRef, ref, type Ref } from "lit/directives/ref.js";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -21,6 +23,8 @@ const createDownloadUrl = (identifier: string): URL => {
 
   return url;
 };
+
+const getExpiresAtText = (date: Date): string => {};
 
 /**
  * A component which shows upload progress of a file, as well as options about which provider to upload with when multiple are available
@@ -30,14 +34,19 @@ export class UploadBarElement extends LitElement {
   static styles = css`
     :host {
       display: flex;
-      flex-flow: row wrap;
-      place-items: center;
-      place-content: space-between;
+      flex-flow: column;
       padding: 1rem 2rem;
       border-radius: 1rem;
       gap: 1rem;
-      align-items: center;
       background-color: var(--dropspot-dark);
+    }
+
+    .upload-result-row {
+      display: flex;
+      flex-flow: row nowrap;
+      place-items: center;
+      gap: 1rem;
+      align-items: center;
     }
 
     .integration-select {
@@ -91,6 +100,9 @@ export class UploadBarElement extends LitElement {
 
   @state()
   private integrations: Integration[] = [];
+
+  private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
+  private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
 
   /**
    * The slug of the storage integration method being used to currently upload.
@@ -198,6 +210,22 @@ export class UploadBarElement extends LitElement {
     this.dispatchEvent(event);
   };
 
+  private handleUpdateExpiry = async (
+    fileId: string,
+    expiresAt: string,
+  ): Promise<void> => {
+    const auth = getAuth();
+
+    if (!auth) {
+      return;
+    }
+
+    await updateFile(fileId, auth, {
+      expires_at: expiresAt,
+      max_downloads: undefined,
+    });
+  };
+
   private handleUpdateDownloadLimit = async (
     fileId: string,
     maxDownloads: number,
@@ -208,11 +236,10 @@ export class UploadBarElement extends LitElement {
       return;
     }
 
-    const file = await updateFile(fileId, auth, {
-      expires_at: null,
+    await updateFile(fileId, auth, {
+      expires_at: undefined,
       max_downloads: maxDownloads,
     });
-    console.debug(file);
   };
 
   private renderIntegration = (integration: Integration): TemplateResult<1> => {
@@ -258,24 +285,110 @@ export class UploadBarElement extends LitElement {
       const url = createDownloadUrl(link);
 
       return html`
-        <h3 class="text-white no-margin">
-          Uploaded ${this.uploadResult.file.name}
-        </h3>
-        <md-filled-button
-          class="button-white"
-          @click="${() =>
-            this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 3)}"
-          >Update</md-filled-button
-        >
+        <div class="upload-result-row" style="place-content: space-between;">
+          <h3 class="text-white no-margin">
+            Uploaded ${this.uploadResult.file.name}
+          </h3>
+          <copy-button value="${url}" class="button-white"></copy-button>
+        </div>
+        <div class="upload-result-row">
+          <span>File expires in</span>
+          <!-- File expiry -->
+          <md-filled-button
+            id="time-dropdown"
+            class="button-white"
+            @click="${() => {
+              const { value: menu } = this.expiryDropdownMenuRef;
 
-        <!-- TODO(alec): Set expiry dropdown here -->
-        <!-- TODO(alec): Set download limit dropdown here -->
-        <copy-button value="${url}" class="button-white"></copy-button>
+              if (menu) {
+                menu.open = !menu.open;
+              }
+            }}"
+            >Update</md-filled-button
+          >
+          <md-menu
+            anchor="time-dropdown"
+            positioning="fixed"
+            ref="${ref(this.expiryDropdownMenuRef)}"
+          >
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
+            >
+              1 hour
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
+            >
+              6 hours
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
+            >
+              1 day
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateExpiry(this.uploadResult!.file.id, "")}"
+            >
+              3 days
+            </md-menu-item>
+          </md-menu>
+          <span>and can be downloaded</span>
+          <md-filled-button
+            id="max-downloads-dropdown"
+            class="button-white"
+            @click="${() => {
+              const { value: menu } = this.maxDownloadsDropdownMenuRef;
+
+              if (menu) {
+                menu.open = !menu.open;
+              }
+            }}"
+            >Update</md-filled-button
+          >
+          <!-- Max downloads -->
+          <md-menu
+            anchor="max-downloads-dropdown"
+            positioning="fixed"
+            ref="${ref(this.maxDownloadsDropdownMenuRef)}"
+          >
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 1)}"
+            >
+              1
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 2)}"
+            >
+              2
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 5)}"
+            >
+              5
+            </md-menu-item>
+            <md-menu-item
+              @click="${() =>
+                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 10)}"
+            >
+              10
+            </md-menu-item>
+          </md-menu>
+          <span>times</span>
+          <!-- TODO(alec): Set expiry dropdown here -->
+        </div>
       `;
     }
 
     const isSelectingIntegrations =
       this.integrations.length > 1 && !this.uploadResult;
+
     if (isSelectingIntegrations) {
       // Multple integrations exist and the user must choose which one to upload to
       return html`

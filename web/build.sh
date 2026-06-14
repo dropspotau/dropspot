@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-tsc
+pnpm exec tsc
 vite build
 
 if [[ -d ../static/dist ]]; then
