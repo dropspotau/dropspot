@@ -11,6 +11,16 @@ export class OnboardingElement extends LitElement {
     :host {
       display: contents;
     }
+
+    .title {
+      align-self: center;
+    }
+
+    .contents {
+      display: flex;
+      flex-flow: column;
+      gap: 1rem;
+    }
   `;
 
   private welcomePopoverRef: Ref<PopoverElement> = createRef();
@@ -26,6 +36,10 @@ export class OnboardingElement extends LitElement {
     if (this.shadowRoot) {
       applyGlobalStyles(this.shadowRoot);
     }
+
+    setTimeout(() => {
+      this.advanceStep();
+    }, 0);
   }
 
   /** Advances through the onboarding by one step */
@@ -47,24 +61,19 @@ export class OnboardingElement extends LitElement {
     if (this.step === 0 && uploadCircle instanceof HTMLElement) {
       welcomePopover.toggle(uploadCircle);
       settingsPopover.close();
-      filesPopover.close();
     }
 
     if (this.step === 1 && settingsDialogButton instanceof HTMLElement) {
       welcomePopover.close();
       settingsPopover.toggle(settingsDialogButton);
-      filesPopover.close();
     }
 
     if (this.step === 2 && filesDialogButton instanceof HTMLElement) {
-      welcomePopover.close();
       settingsPopover.close();
       filesPopover.toggle(filesDialogButton);
     }
 
     if (this.step === 3) {
-      welcomePopover.close();
-      settingsPopover.close();
       filesPopover.close();
     }
 
@@ -72,18 +81,33 @@ export class OnboardingElement extends LitElement {
   };
 
   private renderWelcome = (): TemplateResult<1> => html`
-    <h3 class="no-margin">Welcome to DropSpot!</h3>
-    <span>Your file shoring tool</span>
+    <div class="contents">
+      <h3 class="no-margin title">Welcome to DropSpot!</h3>
+      <span>Your file sharing tool</span>
+    </div>
+    <md-filled-button class="button-white" @click="${this.advanceStep}"
+      >Got it</md-filled-button
+    >
   `;
 
   private renderSettings = (): TemplateResult<1> => html`
-    <h3 class="no-margin">Settings</h3>
-    <span>Your settings are located here</span>
+    <div class="contents">
+      <h3 class="no-margin title">Settings</h3>
+      <span>Your settings are located here</span>
+    </div>
+    <md-filled-button class="button-white" @click="${this.advanceStep}"
+      >Got it</md-filled-button
+    >
   `;
 
   private renderFiles = (): TemplateResult<1> => html`
-    <h3 class="no-margin">Files</h3>
-    <span>Your files are located here</span>
+    <div class="contents">
+      <h3 class="no-margin title">Files</h3>
+      <span>Your files are located here</span>
+    </div>
+    <md-filled-button class="button-white" @click="${this.advanceStep}"
+      >Got it</md-filled-button
+    >
   `;
 
   render() {
@@ -97,9 +121,6 @@ export class OnboardingElement extends LitElement {
       <dropspot-popover alignment="right" ${ref(this.filesPopoverRef)}>
         <section class="settings">${this.renderFiles()}</section>
       </dropspot-popover>
-      <md-filled-button class="button-white" @click="${this.advanceStep}"
-        >Toggle</md-filled-button
-      >
     `;
   }
 }
