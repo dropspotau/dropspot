@@ -31,8 +31,10 @@ export class OnboardingElement extends LitElement {
 
     .welcome {
       /* Overwrites the .settings class's sizes */
-      --menu-height: 32dvh !important;
-      --menu-width: 48dvw !important;
+      --menu-padding: 2rem !important;
+      --menu-height: calc(42rem - var(--menu-padding)) !important;
+      --menu-width: calc(48rem - var(--menu-padding)) !important;
+      overflow: auto !important;
     }
 
     .button-container {
