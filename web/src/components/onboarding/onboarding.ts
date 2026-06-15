@@ -19,7 +19,6 @@ export class OnboardingElement extends LitElement {
     .container {
       display: flex;
       flex-flow: column;
-      place-content: space-between;
       gap: 1rem;
     }
 
@@ -32,9 +31,13 @@ export class OnboardingElement extends LitElement {
     .welcome {
       /* Overwrites the .settings class's sizes */
       --menu-padding: 2rem !important;
-      --menu-height: calc(42rem - var(--menu-padding)) !important;
+      --menu-height: fit-content !important;
       --menu-width: calc(48rem - var(--menu-padding)) !important;
       overflow: auto !important;
+    }
+
+    .onboarding-popover {
+      height: fit-content !important;
     }
 
     .button-container {
@@ -79,10 +82,16 @@ export class OnboardingElement extends LitElement {
   /** Advances through the onboarding by one step */
   private advanceStep = (): void => {
     const { value: welcomePopover } = this.welcomePopoverRef;
+    const { value: uploadPopover } = this.uploadPopoverRef;
     const { value: settingsPopover } = this.settingsPopoverRef;
     const { value: filesPopover } = this.filesPopoverRef;
 
-    if (!welcomePopover || !settingsPopover || !filesPopover) {
+    if (
+      !welcomePopover ||
+      !uploadPopover ||
+      !settingsPopover ||
+      !filesPopover
+    ) {
       return;
     }
 
@@ -94,16 +103,15 @@ export class OnboardingElement extends LitElement {
 
     if (this.step === 0 && uploadCircle instanceof HTMLElement) {
       welcomePopover.toggle(uploadCircle);
-      settingsPopover.close();
     }
 
     if (this.step === 1 && uploadCircle instanceof HTMLElement) {
-      welcomePopover.toggle(uploadCircle);
-      settingsPopover.close();
+      welcomePopover.close();
+      uploadPopover.toggle(uploadCircle);
     }
 
     if (this.step === 2 && settingsDialogButton instanceof HTMLElement) {
-      welcomePopover.close();
+      uploadPopover.close();
       settingsPopover.toggle(settingsDialogButton);
     }
 
@@ -114,6 +122,7 @@ export class OnboardingElement extends LitElement {
 
     if (this.step === 4) {
       filesPopover.close();
+      this.remove();
     }
 
     this.step = Math.min(this.step + 1, 4) as typeof this.step;
@@ -154,10 +163,35 @@ export class OnboardingElement extends LitElement {
     </div>
   `;
 
+  private renderUpload = (): TemplateResult<1> => html`
+    <div class="contents">
+      <h1 class="no-margin title">⬆️ Uploads ⬆️</h1>
+      <p class="no-margin">
+        Here you can drag a file or select one to upload it.
+      </p>
+      <p class="no-margin">
+        When it uploads, a link will appear which you can copy and send to
+        someone else.
+      </p>
+      <p class="no-margin">
+        After a certain amount of time has passed or downloads, the file will
+        expire and become unavailable to be deleted.
+      </p>
+      <div class="button-container">
+        <md-filled-button class="button-primary" @click="${this.advanceStep}"
+          >Got it</md-filled-button
+        >
+      </div>
+    </div>
+  `;
+
   private renderSettings = (): TemplateResult<1> => html`
     <div class="contents">
-      <h3 class="no-margin title">Settings</h3>
-      <span>Your settings are located here</span>
+      <h1 class="no-margin title">⚙️ Settings ⚙️</h1>
+      <p class="no-margin">
+        Here you can change default file expiry and download limits,
+        integrations and see your organisation's users.
+      </p>
     </div>
     <div class="button-container">
       <md-filled-button class="button-primary" @click="${this.advanceStep}"
@@ -168,8 +202,8 @@ export class OnboardingElement extends LitElement {
 
   private renderFiles = (): TemplateResult<1> => html`
     <div class="contents">
-      <h3 class="no-margin title">Files</h3>
-      <span>Your files are located here</span>
+      <h3 class="no-margin title">💾 Files 💾</h3>
+      <p class="no-margin">Here you can find all your active files.</p>
     </div>
     <div class="button-container">
       <md-filled-button class="button-primary" @click="${this.advanceStep}"
@@ -181,20 +215,24 @@ export class OnboardingElement extends LitElement {
   render() {
     return html`
       <dropspot-popover alignment="center" ${ref(this.welcomePopoverRef)}>
-        <section class="welcome settings container">
+        <section class="onboarding-popover welcome settings container">
           ${this.renderWelcome()}
         </section>
       </dropspot-popover>
-      <dropspot-popover alignment="center" ${ref(this.uploadPopoverRef)}>
-        <section class="welcome settings container">
-          ${this.renderWelcome()}
+      <dropspot-popover alignment="left" ${ref(this.uploadPopoverRef)}>
+        <section class="onboarding-popover welcome settings container">
+          ${this.renderUpload()}
         </section>
       </dropspot-popover>
       <dropspot-popover alignment="left" ${ref(this.settingsPopoverRef)}>
-        <section class="settings container">${this.renderSettings()}</section>
+        <section class="onboarding-popover settings container">
+          ${this.renderSettings()}
+        </section>
       </dropspot-popover>
       <dropspot-popover alignment="right" ${ref(this.filesPopoverRef)}>
-        <section class="settings container">${this.renderFiles()}</section>
+        <section class="onboarding-popover settings container">
+          ${this.renderFiles()}
+        </section>
       </dropspot-popover>
     `;
   }
