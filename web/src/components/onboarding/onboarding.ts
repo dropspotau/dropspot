@@ -16,6 +16,13 @@ export class OnboardingElement extends LitElement {
       align-self: center;
     }
 
+    .container {
+      display: flex;
+      flex-flow: column;
+      place-content: space-between;
+      gap: 1rem;
+    }
+
     .contents {
       display: flex;
       flex-flow: column;
@@ -85,7 +92,7 @@ export class OnboardingElement extends LitElement {
       <h3 class="no-margin title">Welcome to DropSpot!</h3>
       <span>Your file sharing tool</span>
     </div>
-    <md-filled-button class="button-white" @click="${this.advanceStep}"
+    <md-filled-button class="button-primary" @click="${this.advanceStep}"
       >Got it</md-filled-button
     >
   `;
@@ -95,7 +102,7 @@ export class OnboardingElement extends LitElement {
       <h3 class="no-margin title">Settings</h3>
       <span>Your settings are located here</span>
     </div>
-    <md-filled-button class="button-white" @click="${this.advanceStep}"
+    <md-filled-button class="button-primary" @click="${this.advanceStep}"
       >Got it</md-filled-button
     >
   `;
@@ -105,7 +112,7 @@ export class OnboardingElement extends LitElement {
       <h3 class="no-margin title">Files</h3>
       <span>Your files are located here</span>
     </div>
-    <md-filled-button class="button-white" @click="${this.advanceStep}"
+    <md-filled-button class="button-primary" @click="${this.advanceStep}"
       >Got it</md-filled-button
     >
   `;
@@ -113,13 +120,13 @@ export class OnboardingElement extends LitElement {
   render() {
     return html`
       <dropspot-popover alignment="center" ${ref(this.welcomePopoverRef)}>
-        <section class="settings">${this.renderWelcome()}</section>
+        <section class="settings container">${this.renderWelcome()}</section>
       </dropspot-popover>
       <dropspot-popover alignment="left" ${ref(this.settingsPopoverRef)}>
-        <section class="settings">${this.renderSettings()}</section>
+        <section class="settings container">${this.renderSettings()}</section>
       </dropspot-popover>
       <dropspot-popover alignment="right" ${ref(this.filesPopoverRef)}>
-        <section class="settings">${this.renderFiles()}</section>
+        <section class="settings container">${this.renderFiles()}</section>
       </dropspot-popover>
     `;
   }
