@@ -12,14 +12,29 @@ use crate::{
 };
 
 #[derive(Template)]
+#[template(path = "onboarding.html")]
+struct OnboardingTemplate {}
+
+pub async fn handle_onboarding(State(state): State<AppState>, user: User) -> Response {
+    // let pool = state.get_pool();
+    // let onboarding = record_onboarding_completion(pool, &user.id).await;
+    // let success = onboarding.is_ok();
+
+    let template = OnboardingTemplate {};
+
+    // if let Err(e) = onboarding {
+    //     tracing::error!("Onboarding error: {e} user_id={}", &user.id);
+    //     return (StatusCode::BAD_REQUEST, HtmlTemplate(template)).into_response();
+    // }
+
+    HtmlTemplate(template).into_response()
+}
+
+#[derive(Template)]
 #[template(path = "onboarding_record.html")]
 struct RecordOnboardingTemplate {
     success: bool,
 }
-
-#[derive(Template)]
-#[template(path = "settings_unauthed.html")]
-struct SettingsUnAuthedTemplate {}
 
 pub async fn handle_record_onboarding(State(state): State<AppState>, user: User) -> Response {
     let pool = state.get_pool();

@@ -146,7 +146,12 @@ export class OnboardingElement extends LitElement {
     if (this.step === 4 && settingsDialogButton instanceof HTMLElement) {
       filesPopover.close();
       hideTargetHighlight(settingsDialogButton);
-      this.remove();
+
+      const event: OnboardingCompletedEvent = new CustomEvent(
+        "onboarding-complete",
+        { bubbles: true },
+      );
+      this.dispatchEvent(event);
     }
 
     this.step = Math.min(this.step + 1, 4) as typeof this.step;
@@ -262,8 +267,16 @@ export class OnboardingElement extends LitElement {
   }
 }
 
+type OnboardingCompletedEvent = CustomEvent;
+
 declare global {
   interface HTMLElementTagNameMap {
     "dropspot-onboarding": OnboardingElement;
+  }
+  interface DocumentEventMap {
+    "onboarding-complete": OnboardingCompletedEvent;
+  }
+  interface HTMLElementEventMap {
+    "onboarding-complete": OnboardingCompletedEvent;
   }
 }

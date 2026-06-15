@@ -23,6 +23,6 @@ pub use web::header::handle_header;
 #[cfg(feature = "web")]
 pub use web::index::handle_index;
 #[cfg(feature = "web")]
-pub use web::onboarding::handle_record_onboarding;
+pub use web::onboarding::{handle_onboarding, handle_record_onboarding};
 #[cfg(feature = "web")]
 pub use web::settings::{handle_settings, handle_update_settings, handle_update_user};

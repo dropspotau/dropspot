@@ -9,6 +9,7 @@ import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import type { MdFilledButton } from "@material/web/button/filled-button";
+import htmx from "htmx.org";
 
 import { setTokens, type LoginEvent } from "../auth";
 import { applyGlobalStyles } from "../style";
@@ -21,6 +22,21 @@ const isApiError = (error: any): error is ApiError =>
   typeof error === "object" &&
   error.type === "ApiError" &&
   typeof error.message === "string";
+
+/** Starts the onboarding after a new user has been created */
+const startOnboarding = (): void => {
+  const main = document.querySelector("main");
+
+  if (main) {
+    // Mimic attributes provided by index.html
+    const onboardingLoader = document.createElement("div");
+    onboardingLoader.setAttribute("hx-get", "/app/onboarding");
+    onboardingLoader.setAttribute("hx-trigger", "load");
+    onboardingLoader.setAttribute("hx-swap", "outerHTML");
+    main.appendChild(onboardingLoader);
+    htmx.process(onboardingLoader);
+  }
+};
 
 @customElement("login-controller")
 export class LoginControllerElement extends LitElement {
@@ -178,6 +194,10 @@ export class LoginControllerElement extends LitElement {
         bubbles: true,
       });
       this.dispatchEvent(event);
+
+      if (this.isSigningUp) {
+        startOnboarding();
+      }
     }
 
     return false;

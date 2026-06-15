@@ -23,8 +23,11 @@ pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> 
     if let Some(user) = user {
         let pool = state.get_pool();
         let onboarding = get_onboarding_status(pool, &user.id).await;
-        should_show_onboarding = onboarding.unwrap_or(false);
+        println!("onboarding: {onboarding:?}");
+        should_show_onboarding = onboarding.map(|exists| !exists).unwrap_or(false);
     }
+
+    println!("onboarding: {should_show_onboarding}");
 
     let template = IndexTemplate {
         header,
