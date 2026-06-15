@@ -79,6 +79,13 @@ create table settings (
     default_download_limit int not null check (default_download_limit > 0)
 );
 
+-- A record of each user's onboarding completion
+create table onboarding (
+    id uuid primary key default uuid_generate_v4(),
+    user_id uuid references users (id) on delete cascade not null unique,
+    completed_at timestamptz
+);
+
 
 --
 -- Indexes
