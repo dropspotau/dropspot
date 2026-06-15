@@ -1,9 +1,19 @@
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
+import { createRef, ref, type Ref } from "lit/directives/ref.js";
 
 import { applyGlobalStyles } from "../../style";
 import type { PopoverElement } from "../popover";
-import { createRef, ref, type Ref } from "lit/directives/ref.js";
+
+import "./onboarding.css";
+
+const highlightTarget = (element: HTMLElement): void => {
+  element.classList.add("onboarding-popover-highlight");
+};
+
+const hideTargetHighlight = (element: HTMLElement): void => {
+  element.classList.remove("onboarding-popover-highlight");
+};
 
 @customElement("dropspot-onboarding")
 export class OnboardingElement extends LitElement {
@@ -103,6 +113,7 @@ export class OnboardingElement extends LitElement {
 
     if (this.step === 0 && uploadCircle instanceof HTMLElement) {
       welcomePopover.toggle(uploadCircle);
+      highlightTarget(uploadCircle);
     }
 
     if (this.step === 1 && uploadCircle instanceof HTMLElement) {
@@ -110,18 +121,31 @@ export class OnboardingElement extends LitElement {
       uploadPopover.toggle(uploadCircle);
     }
 
-    if (this.step === 2 && settingsDialogButton instanceof HTMLElement) {
+    if (
+      this.step === 2 &&
+      uploadCircle instanceof HTMLElement &&
+      settingsDialogButton instanceof HTMLElement
+    ) {
       uploadPopover.close();
       settingsPopover.toggle(settingsDialogButton);
+      hideTargetHighlight(uploadCircle);
+      highlightTarget(settingsDialogButton);
     }
 
-    if (this.step === 3 && filesDialogButton instanceof HTMLElement) {
+    if (
+      this.step === 3 &&
+      settingsDialogButton instanceof HTMLElement &&
+      filesDialogButton instanceof HTMLElement
+    ) {
       settingsPopover.close();
       filesPopover.toggle(filesDialogButton);
+      hideTargetHighlight(settingsDialogButton);
+      highlightTarget(filesDialogButton);
     }
 
-    if (this.step === 4) {
+    if (this.step === 4 && settingsDialogButton instanceof HTMLElement) {
       filesPopover.close();
+      hideTargetHighlight(settingsDialogButton);
       this.remove();
     }
 
@@ -202,12 +226,12 @@ export class OnboardingElement extends LitElement {
 
   private renderFiles = (): TemplateResult<1> => html`
     <div class="contents">
-      <h3 class="no-margin title">💾 Files 💾</h3>
+      <h1 class="no-margin title">💾 Files 💾</h1>
       <p class="no-margin">Here you can find all your active files.</p>
     </div>
     <div class="button-container">
       <md-filled-button class="button-primary" @click="${this.advanceStep}"
-        >Got it</md-filled-button
+        >Finish</md-filled-button
       >
     </div>
   `;

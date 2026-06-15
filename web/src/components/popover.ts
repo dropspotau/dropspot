@@ -30,7 +30,7 @@ export class PopoverElement extends LitElement {
       }
 
       &[alignment="right"] {
-        left: calc(anchor(center) + 1rem);
+        left: calc(anchor(right) + 1rem);
       }
 
       &[alignment="center"] {
