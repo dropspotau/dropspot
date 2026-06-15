@@ -89,17 +89,17 @@ pub async fn handle_update_settings(
     let pool = state.get_pool();
     let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
         let template = UpdateSettingsTemplate { success: false };
-        return HtmlTemplate(template).into_response();
+        return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
     };
     let Ok(member) = get_organisation_member(pool, &organisation.id, &user.id).await else {
         let template = UpdateSettingsTemplate { success: false };
-        return HtmlTemplate(template).into_response();
+        return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
     };
 
     let can_edit = member.is_admin;
     if !can_edit || !payload.validate() {
         let template = UpdateSettingsTemplate { success: false };
-        return HtmlTemplate(template).into_response();
+        return (StatusCode::FORBIDDEN, HtmlTemplate(template)).into_response();
     }
 
     if update_organisation_settings(
@@ -112,7 +112,7 @@ pub async fn handle_update_settings(
     .is_err()
     {
         let template = UpdateSettingsTemplate { success: false };
-        return HtmlTemplate(template).into_response();
+        return (StatusCode::INTERNAL_SERVER_ERROR, HtmlTemplate(template)).into_response();
     }
 
     let template = UpdateSettingsTemplate { success: true };

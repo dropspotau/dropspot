@@ -51,7 +51,11 @@
         <section id="recent-uploads"></section>
         <section id="toast-container"></section>
         {% if should_show_onboarding %}
-            <dropspot-onboarding></dropspot-onboarding>
+            <dropspot-onboarding hx-post="/app/onboarding"
+                                 hx-swap="outerHTML"
+                                 hx-status:4**="target:afterend"
+                                 hx-status:5**="target:afterend"
+            ></dropspot-onboarding>
         {% endif %}
     </main>
 </body>

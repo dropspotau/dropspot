@@ -3,6 +3,7 @@ use axum::{
     extract::State,
     response::{IntoResponse, Response},
 };
+use reqwest::StatusCode;
 
 use crate::{
     db::{User, record_onboarding_completion},
@@ -25,10 +26,12 @@ pub async fn handle_record_onboarding(State(state): State<AppState>, user: User)
     let onboarding = record_onboarding_completion(pool, &user.id).await;
     let success = onboarding.is_ok();
 
+    let template = RecordOnboardingTemplate { success };
+
     if let Err(e) = onboarding {
         tracing::error!("Onboarding error: {e} user_id={}", &user.id);
+        return (StatusCode::BAD_REQUEST, HtmlTemplate(template)).into_response();
     }
 
-    let template = RecordOnboardingTemplate { success };
     HtmlTemplate(template).into_response()
 }
