@@ -23,8 +23,8 @@ use crate::handlers::{
 
 #[cfg(feature = "web")]
 use crate::handlers::{
-    handle_files, handle_header, handle_index, handle_settings, handle_update_settings,
-    handle_update_user,
+    handle_files, handle_header, handle_index, handle_record_onboarding, handle_settings,
+    handle_update_settings, handle_update_user,
 };
 
 use crate::state::AppState;
@@ -89,6 +89,7 @@ pub fn get_web_router() -> Router<AppState> {
         .route("/settings", get(handle_settings))
         .route("/settings/update", patch(handle_update_settings))
         .route("/settings/user/{id}/update", patch(handle_update_user))
+        .route("/onboarding", post(handle_record_onboarding))
 }
 
 pub async fn handle_run_server() -> Result<(), ()> {
