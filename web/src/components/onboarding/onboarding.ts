@@ -1,4 +1,4 @@
-import { html, css, LitElement } from "lit";
+import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import { applyGlobalStyles } from "../../style";
@@ -71,16 +71,31 @@ export class OnboardingElement extends LitElement {
     this.step = Math.min(this.step + 1, 3) as typeof this.step;
   };
 
+  private renderWelcome = (): TemplateResult<1> => html`
+    <h3 class="no-margin">Welcome to DropSpot!</h3>
+    <span>Your file shoring tool</span>
+  `;
+
+  private renderSettings = (): TemplateResult<1> => html`
+    <h3 class="no-margin">Settings</h3>
+    <span>Your settings are located here</span>
+  `;
+
+  private renderFiles = (): TemplateResult<1> => html`
+    <h3 class="no-margin">Files</h3>
+    <span>Your files are located here</span>
+  `;
+
   render() {
     return html`
       <dropspot-popover alignment="center" ${ref(this.welcomePopoverRef)}>
-        <section class="settings">Welcome!</section>
+        <section class="settings">${this.renderWelcome()}</section>
       </dropspot-popover>
       <dropspot-popover alignment="left" ${ref(this.settingsPopoverRef)}>
-        <section class="settings">Settings onboarding</section>
+        <section class="settings">${this.renderSettings()}</section>
       </dropspot-popover>
       <dropspot-popover alignment="right" ${ref(this.filesPopoverRef)}>
-        <section class="settings">Files onboarding</section>
+        <section class="settings">${this.renderFiles()}</section>
       </dropspot-popover>
       <md-filled-button class="button-white" @click="${this.advanceStep}"
         >Toggle</md-filled-button
