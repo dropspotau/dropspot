@@ -33,6 +33,10 @@ export class PopoverElement extends LitElement {
         left: calc(anchor(right) + 1rem);
       }
 
+      &[alignment="center"] {
+        position-area: top center;
+      }
+
       &:popover-open {
         opacity: 1;
       }
@@ -42,25 +46,52 @@ export class PopoverElement extends LitElement {
   private popoverRef: Ref<HTMLDivElement> = createRef();
 
   @property()
-  private alignment: "left" | "right" = "right";
+  private alignment: "left" | "center" | "right" = "right";
 
-  connectedCallback() {
+  connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener("popover-toggle", this.handlePopoverToggle);
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     super.disconnectedCallback();
     document.removeEventListener("popover-toggle", this.handlePopoverToggle);
   }
 
+  public get isOpen() {
+    const { value: popover } = this.popoverRef;
+
+    if (!popover) {
+      return false;
+    }
+
+    return popover.matches(":popover-open");
+  }
+
+  /** Programmatic way to toggle a popover on a certain target element */
+  public toggle = (target: HTMLElement): void => {
+    const { value: popover } = this.popoverRef;
+
+    if (popover) {
+      popover.togglePopover({ source: target });
+    }
+  };
+
+  /** Programmatic way to close a popover */
+  public close = (): void => {
+    const { value: popover } = this.popoverRef;
+
+    if (popover) {
+      popover.hidePopover();
+    }
+  };
+
   private handlePopoverToggle = (e: PopoverToggleEvent) => {
     const { selector, srcElement } = e.detail;
-    const popover = this.popoverRef.value;
 
-    if (this.matches(selector) && popover) {
+    if (this.matches(selector)) {
       // This event was meant for this popover
-      popover.togglePopover({ source: srcElement });
+      this.toggle(srcElement);
     }
   };
 
@@ -78,8 +109,11 @@ export class PopoverElement extends LitElement {
   }
 }
 
-type PopoverToggleEvent = CustomEvent<{
+export type PopoverToggleEvent = CustomEvent<{
+  /** The selector of the popover */
   selector: string;
+
+  /** The element which triggered the event. i.e. a button clicked which should open a popover */
   srcElement: HTMLElement;
 }>;
 

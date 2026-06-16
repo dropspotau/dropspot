@@ -25,6 +25,7 @@ pub struct File {
     pub size: i64,
     pub expires_at: String,
     pub remaining_downloads: i32,
+    pub max_downloads: i32,
     pub is_expired: bool,
 }
 

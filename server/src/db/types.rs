@@ -4,3 +4,8 @@ use uuid::Uuid;
 pub(crate) struct Id {
     pub id: Uuid,
 }
+
+/// Used in queries which return whether a row exists
+pub(crate) struct Exists {
+    pub exists: bool,
+}

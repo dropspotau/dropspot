@@ -61,8 +61,13 @@ export class ModalElement extends LitElement {
     }
   `;
 
+  /** Whether the modal is open or not */
   @property()
   private open: boolean = false;
+
+  /** Prevents the modal from being closed when the backdrop is clicked */
+  @property()
+  private preventDefaultClose: boolean = false;
 
   private dialogRef: Ref<HTMLDialogElement> = createRef();
 
@@ -84,26 +89,28 @@ export class ModalElement extends LitElement {
   };
 
   render() {
-    return html`<dialog
-      ref="${ref(this.dialogRef)}"
-      closedby="any"
-      @close="${this.handleClose}"
-    >
-      <div class="modal-header">
-        <div class="title-wrapper">
-          <slot name="title"></slot>
+    return html`
+      <dialog
+        ref="${ref(this.dialogRef)}"
+        closedby="${this.preventDefaultClose ? "none" : "any"}"
+        @close="${this.handleClose}"
+      >
+        <div class="modal-header">
+          <div class="title-wrapper">
+            <slot name="title"></slot>
+          </div>
+          <md-icon-button class="close-button" @click=${this.handleClose}>
+            <md-icon>close</md-icon>
+          </md-icon-button>
         </div>
-        <md-icon-button class="close-button" @click=${this.handleClose}>
-          <md-icon>close</md-icon>
-        </md-icon-button>
-      </div>
-      <div class="modal-body">
-        <slot></slot>
-      </div>
-      <div class="modal-footer">
-        <slot name="footer"></slot>
-      </div>
-    </dialog>`;
+        <div class="modal-body">
+          <slot></slot>
+        </div>
+        <div class="modal-footer">
+          <slot name="footer"></slot>
+        </div>
+      </dialog>
+    `;
   }
 }
 

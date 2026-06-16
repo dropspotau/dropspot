@@ -17,7 +17,7 @@ import { ToastElement } from "./toast";
 import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
-import { addMinutes, parseISO } from "date-fns";
+import { addMinutes, format, parseISO } from "date-fns";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -47,6 +47,12 @@ export class UploadBarElement extends LitElement {
       place-items: center;
       gap: 1rem;
       align-items: center;
+    }
+
+    .upload-file-title {
+      max-width: 80%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .integration-select {
@@ -101,8 +107,12 @@ export class UploadBarElement extends LitElement {
   @state()
   private integrations: Integration[] = [];
 
+  @state()
+  private isSelectingCustomDate: boolean = false;
+
   private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
   private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
+  private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
 
   /**
    * The slug of the storage integration method being used to currently upload.
@@ -235,6 +245,7 @@ export class UploadBarElement extends LitElement {
         "Sorry, there was an error updating the file. Please try again",
         "danger",
       );
+      throw e;
     }
   };
 
@@ -309,6 +320,154 @@ export class UploadBarElement extends LitElement {
     </md-menu-item>
   `;
 
+  private renderCustomDateModal = (
+    uploadedFileId: string,
+    currentExpiresAt: Date,
+  ): TemplateResult<1> => {
+    const handleConfirm = (): void => {
+      const { value: dateInput } = this.customExpiresAtInputRef;
+      const dateTimeString = dateInput?.value;
+
+      if (!dateTimeString) {
+        return;
+      }
+
+      const dateTime = parseISO(dateTimeString);
+
+      if (dateTime <= new Date()) {
+        ToastElement.create("File expiry cannot be in the past", "danger");
+        return;
+      }
+
+      this.handleUpdateExpiry(uploadedFileId, dateTime).then(() => {
+        this.isSelectingCustomDate = false;
+      });
+    };
+
+    // TOOD(alec): Use the Temporal API when my LSP has it
+    const now = new Date();
+    const inputDateFormat = "y-MM-dd"; // i.e. "2026-06-16"
+    const inputTimeFormat = "HH:mm"; // i.e. "15:45"
+    const minDate = `${format(now, inputDateFormat)}T${format(now, inputTimeFormat)}`;
+    const value = `${format(currentExpiresAt, inputDateFormat)}T${format(currentExpiresAt, inputTimeFormat)}`;
+
+    return html`
+      <dropspot-modal
+        .open="${this.isSelectingCustomDate}"
+        .preventDefaultClose="${true}"
+        @close="${() => {
+          this.isSelectingCustomDate = false;
+        }}"
+      >
+        <h3 slot="title" class="no-margin text-primary">
+          Select an expiry date
+        </h3>
+        <input
+          type="datetime-local"
+          name="expires_at"
+          value="${value}"
+          min="${minDate}"
+          ${ref(this.customExpiresAtInputRef)}
+        />
+        <md-filled-button slot="footer" @click="${handleConfirm}">
+          Confirm
+        </md-filled-button>
+      </dropspot-modal>
+    `;
+  };
+
+  /** Renders the bottom row of the upload result when a user is not logged in */
+  private renderUnauthedOptions = (
+    uploadResult: UploadResult,
+    currentExpiresAt: Date,
+  ): TemplateResult<1> => html`
+    <span>
+      File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
+      be downloaded <b>${uploadResult.file.max_downloads} times</b>
+    </span>
+  `;
+
+  /** Renders the bottom row of the upload result when a user is logged in */
+  private renderAuthedOptions = (
+    uploadResult: UploadResult,
+    currentExpiresAt: Date,
+  ): TemplateResult<1> => html`
+    <span>File expires in</span>
+    <!-- File expiry -->
+    <md-filled-button
+      id="time-dropdown"
+      class="button-white"
+      @click="${() => {
+        const { value: menu } = this.expiryDropdownMenuRef;
+
+        if (menu) {
+          menu.open = !menu.open;
+        }
+      }}"
+      >${getRemainingTimeText(currentExpiresAt)}</md-filled-button
+    >
+    <md-menu
+      anchor="time-dropdown"
+      positioning="fixed"
+      ref="${ref(this.expiryDropdownMenuRef)}"
+    >
+      ${getExpiresAtOptions().map(this.renderExpiryOption)}
+      <md-menu-item
+        @click="${() => {
+          this.isSelectingCustomDate = true;
+        }}"
+      >
+        Custom
+      </md-menu-item>
+    </md-menu>
+    <span>and can be downloaded</span>
+    <md-filled-button
+      id="max-downloads-dropdown"
+      class="button-white"
+      @click="${() => {
+        const { value: menu } = this.maxDownloadsDropdownMenuRef;
+
+        if (menu) {
+          menu.open = !menu.open;
+        }
+      }}"
+      >${uploadResult.file.max_downloads}</md-filled-button
+    >
+    <!-- Max downloads -->
+    <md-menu
+      anchor="max-downloads-dropdown"
+      positioning="fixed"
+      ref="${ref(this.maxDownloadsDropdownMenuRef)}"
+    >
+      <md-menu-item
+        @click="${() =>
+          this.handleUpdateDownloadLimit(uploadResult.file.id, 1)}"
+      >
+        1
+      </md-menu-item>
+      <md-menu-item
+        @click="${() =>
+          this.handleUpdateDownloadLimit(uploadResult.file.id, 2)}"
+      >
+        2
+      </md-menu-item>
+      <md-menu-item
+        @click="${() =>
+          this.handleUpdateDownloadLimit(uploadResult.file.id, 5)}"
+      >
+        5
+      </md-menu-item>
+      <md-menu-item
+        @click="${() =>
+          this.handleUpdateDownloadLimit(uploadResult.file.id, 10)}"
+      >
+        10
+      </md-menu-item>
+    </md-menu>
+    <span>times</span>
+    ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
+  `;
+
   render() {
     if (this.uploadResult) {
       // The file has uploaded
@@ -317,6 +476,7 @@ export class UploadBarElement extends LitElement {
         this.uploadResult.encryption,
       );
       const url = createDownloadUrl(link);
+      const isLoggedIn = !!getAuth();
 
       // Add one minute so the exact "59 minutes" actually becomes "1 hour"
       const currentExpiresAt = addMinutes(
@@ -326,79 +486,15 @@ export class UploadBarElement extends LitElement {
 
       return html`
         <div class="upload-result-row" style="place-content: space-between;">
-          <h3 class="text-white no-margin">
+          <h3 class="text-white no-margin upload-file-title">
             Uploaded ${this.uploadResult.file.name}
           </h3>
           <copy-button value="${url}" class="button-white"></copy-button>
         </div>
         <div class="upload-result-row">
-          <span>File expires in</span>
-          <!-- File expiry -->
-          <md-filled-button
-            id="time-dropdown"
-            class="button-white"
-            @click="${() => {
-              const { value: menu } = this.expiryDropdownMenuRef;
-
-              if (menu) {
-                menu.open = !menu.open;
-              }
-            }}"
-            >${getRemainingTimeText(currentExpiresAt)}</md-filled-button
-          >
-          <md-menu
-            anchor="time-dropdown"
-            positioning="fixed"
-            ref="${ref(this.expiryDropdownMenuRef)}"
-          >
-            ${getExpiresAtOptions().map(this.renderExpiryOption)}
-          </md-menu>
-          <span>and can be downloaded</span>
-          <md-filled-button
-            id="max-downloads-dropdown"
-            class="button-white"
-            @click="${() => {
-              const { value: menu } = this.maxDownloadsDropdownMenuRef;
-
-              if (menu) {
-                menu.open = !menu.open;
-              }
-            }}"
-            >${this.uploadResult.file.remaining_downloads}</md-filled-button
-          >
-          <!-- Max downloads -->
-          <md-menu
-            anchor="max-downloads-dropdown"
-            positioning="fixed"
-            ref="${ref(this.maxDownloadsDropdownMenuRef)}"
-          >
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 1)}"
-            >
-              1
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 2)}"
-            >
-              2
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 5)}"
-            >
-              5
-            </md-menu-item>
-            <md-menu-item
-              @click="${() =>
-                this.handleUpdateDownloadLimit(this.uploadResult!.file.id, 10)}"
-            >
-              10
-            </md-menu-item>
-          </md-menu>
-          <span>times</span>
-          <!-- TODO(alec): Set expiry dropdown here -->
+          ${isLoggedIn
+            ? this.renderAuthedOptions(this.uploadResult, currentExpiresAt)
+            : this.renderUnauthedOptions(this.uploadResult, currentExpiresAt)}
         </div>
       `;
     }

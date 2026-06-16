@@ -44,6 +44,7 @@ impl From<File> for ApiFile {
             size: file.size,
             expires_at: file.expires_at.to_rfc3339(),
             remaining_downloads: file.get_remaining_downloads(),
+            max_downloads: file.max_downloads,
             is_expired: file.is_expired(),
         }
     }

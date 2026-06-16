@@ -4,6 +4,7 @@ mod error;
 mod file;
 mod integration;
 mod member;
+mod onboarding;
 mod organisation;
 mod settings;
 mod types;
@@ -22,6 +23,9 @@ pub use member::create_organisation_member;
 pub use member::get_organisation_member;
 
 pub use organisation::{Organisation, get_default_organisation, get_organisation_for_user};
+
+#[cfg(feature = "web")]
+pub use onboarding::{get_onboarding_status, record_onboarding_completion};
 
 pub use settings::get_organisation_settings;
 #[cfg(feature = "web")]
