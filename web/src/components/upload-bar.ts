@@ -17,7 +17,7 @@ import { ToastElement } from "./toast";
 import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
-import { addMinutes, parseISO } from "date-fns";
+import { addMinutes, format, parseISO } from "date-fns";
 
 const createDownloadUrl = (identifier: string): URL => {
   const url = new URL(window.location.href);
@@ -314,7 +314,10 @@ export class UploadBarElement extends LitElement {
     </md-menu-item>
   `;
 
-  private renderCustomDateModal = (): TemplateResult<1> => {
+  private renderCustomDateModal = (
+    uploadedFileId: string,
+    currentExpiresAt: Date,
+  ): TemplateResult<1> => {
     const handleConfirm = (): void => {
       const { value: dateInput } = this.customExpiresAtInputRef;
       const dateTimeString = dateInput?.value;
@@ -324,19 +327,23 @@ export class UploadBarElement extends LitElement {
       }
 
       const dateTime = parseISO(dateTimeString);
-      console.debug(dateTime && this.uploadResult);
 
-      if (dateTime && this.uploadResult) {
-        this.handleUpdateExpiry(this.uploadResult.file.id, dateTime).then(
-          () => {
-            this.isSelectingCustomDate = false;
-          },
-        );
+      if (dateTime <= new Date()) {
+        ToastElement.create("File expiry cannot be in the past", "danger");
+        return;
       }
+
+      this.handleUpdateExpiry(uploadedFileId, dateTime).then(() => {
+        this.isSelectingCustomDate = false;
+      });
     };
 
+    // TOOD(alec): Use the Temporal API when my LSP has it
     const now = new Date();
-    const minDate = now.toISOString();
+    const inputDateFormat = "y-MM-dd"; // i.e. "2026-06-16"
+    const inputTimeFormat = "hh:mm"; // i.e. "15:45"
+    const minDate = `${format(now, inputDateFormat)}T${format(now, inputTimeFormat)}`;
+    const value = `${format(currentExpiresAt, inputDateFormat)}T${format(currentExpiresAt, inputTimeFormat)}`;
 
     return html`
       <dropspot-modal
@@ -352,6 +359,7 @@ export class UploadBarElement extends LitElement {
         <input
           type="datetime-local"
           name="expires_at"
+          value="${value}"
           min="${minDate}"
           ${ref(this.customExpiresAtInputRef)}
         />
@@ -451,7 +459,7 @@ export class UploadBarElement extends LitElement {
       </md-menu-item>
     </md-menu>
     <span>times</span>
-    ${this.renderCustomDateModal()}
+    ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
   `;
 
   render() {
