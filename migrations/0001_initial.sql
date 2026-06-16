@@ -60,6 +60,7 @@ create table download (
     file_id uuid references file (id) on delete cascade not null,
     created_at timestamptz not null,
     created_by_id uuid references users (id) on delete set null,
+    download_ip inet not null,
     expires_at timestamptz not null
 );
 
