@@ -341,7 +341,7 @@ export class UploadBarElement extends LitElement {
     // TOOD(alec): Use the Temporal API when my LSP has it
     const now = new Date();
     const inputDateFormat = "y-MM-dd"; // i.e. "2026-06-16"
-    const inputTimeFormat = "hh:mm"; // i.e. "15:45"
+    const inputTimeFormat = "HH:mm"; // i.e. "15:45"
     const minDate = `${format(now, inputDateFormat)}T${format(now, inputTimeFormat)}`;
     const value = `${format(currentExpiresAt, inputDateFormat)}T${format(currentExpiresAt, inputTimeFormat)}`;
 
