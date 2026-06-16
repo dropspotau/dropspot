@@ -49,6 +49,12 @@ export class UploadBarElement extends LitElement {
       align-items: center;
     }
 
+    .upload-file-title {
+      max-width: 80%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .integration-select {
       display: flex;
       gap: 0.5rem;
@@ -480,7 +486,7 @@ export class UploadBarElement extends LitElement {
 
       return html`
         <div class="upload-result-row" style="place-content: space-between;">
-          <h3 class="text-white no-margin">
+          <h3 class="text-white no-margin upload-file-title">
             Uploaded ${this.uploadResult.file.name}
           </h3>
           <copy-button value="${url}" class="button-white"></copy-button>
