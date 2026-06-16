@@ -49,6 +49,7 @@ create table upload (
     expires_at timestamptz not null,
     upload_started_at timestamptz,
     upload_finished_at timestamptz,
+    upload_ip inet not null,
     has_uploaded boolean not null generated always as (upload_finished_at is not null) stored
 );
 
@@ -59,6 +60,7 @@ create table download (
     file_id uuid references file (id) on delete cascade not null,
     created_at timestamptz not null,
     created_by_id uuid references users (id) on delete set null,
+    download_ip inet not null,
     expires_at timestamptz not null
 );
 

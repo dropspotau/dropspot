@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -166,6 +168,7 @@ pub async fn create_file(
     storage: &StorageType,
     expires_at: DateTime<Utc>,
     max_downloads: i32,
+    upload_ip: IpAddr,
 ) -> Result<File, sqlx::Error> {
     let created_at = Utc::now();
 
@@ -188,7 +191,7 @@ pub async fn create_file(
     .fetch_one(pool)
     .await?;
 
-    create_upload(pool, &id.id).await?;
+    create_upload(pool, &id.id, upload_ip).await?;
     get_file_by_id(pool, &id.id).await
 }
 

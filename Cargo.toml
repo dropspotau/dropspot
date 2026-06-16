@@ -22,7 +22,7 @@ http-serde = { version = "2.1.1", workspace = true }
 regex = { version = "1.12.4", workspace = true }
 reqwest = { version = "0.13.4", features = ["json", "stream", "query"] , workspace = true }
 serde = { version = "1.0.228", features = ["derive"], workspace = true }
-sqlx = { version = "0.9.0", features = ["chrono", "derive", "postgres", "runtime-tokio", "uuid", "json"] , workspace = true }
+sqlx = { version = "0.9.0", features = ["chrono", "derive", "postgres", "runtime-tokio", "uuid", "json", "ipnetwork"] , workspace = true }
 thiserror = { version = "2.0.18", workspace = true }
 tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] , workspace = true }
 tokio-util = { version = "0.7.18", workspace = true }

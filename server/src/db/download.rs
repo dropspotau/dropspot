@@ -1,5 +1,7 @@
+use std::net::IpAddr;
+
 use chrono::{DateTime, Duration, Utc};
-use sqlx::PgPool;
+use sqlx::{PgPool, types::ipnetwork::IpNetwork};
 use uuid::Uuid;
 
 use super::types::Id;
@@ -11,6 +13,7 @@ pub struct Download {
     pub created_at: DateTime<Utc>,
     pub created_by_id: Option<Uuid>,
     pub created_by_name: Option<String>,
+    pub download_ip: IpAddr,
     pub expires_at: DateTime<Utc>,
 }
 
@@ -30,6 +33,7 @@ pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sq
                 download.created_at,
                 users.id "created_by_id?",
                 users.email "created_by_name?",
+                download.download_ip as "download_ip: IpAddr",
                 download.expires_at
             from download
             left join users
@@ -47,20 +51,23 @@ pub async fn create_download(
     pool: &PgPool,
     file_id: &Uuid,
     created_by_id: Option<Uuid>,
+    download_ip: IpAddr,
 ) -> Result<Download, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3);
+    let download_ip = IpNetwork::from(download_ip);
 
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into download (file_id, created_at, created_by_id, expires_at)
-            values ($1, $2, $3, $4)
+            insert into download (file_id, created_at, created_by_id, download_ip, expires_at)
+            values ($1, $2, $3, $4, $5)
             returning id
         "#,
         file_id,
         created_at,
         created_by_id,
+        download_ip,
         expires_at
     )
     .fetch_one(pool)

@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -145,7 +146,8 @@ pub async fn handle_run_server() -> Result<(), ()> {
                 ),
         )
         .fallback_service(serve_dir)
-        .with_state(state);
+        .with_state(state)
+        .into_make_service_with_connect_info::<SocketAddr>();
 
     tracing::info!("Listening on port 8000");
     let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();

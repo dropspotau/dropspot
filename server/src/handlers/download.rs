@@ -1,6 +1,9 @@
+use std::net::SocketAddr;
+
 use axum::{
     body::Body,
-    extract::{Json, Path, State},
+    extract::{ConnectInfo, Json, Path, State},
+    http::HeaderMap,
     response::{IntoResponse, Response},
 };
 use dropspot_core::download::Download as ApiDownload;
@@ -13,7 +16,7 @@ use crate::{
         Download, User, create_download, get_download_by_id, get_file_by_id,
         get_integration_by_slug,
     },
-    handlers::utils::get_organisation_from_request_user,
+    handlers::utils::{extract_client_ip, get_organisation_from_request_user},
 };
 use crate::{state::AppState, storage::get_storage, types::ApiError};
 
@@ -27,6 +30,8 @@ impl From<Download> for ApiDownload {
 }
 
 pub async fn handle_file_request_download(
+    ConnectInfo(address): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     State(state): State<AppState>,
     Path(file_id): Path<Uuid>,
     user: Option<User>,
@@ -43,7 +48,8 @@ pub async fn handle_file_request_download(
         return api_error.into_response();
     }
 
-    let download = create_download(pool, &file.id, user.map(|u| u.id))
+    let download_ip = extract_client_ip(address, headers);
+    let download = create_download(pool, &file.id, user.map(|u| u.id), download_ip)
         .await
         .map(|download| ApiDownload::from(download));
 
