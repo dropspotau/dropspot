@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::{
     db::{
         Download, User, create_download, get_download_by_id, get_file_by_id,
-        get_integration_by_slug,
+        get_integration_by_slug, get_organisation_for_user, get_organisation_settings,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
 };
@@ -41,6 +41,61 @@ pub async fn handle_file_request_download(
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
+    };
+
+    let Ok(organisation) = get_organisation_from_request_user(pool, user.as_ref()).await else {
+        return ApiError::new(
+            format!("Failed to retrieve organisation: {e}"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
+
+    if let Some(user_id) = file.created_by_id {
+        let Ok(upload_organisation) = get_organisation_for_user(pool, &user_id).await else {
+            return ApiError::new(
+                "Could not find uploader's organisation".to_owned(),
+                StatusCode::NOT_FOUND,
+            )
+            .into_response();
+        };
+
+        let Ok(settings) = get_organisation_settings(pool, &upload_organisation.id).await else {
+            return ApiError::new(
+                "Could not find uploader's organisation's settings".to_owned(),
+                StatusCode::NOT_FOUND,
+            )
+            .into_response();
+        };
+
+        if organisation.id != upload_organisation.id {
+            return ApiError::new(
+                "Download organisation mismatch".to_owned(),
+                StatusCode::FORBIDDEN,
+            )
+            .into_response();
+        }
+
+        // Users can download if they're logged in, or the organisation allows unauthorised downloads
+        let can_download = user.is_some() || settings.allow_unauthorised_downloads;
+
+        if !can_download {
+            return ApiError::new(
+                "The organisation does not permit unauthorised downloads".to_owned(),
+                StatusCode::NOT_FOUND,
+            )
+            .into_response();
+        }
+    }
+
+    let upload_ip = extract_client_ip(address, headers);
+
+    let Ok(settings) = get_organisation_settings(pool, &organisation.unwrap().id).await else {
+        return ApiError::new(
+            "Failed to retrieve settings for organisation".to_owned(),
+            StatusCode::NOT_FOUND,
+        )
+        .into_response();
     };
 
     if file.is_expired() {

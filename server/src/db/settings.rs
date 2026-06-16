@@ -7,6 +7,7 @@ pub struct Settings {
     pub default_file_expiry_minutes: i32,
     pub default_download_limit: i32,
     pub allow_unauthorised_uploads: bool,
+    pub allow_unauthorised_downloads: bool,
 }
 
 pub async fn get_organisation_settings(
@@ -19,7 +20,8 @@ pub async fn get_organisation_settings(
             select
               default_file_expiry_minutes,
               default_download_limit,
-              allow_unauthorised_uploads
+              allow_unauthorised_uploads,
+              allow_unauthorised_downloads
             from settings
             where organisation_id = $1
         "#,
@@ -40,14 +42,15 @@ pub async fn create_organisation_settings(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_unauthorised_uploads)
-            values ($1, $2, $3, $4)
+            insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_unauthorised_uploads, allow_unauthorised_downloads)
+            values ($1, $2, $3, $4, $5)
             returning organisation_id id
         "#,
         organisation_id,
         default_file_expiry_minutes,
         default_download_limit,
-        allow_unauthorised_uploads
+        allow_unauthorised_uploads,
+        allow_unauthorised_downloads
     )
     .fetch_one(pool)
     .await?;
@@ -60,18 +63,26 @@ pub async fn update_organisation_settings(
     organisation_id: &Uuid,
     default_file_expiry_minutes: i32,
     default_download_limit: i32,
+    allow_unauthorised_uploads: bool,
+    allow_unauthorised_downloads: bool,
 ) -> Result<Settings, sqlx::Error> {
     let organisation_id = sqlx::query_as!(
         Id,
         r#"
             update settings
-            set default_file_expiry_minutes = $2, default_download_limit = $3
+            set
+              default_file_expiry_minutes = $2,
+              default_download_limit = $3,
+              allow_unauthorised_uploads = $4,
+              allow_unauthorised_downloads = $5,
             where organisation_id = $1
             returning organisation_id id
         "#,
         organisation_id,
         default_file_expiry_minutes,
-        default_download_limit
+        default_download_limit,
+        allow_unauthorised_uploads,
+        allow_unauthorised_downloads
     )
     .fetch_one(pool)
     .await?;

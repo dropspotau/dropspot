@@ -47,11 +47,21 @@ pub async fn handle_file_request_upload(
 
     let Ok(settings) = get_organisation_settings(pool, &organisation.unwrap().id).await else {
         return ApiError::new(
-            format!("Failed to retrieve settings for organisation"),
+            "Failed to retrieve settings for organisation".to_owned(),
             StatusCode::NOT_FOUND,
         )
         .into_response();
     };
+
+    let can_upload = user.is_some() || settings.allow_unauthorised_uploads;
+
+    if can_upload {
+        return ApiError::new(
+            "This organisation requires authentication to upload".to_owned(),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    }
 
     let expires_at = Utc::now() + Duration::minutes(settings.default_file_expiry_minutes as i64);
     let max_downloads = settings.default_download_limit;
