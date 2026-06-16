@@ -377,7 +377,7 @@ export class UploadBarElement extends LitElement {
   ): TemplateResult<1> => html`
     <span>
       File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
-      be downloaded <b>${uploadResult.file.remaining_downloads} times</b>
+      be downloaded <b>${uploadResult.file.max_downloads} times</b>
     </span>
   `;
 
@@ -425,7 +425,7 @@ export class UploadBarElement extends LitElement {
           menu.open = !menu.open;
         }
       }}"
-      >${uploadResult.file.remaining_downloads}</md-filled-button
+      >${uploadResult.file.max_downloads}</md-filled-button
     >
     <!-- Max downloads -->
     <md-menu
