@@ -101,8 +101,12 @@ export class UploadBarElement extends LitElement {
   @state()
   private integrations: Integration[] = [];
 
+  @state()
+  private isSelectingCustomDate: boolean = false;
+
   private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
   private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
+  private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
 
   /**
    * The slug of the storage integration method being used to currently upload.
@@ -235,6 +239,7 @@ export class UploadBarElement extends LitElement {
         "Sorry, there was an error updating the file. Please try again",
         "danger",
       );
+      throw e;
     }
   };
 
@@ -309,6 +314,34 @@ export class UploadBarElement extends LitElement {
     </md-menu-item>
   `;
 
+  private renderCustomDateModal = (): TemplateResult<1> => {
+    const handleConfirm = (): void => {
+      const { value: dateInput } = this.customExpiresAtInputRef;
+
+      if (!dateInput) {
+        return;
+      }
+
+      const date = dateInput.valueAsDate;
+
+      if (date && this.uploadResult) {
+        this.handleUpdateExpiry(this.uploadResult.file.id, date).then(() => {
+          this.isSelectingCustomDate = false;
+        });
+      }
+    };
+
+    return html`
+      <dropspot-modal .open="${this.isSelectingCustomDate}">
+        <h3 slot="header" class="no-margin">Select an expiry date</h3>
+        <input type="date" />
+        <md-filled-button slot="footer" @click="${handleConfirm}">
+          Confirm
+        </md-filled-button>
+      </dropspot-modal>
+    `;
+  };
+
   render() {
     if (this.uploadResult) {
       // The file has uploaded
@@ -352,6 +385,13 @@ export class UploadBarElement extends LitElement {
             ref="${ref(this.expiryDropdownMenuRef)}"
           >
             ${getExpiresAtOptions().map(this.renderExpiryOption)}
+            <md-menu-item
+              @click="${() => {
+                this.isSelectingCustomDate = true;
+              }}"
+            >
+              Custom
+            </md-menu-item>
           </md-menu>
           <span>and can be downloaded</span>
           <md-filled-button
@@ -398,7 +438,7 @@ export class UploadBarElement extends LitElement {
             </md-menu-item>
           </md-menu>
           <span>times</span>
-          <!-- TODO(alec): Set expiry dropdown here -->
+          ${this.renderCustomDateModal()}
         </div>
       `;
     }
