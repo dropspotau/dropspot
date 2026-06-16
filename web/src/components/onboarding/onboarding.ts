@@ -143,9 +143,9 @@ export class OnboardingElement extends LitElement {
       highlightTarget(filesDialogButton);
     }
 
-    if (this.step === 4 && settingsDialogButton instanceof HTMLElement) {
+    if (this.step === 4 && filesDialogButton instanceof HTMLElement) {
       filesPopover.close();
-      hideTargetHighlight(settingsDialogButton);
+      hideTargetHighlight(filesDialogButton);
 
       const event: OnboardingCompletedEvent = new CustomEvent(
         "onboarding-complete",
