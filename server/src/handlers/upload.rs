@@ -1,15 +1,19 @@
-use std::net::SocketAddr;
+use std::{
+    net::{IpAddr, SocketAddr},
+    str::FromStr,
+};
 
 use axum::{
     body::Body,
     extract::{ConnectInfo, Json, Path, Query, State},
+    http::HeaderMap,
     response::{IntoResponse, Response},
 };
 use chrono::{Duration, Utc};
 use dropspot_core::upload::CreateFileBody;
 use dropspot_core::{file::File as ApiFile, upload::PreviewUploadRequest};
 use futures_util::StreamExt;
-use reqwest::StatusCode;
+use reqwest::{StatusCode, header::FORWARDED};
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
@@ -25,15 +29,29 @@ use crate::{
     types::ApiError,
 };
 
+// Retrieves the proxy-forwarded IP address, or the direct connection address if the header is
+// missing
+fn extract_upload_ip(address: SocketAddr, headers: HeaderMap) -> IpAddr {
+    if let Some(forwarded_for_ip) = headers.get(FORWARDED)
+        && let Ok(forwarded_for_ip) = forwarded_for_ip.to_str()
+        && let Ok(upload_ip) = IpAddr::from_str(forwarded_for_ip)
+    {
+        return upload_ip;
+    }
+
+    address.ip()
+}
+
 pub async fn handle_file_request_upload(
     ConnectInfo(connection): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
     State(state): State<AppState>,
     user: Option<User>,
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
     let pool = state.get_pool();
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
-    let upload_ip = connection.ip();
+    let upload_ip = extract_upload_ip(connection, headers);
 
     if let Err(e) = organisation {
         return ApiError::new(

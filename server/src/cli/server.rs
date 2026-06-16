@@ -2,11 +2,11 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
+use axum::Router;
 use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
-use axum::{Router, ServiceExt};
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::services::{ServeDir, ServeFile};
