@@ -1,9 +1,12 @@
+use std::net::IpAddr;
+
 use chrono::{DateTime, Duration, Utc};
 use dropspot_core::{
     integration::integration::Integration as ApiIntegration, upload::PreviewUploadResult,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use sqlx::types::ipnetwork::IpNetwork;
 use uuid::Uuid;
 
 use crate::db::{get_integrations, organisation::get_default_organisation};
@@ -16,6 +19,7 @@ pub struct Upload {
     pub expires_at: DateTime<Utc>,
     pub upload_started_at: Option<DateTime<Utc>>,
     pub upload_finished_at: Option<DateTime<Utc>>,
+    pub upload_ip: IpAddr,
     pub has_uploaded: bool,
 }
 
@@ -23,7 +27,15 @@ pub async fn get_upload_by_file_id(pool: &PgPool, id: &Uuid) -> Result<Upload, s
     sqlx::query_as!(
         Upload,
         r#"
-            select id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+            select
+              id,
+              file_id,
+              created_at,
+              expires_at,
+              upload_started_at,
+              upload_finished_at,
+              upload_ip as "upload_ip: IpAddr",
+              has_uploaded
             from upload
             where file_id = $1
             limit 1
@@ -34,20 +46,34 @@ pub async fn get_upload_by_file_id(pool: &PgPool, id: &Uuid) -> Result<Upload, s
     .await
 }
 
-pub async fn create_upload(pool: &PgPool, file_id: &Uuid) -> Result<Upload, sqlx::Error> {
+pub async fn create_upload(
+    pool: &PgPool,
+    file_id: &Uuid,
+    upload_ip: IpAddr,
+) -> Result<Upload, sqlx::Error> {
     let created_at = Utc::now();
     let expires_at = Utc::now() + Duration::minutes(3); // Three minute leeway to upload
+    let upload_ip = IpNetwork::from(upload_ip);
 
     sqlx::query_as!(
         Upload,
         r#"
-            insert into upload (file_id, created_at, expires_at)
-            values ($1, $2, $3)
-            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+            insert into upload (file_id, created_at, expires_at, upload_ip)
+            values ($1, $2, $3, $4::inet)
+            returning 
+              id,
+              file_id,
+              created_at,
+              expires_at,
+              upload_started_at,
+              upload_finished_at,
+              upload_ip as "upload_ip: IpAddr",
+              has_uploaded
         "#,
         file_id,
         created_at,
-        expires_at
+        expires_at,
+        upload_ip
     )
     .fetch_one(pool)
     .await
@@ -60,7 +86,15 @@ pub async fn start_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Erro
             update upload
             set upload_started_at = now()
             where id = $1
-            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+            returning
+              id,
+              file_id,
+              created_at,
+              expires_at,
+              upload_started_at,
+              upload_finished_at,
+              upload_ip as "upload_ip: IpAddr",
+              has_uploaded
         "#,
         id
     )
@@ -75,7 +109,15 @@ pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Err
             update upload
             set upload_finished_at = now()
             where id = $1
-            returning id, file_id, created_at, expires_at, upload_started_at, upload_finished_at, has_uploaded
+            returning
+              id,
+              file_id,
+              created_at,
+              expires_at,
+              upload_started_at,
+              upload_finished_at,
+              upload_ip as "upload_ip: IpAddr",
+              has_uploaded
         "#,
         id
     )

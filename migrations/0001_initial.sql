@@ -49,6 +49,7 @@ create table upload (
     expires_at timestamptz not null,
     upload_started_at timestamptz,
     upload_finished_at timestamptz,
+    upload_ip inet not null,
     has_uploaded boolean not null generated always as (upload_finished_at is not null) stored
 );
 
