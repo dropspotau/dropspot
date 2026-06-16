@@ -78,7 +78,8 @@ create table settings (
     id uuid primary key default uuid_generate_v4(),
     organisation_id uuid references organisation (id) on delete cascade not null unique,
     default_file_expiry_minutes int not null check (default_file_expiry_minutes > 0),
-    default_download_limit int not null check (default_download_limit > 0)
+    default_download_limit int not null check (default_download_limit > 0),
+    allow_unauthorised_uploads boolean not null
 );
 
 -- A record of each user's onboarding completion
@@ -127,5 +128,5 @@ with default_organisation_id as (
     from organisation
     where name = 'Default'
 )
-insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit)
-values ((select id from default_organisation_id limit 1), 60, 3);
+insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_unauthorised_uploads)
+values ((select id from default_organisation_id limit 1), 60, 3, true);

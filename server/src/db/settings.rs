@@ -6,6 +6,7 @@ use super::types::Id;
 pub struct Settings {
     pub default_file_expiry_minutes: i32,
     pub default_download_limit: i32,
+    pub allow_unauthorised_uploads: bool,
 }
 
 pub async fn get_organisation_settings(
@@ -17,7 +18,8 @@ pub async fn get_organisation_settings(
         r#"
             select
               default_file_expiry_minutes,
-              default_download_limit
+              default_download_limit,
+              allow_unauthorised_uploads
             from settings
             where organisation_id = $1
         "#,
@@ -33,17 +35,19 @@ pub async fn create_organisation_settings(
     organisation_id: &Uuid,
     default_file_expiry_minutes: i32,
     default_download_limit: i32,
+    allow_unauthorised_uploads: bool,
 ) -> Result<Settings, sqlx::Error> {
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit)
-            values ($1, $2, $3)
+            insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_unauthorised_uploads)
+            values ($1, $2, $3, $4)
             returning organisation_id id
         "#,
         organisation_id,
         default_file_expiry_minutes,
-        default_download_limit
+        default_download_limit,
+        allow_unauthorised_uploads
     )
     .fetch_one(pool)
     .await?;
