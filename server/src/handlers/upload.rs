@@ -1,6 +1,8 @@
+use std::net::SocketAddr;
+
 use axum::{
     body::Body,
-    extract::{Json, Path, Query, State},
+    extract::{ConnectInfo, Json, Path, Query, State},
     response::{IntoResponse, Response},
 };
 use chrono::{Duration, Utc};
@@ -24,12 +26,14 @@ use crate::{
 };
 
 pub async fn handle_file_request_upload(
+    ConnectInfo(connection): ConnectInfo<SocketAddr>,
     State(state): State<AppState>,
     user: Option<User>,
     Json(payload): Json<CreateFileBody>,
 ) -> Response {
     let pool = state.get_pool();
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
+    let upload_ip = connection.ip();
 
     if let Err(e) = organisation {
         return ApiError::new(
@@ -59,6 +63,7 @@ pub async fn handle_file_request_upload(
         &StorageType::from(payload.storage),
         expires_at,
         max_downloads,
+        upload_ip,
     )
     .await
     .map(ApiFile::from);

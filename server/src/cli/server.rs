@@ -1,11 +1,12 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use axum::Router;
 use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
+use axum::{Router, ServiceExt};
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::services::{ServeDir, ServeFile};
@@ -145,7 +146,8 @@ pub async fn handle_run_server() -> Result<(), ()> {
                 ),
         )
         .fallback_service(serve_dir)
-        .with_state(state);
+        .with_state(state)
+        .into_make_service_with_connect_info::<SocketAddr>();
 
     tracing::info!("Listening on port 8000");
     let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
