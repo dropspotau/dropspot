@@ -21,13 +21,16 @@ pub async fn get_organisation_from_request_user(
 
 // Retrieves the proxy-forwarded IP address, or the direct connection address if the header is
 // missing
-pub fn extract_upload_ip(address: SocketAddr, headers: HeaderMap) -> IpAddr {
+pub fn extract_client_ip(address: SocketAddr, headers: HeaderMap) -> IpAddr {
     if let Some(forwarded_for_ip) = headers.get(FORWARDED)
         && let Ok(forwarded_for_ip) = forwarded_for_ip.to_str()
         && let Ok(upload_ip) = IpAddr::from_str(forwarded_for_ip)
     {
+        // NOTE(alec): This kind of sucks. It doesn't validate anything and just stores an IP which
+        // could be spoofed
         return upload_ip;
     }
 
+    // If the server isn't behind a reverse proxy, this will be the request's IP address
     address.ip()
 }
