@@ -79,7 +79,10 @@ pub(crate) struct UpdateSettingsTemplate {
 pub struct UpdateSettingsPayload {
     file_expiry_minutes: i32,
     download_limit: i32,
+
+    #[serde(default)]
     allow_external_uploads: bool,
+    #[serde(default)]
     allow_external_downloads: bool,
 }
 
