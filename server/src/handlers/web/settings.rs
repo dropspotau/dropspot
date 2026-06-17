@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Integration, User, get_integrations, get_organisation_for_user, get_organisation_settings,
-        get_users, update_user_name,
+        Integration, User, get_integrations, get_organisation_for_user, get_organisation_member,
+        get_organisation_settings, get_users, update_organisation_settings, update_user_name,
     },
     state::AppState,
 };
@@ -69,17 +69,71 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     HtmlTemplate(template).into_response()
 }
 
+#[derive(Template)]
+#[template(path = "settings_update.html")]
+pub(crate) struct UpdateSettingsTemplate {
+    pub success: bool,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateSettingsPayload {
+    file_expiry_minutes: i32,
+    download_limit: i32,
+    allow_external_uploads: bool,
+    allow_external_downloads: bool,
+}
+
+impl UpdateSettingsPayload {
+    pub fn validate(&self) -> bool {
+        self.file_expiry_minutes > 0 && self.download_limit > 0
+    }
+}
+
+pub async fn handle_update_settings(
+    State(state): State<AppState>,
+    user: User,
+    Form(payload): Form<UpdateSettingsPayload>,
+) -> Response {
+    let pool = state.get_pool();
+    let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
+    };
+    let Ok(member) = get_organisation_member(pool, &organisation.id, &user.id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
+    };
+
+    let can_edit = member.is_admin;
+    if !can_edit || !payload.validate() {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::FORBIDDEN, HtmlTemplate(template)).into_response();
+    }
+
+    if update_organisation_settings(
+        pool,
+        &organisation.id,
+        payload.file_expiry_minutes,
+        payload.download_limit,
+        payload.allow_external_uploads,
+        payload.allow_external_downloads,
+    )
+    .await
+    .is_err()
+    {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::INTERNAL_SERVER_ERROR, HtmlTemplate(template)).into_response();
+    }
+
+    let template = UpdateSettingsTemplate { success: true };
+    HtmlTemplate(template).into_response()
+}
+
 #[derive(Deserialize)]
 pub struct UpdateUserPayload {
     first_name: Option<String>,
     last_name: Option<String>,
     email: Option<String>,
-}
-
-#[derive(Template)]
-#[template(path = "settings_update.html")]
-pub(crate) struct UpdateSettingsTemplate {
-    pub success: bool,
 }
 
 pub async fn handle_update_user(

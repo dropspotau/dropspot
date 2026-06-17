@@ -1,7 +1,6 @@
 mod download;
 mod file;
 mod integration;
-mod settings;
 mod upload;
 mod user;
 mod utils;
@@ -14,7 +13,6 @@ pub use file::{handle_delete_file, handle_get_file, handle_list_files, handle_up
 pub use integration::{
     handle_get_integration_by_slug, handle_get_integrations, handle_upsert_integration,
 };
-pub use settings::handle_update_settings;
 pub use upload::{handle_file_request_upload, handle_file_upload, handle_preview_upload};
 pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
 
@@ -27,4 +25,4 @@ pub use web::index::handle_index;
 #[cfg(feature = "web")]
 pub use web::onboarding::{handle_onboarding, handle_record_onboarding};
 #[cfg(feature = "web")]
-pub use web::settings::{handle_settings, handle_update_user};
+pub use web::settings::{handle_settings, handle_update_settings, handle_update_user};

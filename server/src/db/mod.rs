@@ -27,7 +27,10 @@ pub use organisation::{Organisation, get_default_organisation, get_organisation_
 #[cfg(feature = "web")]
 pub use onboarding::{get_onboarding_status, record_onboarding_completion};
 
-pub use settings::{Settings, get_organisation_settings, update_organisation_settings};
+pub use settings::get_organisation_settings;
+#[cfg(feature = "web")]
+pub use settings::update_organisation_settings;
+
 pub use upload::{finish_upload, get_upload_by_file_id, preview_upload, start_upload};
 
 pub use user::{User, create_user, get_user_by_email, get_user_by_id, get_user_password};
