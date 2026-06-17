@@ -45,7 +45,7 @@ pub async fn handle_file_request_download(
 
     let Ok(organisation) = get_organisation_from_request_user(pool, user.as_ref()).await else {
         return ApiError::new(
-            format!("Failed to retrieve organisation: {e}"),
+            "Failed to retrieve organisation".to_owned(),
             StatusCode::UNAUTHORIZED,
         )
         .into_response();
@@ -77,7 +77,7 @@ pub async fn handle_file_request_download(
         }
 
         // Users can download if they're logged in, or the organisation allows unauthorised downloads
-        let can_download = user.is_some() || settings.allow_unauthorised_downloads;
+        let can_download = user.is_some() || settings.allow_external_downloads;
 
         if !can_download {
             return ApiError::new(
@@ -87,16 +87,6 @@ pub async fn handle_file_request_download(
             .into_response();
         }
     }
-
-    let upload_ip = extract_client_ip(address, headers);
-
-    let Ok(settings) = get_organisation_settings(pool, &organisation.unwrap().id).await else {
-        return ApiError::new(
-            "Failed to retrieve settings for organisation".to_owned(),
-            StatusCode::NOT_FOUND,
-        )
-        .into_response();
-    };
 
     if file.is_expired() {
         let api_error = ApiError::new("File is expired".to_owned(), StatusCode::BAD_REQUEST);
@@ -138,9 +128,10 @@ pub async fn handle_file_download(
         return api_error.into_response();
     }
 
-    let is_same_user = user.as_ref().map(|u| u.id) == download.created_by_id;
+    // Downloads can only be actioned by the same requesting user, ignored if it's unauthorised
+    let can_download = user.is_none() || user.as_ref().map(|u| u.id) == download.created_by_id;
 
-    if !is_same_user {
+    if !can_download {
         let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
         return api_error.into_response();
     }

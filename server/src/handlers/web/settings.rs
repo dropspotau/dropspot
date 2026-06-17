@@ -24,6 +24,8 @@ struct SettingsTemplate {
     users: Vec<User>,
     file_expiry_minutes: i32,
     download_limit: i32,
+    allow_external_uploads: bool,
+    allow_external_downloads: bool,
     current_user_id: Uuid,
     integrations: Vec<Integration>,
 }
@@ -52,11 +54,15 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
 
     let file_expiry_minutes = settings.default_file_expiry_minutes;
     let download_limit = settings.default_download_limit;
+    let allow_external_uploads = settings.allow_external_uploads;
+    let allow_external_downloads = settings.allow_external_downloads;
 
     let template = SettingsTemplate {
         users,
         file_expiry_minutes,
         download_limit,
+        allow_external_uploads,
+        allow_external_downloads,
         current_user_id: current_user.id,
         integrations,
     };
@@ -73,6 +79,8 @@ pub(crate) struct UpdateSettingsTemplate {
 pub struct UpdateSettingsPayload {
     file_expiry_minutes: i32,
     download_limit: i32,
+    allow_external_uploads: bool,
+    allow_external_downloads: bool,
 }
 
 impl UpdateSettingsPayload {
@@ -107,6 +115,8 @@ pub async fn handle_update_settings(
         &organisation.id,
         payload.file_expiry_minutes,
         payload.download_limit,
+        payload.allow_external_uploads,
+        payload.allow_external_downloads,
     )
     .await
     .is_err()

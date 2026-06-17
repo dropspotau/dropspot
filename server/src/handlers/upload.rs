@@ -53,7 +53,7 @@ pub async fn handle_file_request_upload(
         .into_response();
     };
 
-    let can_upload = user.is_some() || settings.allow_unauthorised_uploads;
+    let can_upload = user.is_some() || settings.allow_external_uploads;
 
     if can_upload {
         return ApiError::new(

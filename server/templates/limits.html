@@ -33,6 +33,34 @@
     </div>
     <div class="form-row">
         <div class="form-field">
+            <span class="form-label">Allow external uploads?</span>
+            <md-switch icons 
+                       name="allow_external_uploads"
+                       {% if allow_external_downloads %}
+                           selected
+                           value="true"
+                       {% else %}
+                           value="false"
+                       {% endif %}
+            ></md-switch>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Allow external downloads?</span>
+            <md-switch icons 
+                       name="allow_external_downloads"
+                       {% if allow_external_downloads %}
+                           selected
+                           value="true"
+                       {% else %}
+                           value="false"
+                       {% endif %}
+            ></md-switch>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
             <span class="form-label">Save</span>
             <div>
                 <md-filled-button type="submit" class="button-success">Submit</md-filled-button>
