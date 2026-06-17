@@ -233,7 +233,7 @@ pub async fn handle_preview_upload(
 
     let Ok(organisation) = get_organisation_from_request_user(pool, user.as_ref()).await else {
         return ApiError::new(
-            format!("Failed to retrieve organisation"),
+            "Failed to retrieve organisation".to_owned(),
             StatusCode::UNAUTHORIZED,
         )
         .into_response();
