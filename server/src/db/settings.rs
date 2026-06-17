@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::types::Id;
 
+#[derive(Serialize, Deserialize)]
 pub struct Settings {
     pub default_file_expiry_minutes: i32,
     pub default_download_limit: i32,

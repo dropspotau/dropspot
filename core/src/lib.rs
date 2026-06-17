@@ -5,6 +5,7 @@ pub mod encryption;
 pub mod error;
 pub mod file;
 pub mod integration;
+pub mod settings;
 pub mod storage;
 pub mod upload;
 pub mod user;
