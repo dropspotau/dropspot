@@ -16,9 +16,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Organisation, User, create_file, delete_files, finish_upload, get_file_by_id,
-        get_integration_by_slug, get_organisation_for_user, get_organisation_settings,
-        get_upload_by_file_id, preview_upload, start_upload,
+        User, create_file, delete_files, finish_upload, get_file_by_id, get_integration_by_slug,
+        get_organisation_settings, get_upload_by_file_id, preview_upload, start_upload,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
     state::AppState,
@@ -53,9 +52,9 @@ pub async fn handle_file_request_upload(
         .into_response();
     };
 
-    let can_upload = user.is_some() || settings.allow_external_uploads;
+    let can_upload = settings.allow_external_uploads || user.is_some();
 
-    if can_upload {
+    if !can_upload {
         return ApiError::new(
             "This organisation requires authentication to upload".to_owned(),
             StatusCode::UNAUTHORIZED,
@@ -232,22 +231,33 @@ pub async fn handle_preview_upload(
 ) -> Response {
     let pool = state.get_pool();
 
-    let mut organisation: Option<Organisation> = None;
-    if let Some(user) = user {
-        let org = get_organisation_for_user(pool, &user.id).await;
+    let Ok(organisation) = get_organisation_from_request_user(pool, user.as_ref()).await else {
+        return ApiError::new(
+            format!("Failed to retrieve organisation"),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
 
-        if let Err(e) = org {
-            return ApiError::new(
-                format!("Failed to retrieve organisation: {e}"),
-                StatusCode::UNAUTHORIZED,
-            )
-            .into_response();
-        }
+    let Ok(settings) = get_organisation_settings(pool, &organisation.id).await else {
+        return ApiError::new(
+            "Failed to retrieve settings for organisation".to_owned(),
+            StatusCode::NOT_FOUND,
+        )
+        .into_response();
+    };
 
-        organisation = Some(org.unwrap());
+    let can_upload = settings.allow_external_uploads || user.is_some();
+
+    if !can_upload {
+        return ApiError::new(
+            "This organisation requires authentication to upload".to_owned(),
+            StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
     }
 
-    let upload_preiew = preview_upload(pool, organisation.map(|o| o.id).as_ref()).await;
+    let upload_preiew = preview_upload(pool, &organisation.id).await;
 
     if let Err(e) = upload_preiew {
         return ApiError::new(

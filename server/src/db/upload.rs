@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use sqlx::types::ipnetwork::IpNetwork;
 use uuid::Uuid;
 
-use crate::db::{get_integrations, organisation::get_default_organisation};
+use crate::db::get_integrations;
 
 #[derive(Serialize, Deserialize)]
 pub struct Upload {
@@ -127,12 +127,8 @@ pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Err
 
 pub async fn preview_upload(
     pool: &PgPool,
-    organisation_id: Option<&Uuid>,
+    organisation_id: &Uuid,
 ) -> Result<PreviewUploadResult, sqlx::Error> {
-    let organisation_id = match organisation_id {
-        Some(id) => id,
-        None => &get_default_organisation(pool).await?.id,
-    };
     let integrations = get_integrations(pool, organisation_id)
         .await?
         .into_iter()
