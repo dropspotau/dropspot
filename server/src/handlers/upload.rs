@@ -68,7 +68,6 @@ pub async fn handle_file_request_upload(
     let file = create_file(
         pool,
         &payload.name,
-        &payload.name,
         payload.size,
         user.map(|u| u.id),
         &StorageType::from(payload.storage),

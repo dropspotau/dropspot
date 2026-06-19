@@ -12,7 +12,6 @@ use crate::storage::StorageType;
 pub struct File {
     pub id: Uuid,
     pub name: String,
-    pub path: String,
     pub size: i64,
     pub storage: StorageType,
     pub created_at: DateTime<Utc>,
@@ -58,6 +57,10 @@ impl File {
         self.name.split('.').last().unwrap_or("txt").to_string()
     }
 
+    pub fn get_path(&self) -> String {
+        self.id.to_string()
+    }
+
     pub fn get_creator_name(&self) -> String {
         self.created_by_name
             .clone()
@@ -76,7 +79,6 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
             select
               file.id,
               file.name,
-              file.path,
               file.size,
               file.storage as "storage: StorageType",
               file.created_at,
@@ -105,7 +107,6 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
             select
               file.id,
               file.name,
-              file.path,
               file.size,
               file.storage as "storage: StorageType",
               file.created_at,
@@ -135,7 +136,6 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
             select
               file.id,
               file.name,
-              file.path,
               file.size,
               file.storage as "storage: StorageType",
               file.created_at,
@@ -162,7 +162,6 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
 pub async fn create_file(
     pool: &PgPool,
     name: &str,
-    path: &str,
     size: i64,
     created_by_id: Option<Uuid>,
     storage: &StorageType,
@@ -175,12 +174,11 @@ pub async fn create_file(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into file (name, path, size, storage, created_at, created_by_id, expires_at, max_downloads)
-            values ($1, $2, $3, $4, $5, $6, $7, $8)
+            insert into file (name, size, storage, created_at, created_by_id, expires_at, max_downloads)
+            values ($1, $2, $3, $4, $5, $6, $7)
             returning id
         "#,
         name,
-        path,
         size,
         storage as _,
         created_at,

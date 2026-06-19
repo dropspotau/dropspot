@@ -30,7 +30,6 @@ create type storage as enum ('local', 's3', 'gcs');
 create table file (
     id uuid primary key default uuid_generate_v4(),
     name text not null,
-    path varchar(1028) not null,
     size bigint not null,
     created_at timestamptz not null,
     created_by_id uuid references users (id) on delete set null,

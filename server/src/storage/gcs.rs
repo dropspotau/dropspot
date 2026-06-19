@@ -26,7 +26,7 @@ impl Storage for GcsStorage {
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
         let temp_dir = temp_dir();
 
-        let Ok(file) = tokio::fs::File::create(temp_dir.join(&file.path)).await else {
+        let Ok(file) = tokio::fs::File::create(temp_dir.join(&file.id.to_string())).await else {
             eprintln!("Failed to create temporary GCS upload file");
             return Err(());
         };
@@ -45,7 +45,7 @@ impl Storage for GcsStorage {
         // TODO(alec): Can temp_dir give different results on different calls?
         let temp_dir = temp_dir();
 
-        let Ok(temp_file) = tokio::fs::File::open(temp_dir.join(&file.path)).await else {
+        let Ok(temp_file) = tokio::fs::File::open(temp_dir.join(file.get_path())).await else {
             eprintln!("Failed to create temporary GCS upload file");
             return Err(());
         };
@@ -74,7 +74,10 @@ impl Storage for GcsStorage {
         };
 
         let artifact_path = format!("projects/_/buckets/{}", self.bucket_name);
-        let reader = client.read_object(&artifact_path, &file.path).send().await;
+        let reader = client
+            .read_object(&artifact_path, &file.get_path())
+            .send()
+            .await;
 
         if let Err(e) = reader {
             eprintln!("Error reading from GCS bucket artifact: {e}");
@@ -107,7 +110,7 @@ impl Storage for GcsStorage {
         client
             .delete_object()
             .set_bucket(artifact_path)
-            .set_object(&file.path)
+            .set_object(&file.get_path())
             .send()
             .await
             .map_err(|_e| ())

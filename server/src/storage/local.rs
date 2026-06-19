@@ -15,7 +15,7 @@ impl Storage for LocalStorage {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncWrite + Unpin + Send>, ()> {
-        let path = Path::new(&self.folder).join(&file.path);
+        let path = Path::new(&self.folder).join(&file.get_path());
 
         let Ok(io_file) = tokio::fs::File::create(path).await else {
             return Err(());
@@ -33,7 +33,7 @@ impl Storage for LocalStorage {
         &self,
         file: &File,
     ) -> Result<Box<dyn AsyncRead + Unpin + Send>, ()> {
-        let path = Path::new(&self.folder).join(&file.path);
+        let path = Path::new(&self.folder).join(&file.get_path());
 
         let Ok(io_file) = tokio::fs::File::open(path).await else {
             return Err(());
@@ -43,7 +43,7 @@ impl Storage for LocalStorage {
     }
 
     async fn delete(&self, file: &File) -> Result<(), ()> {
-        let path = Path::new(&self.folder).join(&file.path);
+        let path = Path::new(&self.folder).join(&file.get_path());
 
         tokio::fs::remove_file(path).await.map_err(|_e| ())
     }
