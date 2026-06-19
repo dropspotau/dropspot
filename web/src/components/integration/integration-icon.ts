@@ -2,6 +2,8 @@ import type { StorageType } from "dropspot-core";
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
+import googleIcon from "../../assets/google-icon.png";
+
 @customElement("integration-icon")
 export class IntegrationIconElement extends LitElement {
   static styles = css`
@@ -31,7 +33,7 @@ export class IntegrationIconElement extends LitElement {
         return html`<md-icon class="integration-icon">storage</md-icon>`;
       case "gcs":
         return html`<img
-          src="https://image.similarpng.com/file/similarpng/very-thumbnail/2020/06/Logo-google-icon-PNG.png"
+          src="${googleIcon}"
           alt="Google"
           class="integration-icon"
         />`;
