@@ -1,6 +1,7 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
+import { ToastElement } from "./toast";
 import "./copy-button.css";
 
 @customElement("copy-button")
@@ -30,7 +31,14 @@ export class CopyButtonElement extends LitElement {
   }
 
   private handleClick = async (): Promise<void> => {
-    await navigator.clipboard.writeText(this.value);
+    try {
+      await navigator.clipboard.writeText(this.value);
+    } catch (e) {
+      ToastElement.create(
+        "Sorry, there was an error copying to the clipboard. Please try again.",
+        "danger",
+      );
+    }
     this.hasCopied = true;
 
     setTimeout(() => {

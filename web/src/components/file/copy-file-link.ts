@@ -54,9 +54,17 @@ export class CopyFileLinkElement extends LitElement {
     }
 
     const downloadUrl = createDownloadUrl(this.link);
-    navigator.clipboard.writeText(downloadUrl.toString()).then(() => {
-      ToastElement.create("Copied!", "success");
-    });
+    navigator.clipboard
+      .writeText(downloadUrl.toString())
+      .then(() => {
+        ToastElement.create("Copied!", "success");
+      })
+      .catch(() => {
+        ToastElement.create(
+          "Sorry, there was an error copying the link. Please try again.",
+          "danger",
+        );
+      });
   };
 
   render() {
