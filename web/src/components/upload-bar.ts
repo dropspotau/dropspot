@@ -10,11 +10,13 @@ import {
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
+import type { CloseMenuEvent } from "@material/web/menu/internal/controllers/shared";
+import { MdSelectOption } from "@material/web/select/select-option";
+import type { MdOutlinedSelect } from "@material/web/select/outlined-select";
 
 import { getAuth } from "../auth";
 import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
-import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
@@ -36,6 +38,11 @@ export class UploadBarElement extends LitElement {
       gap: 1rem;
       background-color: var(--dropspot-dark);
       opacity: 1;
+
+      /* Alter text colour on <md-outlined-select> from the default black-ish since the background is dark */
+      --md-outlined-select-text-field-input-text-color: currentColor;
+      --md-outlined-select-text-field-hover-input-text-color: currentColor;
+      --md-outlined-select-text-field-focus-input-text-color: currentColor;
     }
 
     :host([fading]) {
@@ -99,6 +106,11 @@ export class UploadBarElement extends LitElement {
       font-weight: 600;
       color: #1a1a2e;
     }
+
+    /* Hide select options which can't be selected from the dropdown menu when it's open */
+    md-select-option[disabled] {
+      display: none;
+    }
   `;
 
   // NOTE(alec): Can't use a Lit property as this is set calling setAttribute
@@ -116,8 +128,7 @@ export class UploadBarElement extends LitElement {
   /** Used to prevent the element being removed at the end of the fadeOut timeout if the fade out was cancelled */
   private activeFadeTimeout: number = 0;
 
-  private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
-  private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
+  private expirySelectRef: Ref<MdOutlinedSelect> = createRef();
   private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
 
   /**
@@ -188,14 +199,18 @@ export class UploadBarElement extends LitElement {
   };
 
   private fadeOut = (): void => {
-    this.setAttribute("fading", "");
-
     const timeout = setTimeout(() => {
-      const isSameTimeout = timeout === this.activeFadeTimeout;
+      // Start fading out
+      this.setAttribute("fading", "");
 
-      if (isSameTimeout) {
-        this.remove();
-      }
+      setTimeout(() => {
+        // Then actually delete the element if this fade hasn't been interrupted
+        const isSameTimeout = timeout === this.activeFadeTimeout;
+
+        if (isSameTimeout) {
+          this.remove();
+        }
+      }, FADE_TIMEOUT);
     }, FADE_TIMEOUT);
 
     this.activeFadeTimeout = timeout;
@@ -263,6 +278,32 @@ export class UploadBarElement extends LitElement {
     }, 10000);
   };
 
+  /** Updates the default <md-select-option> text in the expiry dropdown */
+  private updateExpirySelectText = (): void => {
+    if (!this.expirySelectRef.value || !this.uploadResult) {
+      return;
+    }
+
+    // Set the select option to the most valid option
+    const select = this.expirySelectRef.value;
+
+    // The first option will be the disabled one that's hidden from the menu
+    const firstOption = select.querySelector<MdSelectOption>(
+      "md-select-option[disabled]",
+    );
+
+    if (!firstOption) {
+      return;
+    }
+
+    const parsedExpiresAt = parseISO(this.uploadResult.file.expires_at);
+    firstOption.value = this.uploadResult.file.expires_at;
+    firstOption.innerHTML = `
+              <div slot="headline">${getRemainingTimeText(addMinutes(parsedExpiresAt, 1))}</div>
+          `;
+    select.selectIndex(0);
+  };
+
   private handleUpdateExpiry = async (
     fileId: string,
     expiresAt: Date,
@@ -290,6 +331,9 @@ export class UploadBarElement extends LitElement {
       );
       throw e;
     }
+
+    // Update the default text in the dropdown and make it the default text
+    this.updateExpirySelectText();
   };
 
   private handleUpdateDownloadLimit = async (
@@ -355,12 +399,18 @@ export class UploadBarElement extends LitElement {
 
   /** Renders the expires at option with one minute added so setting "1 hour" shows as that rather than immedtiately "59 minutes" */
   private renderExpiryOption = (date: Date): TemplateResult<1> => html`
-    <md-menu-item
-      @click="${() =>
-        this.handleUpdateExpiry(this.uploadResult!.file.id, date)}"
-    >
-      ${getRemainingTimeText(addMinutes(date, 1))}
-    </md-menu-item>
+    <md-select-option value="${date.toISOString()}">
+      <div slot="headline">${getRemainingTimeText(addMinutes(date, 1))}</div>
+    </md-select-option>
+  `;
+
+  /** Renders a maximum download limit to set on a file */
+  private renderDownloadOption = (
+    maxDownloads: number,
+  ): TemplateResult<1> => html`
+    <md-select-option value="${maxDownloads}">
+      <div slot="headline">${maxDownloads}</div>
+    </md-select-option>
   `;
 
   private renderCustomDateModal = (
@@ -434,82 +484,80 @@ export class UploadBarElement extends LitElement {
   private renderAuthedOptions = (
     uploadResult: UploadResult,
     currentExpiresAt: Date,
-  ): TemplateResult<1> => html`
-    <span>File expires in</span>
-    <!-- File expiry -->
-    <md-filled-button
-      id="time-dropdown"
-      class="button-white"
-      @click="${() => {
-        const { value: menu } = this.expiryDropdownMenuRef;
+  ): TemplateResult<1> => {
+    const handleExpiryChangeCloseMenu = (e: CloseMenuEvent): void => {
+      const { initiator } = e.detail;
 
-        if (menu) {
-          menu.open = !menu.open;
-        }
-      }}"
-      >${getRemainingTimeText(currentExpiresAt)}</md-filled-button
-    >
-    <md-menu
-      anchor="time-dropdown"
-      positioning="fixed"
-      ref="${ref(this.expiryDropdownMenuRef)}"
-    >
-      ${getExpiresAtOptions().map(this.renderExpiryOption)}
-      <md-menu-item
-        @click="${() => {
-          this.isSelectingCustomDate = true;
-        }}"
-      >
-        Custom
-      </md-menu-item>
-    </md-menu>
-    <span>and can be downloaded</span>
-    <md-filled-button
-      id="max-downloads-dropdown"
-      class="button-white"
-      @click="${() => {
-        const { value: menu } = this.maxDownloadsDropdownMenuRef;
+      if (!(initiator instanceof MdSelectOption)) {
+        return;
+      }
 
-        if (menu) {
-          menu.open = !menu.open;
+      const { value } = initiator;
+
+      if (value === "custom") {
+        // Open the custom date selection modal
+        this.isSelectingCustomDate = true;
+
+        if (this.expirySelectRef.value) {
+          // Set the select back to the default value instead of "Custom"
+          this.expirySelectRef.value.selectIndex(0);
         }
-      }}"
-      >${uploadResult.file.max_downloads}</md-filled-button
-    >
-    <!-- Max downloads -->
-    <md-menu
-      anchor="max-downloads-dropdown"
-      positioning="fixed"
-      ref="${ref(this.maxDownloadsDropdownMenuRef)}"
-    >
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 1)}"
+
+        return;
+      }
+
+      if (this.uploadResult) {
+        const parsedValue = parseISO(value);
+        this.handleUpdateExpiry(this.uploadResult.file.id, parsedValue);
+      }
+    };
+
+    const handleDownloadCloseMenu = (e: CloseMenuEvent): void => {
+      const { initiator } = e.detail;
+
+      if (!(initiator instanceof MdSelectOption)) {
+        return;
+      }
+
+      const maxDownloads = parseInt(initiator.value);
+
+      if (this.uploadResult && !isNaN(maxDownloads)) {
+        this.handleUpdateDownloadLimit(this.uploadResult.file.id, maxDownloads);
+      }
+    };
+
+    return html`
+      <span>File expires in</span>
+      <!-- File expiry -->
+      <md-outlined-select
+        ${ref(this.expirySelectRef)}
+        @close-menu="${handleExpiryChangeCloseMenu}"
       >
-        1
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 2)}"
-      >
-        2
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 5)}"
-      >
-        5
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 10)}"
-      >
-        10
-      </md-menu-item>
-    </md-menu>
-    <span>times</span>
-    ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
-  `;
+        <md-select-option
+          selected
+          disabled
+          value="${currentExpiresAt.toISOString()}"
+          aria-label="current"
+        >
+          <div slot="headline">${getRemainingTimeText(currentExpiresAt)}</div>
+        </md-select-option>
+        ${getExpiresAtOptions().map(this.renderExpiryOption)}
+        <md-select-option value="custom">
+          <div slot="headline">Custom</div>
+        </md-select-option>
+      </md-outlined-select>
+      <span>and can be downloaded</span>
+      <!-- Max downloads -->
+      <md-outlined-select @close-menu="${handleDownloadCloseMenu}">
+        <md-select-option selected disabled aria-label="current">
+          <div slot="headline">${uploadResult.file.max_downloads}</div>
+        </md-select-option>
+        ${[1, 3, 5, 10].map(this.renderDownloadOption)}
+      </md-outlined-select>
+      <span>times</span>
+      ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
+    `;
+  };
 
   render() {
     if (this.uploadResult) {

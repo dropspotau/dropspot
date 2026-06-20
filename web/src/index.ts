@@ -6,6 +6,8 @@ import "@material/web/progress/circular-progress.js";
 import "@material/web/menu/menu.js";
 import "@material/web/menu/menu-item.js";
 import "@material/web/textfield/filled-text-field.js";
+import "@material/web/select/outlined-select.js";
+import "@material/web/select/select-option.js";
 import "@material/web/switch/switch.js";
 import init from "dropspot-core";
 
