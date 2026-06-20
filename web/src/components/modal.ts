@@ -12,6 +12,7 @@ export class ModalElement extends LitElement {
     }
 
     dialog {
+      position: relative;
       flex-flow: column;
       gap: 2rem;
       background-color: #ffffff;
@@ -28,14 +29,9 @@ export class ModalElement extends LitElement {
 
     .modal-header {
       display: flex;
-      position: relative;
       flex-flow: column;
       align-items: center;
       flex: 0 0 2rem;
-    }
-
-    .title-wrapper {
-      max-width: calc(100% - 2rem);
     }
 
     .modal-body {
@@ -55,9 +51,9 @@ export class ModalElement extends LitElement {
     }
 
     .close-button {
-      align-self: flex-end;
       position: absolute;
-      top: 0;
+      top: 0.5rem;
+      right: 0.5rem;
     }
   `;
 
@@ -96,13 +92,11 @@ export class ModalElement extends LitElement {
         @close="${this.handleClose}"
       >
         <div class="modal-header">
-          <div class="title-wrapper">
-            <slot name="title"></slot>
-          </div>
-          <md-icon-button class="close-button" @click=${this.handleClose}>
-            <md-icon>close</md-icon>
-          </md-icon-button>
+          <slot name="title"></slot>
         </div>
+        <md-icon-button class="close-button" @click=${this.handleClose}>
+          <md-icon>close</md-icon>
+        </md-icon-button>
         <div class="modal-body">
           <slot></slot>
         </div>
