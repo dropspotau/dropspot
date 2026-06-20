@@ -32,7 +32,6 @@ export class CopyFileLinkElement extends LitElement {
 
       // This is a very niche use case to make menus as children of this element disabled. I will likely regret this
       const menu = this.querySelector("md-menu-item");
-      console.debug(!!link, menu);
 
       if (menu) {
         menu.setAttribute("disabled", "");
