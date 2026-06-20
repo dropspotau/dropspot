@@ -1,6 +1,6 @@
 create extension if not exists "uuid-ossp";
 
-create schema dropspot;
+create schema if not exists dropspot;
 
 create table dropspot.users (
     id uuid primary key default uuid_generate_v4(),
