@@ -199,14 +199,18 @@ export class UploadBarElement extends LitElement {
   };
 
   private fadeOut = (): void => {
-    this.setAttribute("fading", "");
-
     const timeout = setTimeout(() => {
-      const isSameTimeout = timeout === this.activeFadeTimeout;
+      // Start fading out
+      this.setAttribute("fading", "");
 
-      if (isSameTimeout) {
-        this.remove();
-      }
+      setTimeout(() => {
+        // Then actually delete the element if this fade hasn't been interrupted
+        const isSameTimeout = timeout === this.activeFadeTimeout;
+
+        if (isSameTimeout) {
+          this.remove();
+        }
+      }, FADE_TIMEOUT);
     }, FADE_TIMEOUT);
 
     this.activeFadeTimeout = timeout;
