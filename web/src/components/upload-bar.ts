@@ -10,6 +10,7 @@ import {
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
+import type { CloseMenuEvent } from "@material/web/menu/internal/controllers/shared";
 
 import { getAuth } from "../auth";
 import { applyGlobalStyles } from "../style";
@@ -18,6 +19,7 @@ import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
 import { createDownloadUrl, saveFileLink } from "../storage";
+import { MdSelectOption } from "@material/web/select/select-option";
 
 const FADE_TIMEOUT = 3000;
 
@@ -289,6 +291,7 @@ export class UploadBarElement extends LitElement {
     }
   };
 
+  // @ts-ignore
   private handleUpdateDownloadLimit = async (
     fileId: string,
     maxDownloads: number,
@@ -352,11 +355,8 @@ export class UploadBarElement extends LitElement {
 
   /** Renders the expires at option with one minute added so setting "1 hour" shows as that rather than immedtiately "59 minutes" */
   private renderExpiryOption = (date: Date): TemplateResult<1> => html`
-    <md-select-option
-      @click="${() =>
-        this.handleUpdateExpiry(this.uploadResult!.file.id, date)}"
-    >
-      ${getRemainingTimeText(addMinutes(date, 1))}
+    <md-select-option value="${date.toISOString()}">
+      <div slot="headline">${getRemainingTimeText(addMinutes(date, 1))}</div>
     </md-select-option>
   `;
 
@@ -431,35 +431,76 @@ export class UploadBarElement extends LitElement {
   private renderAuthedOptions = (
     uploadResult: UploadResult,
     currentExpiresAt: Date,
-  ): TemplateResult<1> => html`
-    <span>File expires in</span>
-    <!-- File expiry -->
-    <md-outlined-select>
-      ${getExpiresAtOptions().map(this.renderExpiryOption)}
-      <md-select-option
-        @click="${() => {
-          this.isSelectingCustomDate = true;
-        }}"
-      >
-        Custom
-      </md-select-option>
-    </md-outlined-select>
-    <span>and can be downloaded</span>
-    <!-- Max downloads -->
-    <md-outlined-select>
-      <md-select-option selected aria-label="Current"
-        >${uploadResult.file.max_downloads}</md-select-option
-      >
-      <md-select-option
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 1)}"
-      >
-        1
-      </md-select-option>
-    </md-outlined-select>
-    <span>times</span>
-    ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
-  `;
+  ): TemplateResult<1> => {
+    const handleExpiryChangeCloseMenu = (e: CloseMenuEvent): void => {
+      const { initiator } = e.detail;
+
+      if (!(initiator instanceof MdSelectOption)) {
+        return;
+      }
+
+      const { value } = initiator;
+
+      if (value === "custom") {
+        this.isSelectingCustomDate = true;
+        return;
+      }
+
+      if (this.uploadResult) {
+        const parsedValue = parseISO(value);
+        this.handleUpdateExpiry(this.uploadResult.file.id, parsedValue);
+      }
+    };
+
+    const handleDownloadCloseMenu = (e: CloseMenuEvent): void => {
+      const { initiator } = e.detail;
+
+      if (!(initiator instanceof MdSelectOption)) {
+        return;
+      }
+
+      const maxDownloads = parseInt(initiator.value);
+
+      if (this.uploadResult && !isNaN(maxDownloads)) {
+        this.handleUpdateDownloadLimit(this.uploadResult.file.id, maxDownloads);
+      }
+    };
+
+    return html`
+      <span>File expires in</span>
+      <!-- File expiry -->
+      <md-outlined-select @close-menu="${handleExpiryChangeCloseMenu}">
+        <md-select-option selected aria-label="custom">
+          <div slot="headline">${getRemainingTimeText(currentExpiresAt)}</div>
+        </md-select-option>
+        ${getExpiresAtOptions().map(this.renderExpiryOption)}
+        <md-select-option
+          value="custom"
+          @click="${() => {
+            this.isSelectingCustomDate = true;
+          }}"
+        >
+          <div slot="headline">Custom</div>
+        </md-select-option>
+      </md-outlined-select>
+      <span>and can be downloaded</span>
+      <!-- Max downloads -->
+      <md-outlined-select @close-menu="${handleDownloadCloseMenu}">
+        <md-select-option selected aria-label="Current"
+          >${uploadResult.file.max_downloads}</md-select-option
+        >
+        ${[1, 3, 5, 10].map(
+          (option) => html`
+            <md-select-option value="${option}">
+              <div slot="headline">${option}</div>
+            </md-select-option>
+          `,
+        )}
+      </md-outlined-select>
+      <span>times</span>
+      ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
+    `;
+  };
 
   render() {
     if (this.uploadResult) {
