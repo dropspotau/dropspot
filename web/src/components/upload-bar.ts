@@ -20,6 +20,7 @@ import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
 import { createDownloadUrl, saveFileLink } from "../storage";
 import { MdSelectOption } from "@material/web/select/select-option";
+import type { MdOutlinedSelect } from "@material/web/select/outlined-select";
 
 const FADE_TIMEOUT = 3000;
 
@@ -127,6 +128,7 @@ export class UploadBarElement extends LitElement {
   /** Used to prevent the element being removed at the end of the fadeOut timeout if the fade out was cancelled */
   private activeFadeTimeout: number = 0;
 
+  private expirySelectRef: Ref<MdOutlinedSelect> = createRef();
   private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
 
   /**
@@ -400,6 +402,27 @@ export class UploadBarElement extends LitElement {
 
       this.handleUpdateExpiry(uploadedFileId, dateTime).then(() => {
         this.isSelectingCustomDate = false;
+
+        // Set the select option to the most valid option
+        if (this.expirySelectRef.value && this.uploadResult) {
+          const select = this.expirySelectRef.value;
+
+          // The first option will be the disabled one that's hidden from the menu
+          const firstOption = select.querySelector<MdSelectOption>(
+            "md-select-option[disabled]",
+          );
+
+          if (!firstOption) {
+            return;
+          }
+
+          const parsedExpiresAt = parseISO(this.uploadResult.file.expires_at);
+          firstOption.value = this.uploadResult.file.expires_at;
+          firstOption.innerHTML = `
+              <div slot="headline">${getRemainingTimeText(addMinutes(parsedExpiresAt, 1))}</div>
+          `;
+          select.selectIndex(0);
+        }
       });
     };
 
@@ -474,6 +497,8 @@ export class UploadBarElement extends LitElement {
 
     const handleDownloadCloseMenu = (e: CloseMenuEvent): void => {
       const { initiator } = e.detail;
+      e.preventDefault();
+      e.stopPropagation();
 
       if (!(initiator instanceof MdSelectOption)) {
         return;
@@ -489,7 +514,10 @@ export class UploadBarElement extends LitElement {
     return html`
       <span>File expires in</span>
       <!-- File expiry -->
-      <md-outlined-select @close-menu="${handleExpiryChangeCloseMenu}">
+      <md-outlined-select
+        ${ref(this.expirySelectRef)}
+        @close-menu="${handleExpiryChangeCloseMenu}"
+      >
         <md-select-option
           selected
           disabled
