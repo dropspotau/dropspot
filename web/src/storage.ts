@@ -1,9 +1,14 @@
 const LOCALSTORAGE_KEY = "fileLinks";
 
 const getExistingFileLinks = (): Record<string, string> => {
-  let items: Record<string, string> = JSON.parse(
-    localStorage.getItem(LOCALSTORAGE_KEY) || "{}",
-  );
+  let items: Record<string, string>;
+
+  try {
+    items = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY) || "{}");
+  } catch (e) {
+    // JSON was of invalid state
+    items = {};
+  }
 
   if (typeof items !== "object") {
     items = {};
