@@ -2,8 +2,8 @@ import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { deleteFile } from "dropspot-core";
 
-import { getAuth } from "../auth";
-import { ToastElement } from "./toast";
+import { getAuth } from "../../auth";
+import { ToastElement } from "../toast";
 
 @customElement("delete-file")
 export class DeleteFileElement extends LitElement {

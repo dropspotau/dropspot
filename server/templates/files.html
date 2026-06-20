@@ -24,11 +24,20 @@
                     <md-icon>more_vert</md-icon>
                 </md-icon-button>
                 <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed">
+                    <copy-file-link file-id="{{ file.id }}">
+                        <md-menu-item>
+                            <div slot="headline" class="menu-item">
+                                <md-icon>link</md-icon>
+                                <span>Copy</span>
+                            </div>
+                        </md-menu-item>
+                    </copy-file-link>
                     <delete-file file-id="{{ file.id }}">
                         <md-menu-item>
                             <div slot="headline" class="menu-item text-danger">
                                 <md-icon>delete</md-icon>
-                                <span>Delete</span></div>
+                                <span>Delete</span>
+                            </div>
                         </md-menu-item>
                     </delete-file>
                 </md-menu>
