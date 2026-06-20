@@ -14,7 +14,6 @@ import { classMap } from "lit/directives/class-map.js";
 import { getAuth } from "../auth";
 import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
-import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
@@ -116,8 +115,6 @@ export class UploadBarElement extends LitElement {
   /** Used to prevent the element being removed at the end of the fadeOut timeout if the fade out was cancelled */
   private activeFadeTimeout: number = 0;
 
-  private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
-  private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
   private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
 
   /**
@@ -188,13 +185,13 @@ export class UploadBarElement extends LitElement {
   };
 
   private fadeOut = (): void => {
-    this.setAttribute("fading", "");
+    // this.setAttribute("fading", "");
 
     const timeout = setTimeout(() => {
       const isSameTimeout = timeout === this.activeFadeTimeout;
 
       if (isSameTimeout) {
-        this.remove();
+        // this.remove();
       }
     }, FADE_TIMEOUT);
 
@@ -355,12 +352,12 @@ export class UploadBarElement extends LitElement {
 
   /** Renders the expires at option with one minute added so setting "1 hour" shows as that rather than immedtiately "59 minutes" */
   private renderExpiryOption = (date: Date): TemplateResult<1> => html`
-    <md-menu-item
+    <md-select-option
       @click="${() =>
         this.handleUpdateExpiry(this.uploadResult!.file.id, date)}"
     >
       ${getRemainingTimeText(addMinutes(date, 1))}
-    </md-menu-item>
+    </md-select-option>
   `;
 
   private renderCustomDateModal = (
@@ -437,76 +434,29 @@ export class UploadBarElement extends LitElement {
   ): TemplateResult<1> => html`
     <span>File expires in</span>
     <!-- File expiry -->
-    <md-filled-button
-      id="time-dropdown"
-      class="button-white"
-      @click="${() => {
-        const { value: menu } = this.expiryDropdownMenuRef;
-
-        if (menu) {
-          menu.open = !menu.open;
-        }
-      }}"
-      >${getRemainingTimeText(currentExpiresAt)}</md-filled-button
-    >
-    <md-menu
-      anchor="time-dropdown"
-      positioning="fixed"
-      ref="${ref(this.expiryDropdownMenuRef)}"
-    >
+    <md-outlined-select>
       ${getExpiresAtOptions().map(this.renderExpiryOption)}
-      <md-menu-item
+      <md-select-option
         @click="${() => {
           this.isSelectingCustomDate = true;
         }}"
       >
         Custom
-      </md-menu-item>
-    </md-menu>
+      </md-select-option>
+    </md-outlined-select>
     <span>and can be downloaded</span>
-    <md-filled-button
-      id="max-downloads-dropdown"
-      class="button-white"
-      @click="${() => {
-        const { value: menu } = this.maxDownloadsDropdownMenuRef;
-
-        if (menu) {
-          menu.open = !menu.open;
-        }
-      }}"
-      >${uploadResult.file.max_downloads}</md-filled-button
-    >
     <!-- Max downloads -->
-    <md-menu
-      anchor="max-downloads-dropdown"
-      positioning="fixed"
-      ref="${ref(this.maxDownloadsDropdownMenuRef)}"
-    >
-      <md-menu-item
+    <md-outlined-select>
+      <md-select-option selected aria-label="Current"
+        >${uploadResult.file.max_downloads}</md-select-option
+      >
+      <md-select-option
         @click="${() =>
           this.handleUpdateDownloadLimit(uploadResult.file.id, 1)}"
       >
         1
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 2)}"
-      >
-        2
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 5)}"
-      >
-        5
-      </md-menu-item>
-      <md-menu-item
-        @click="${() =>
-          this.handleUpdateDownloadLimit(uploadResult.file.id, 10)}"
-      >
-        10
-      </md-menu-item>
-    </md-menu>
+      </md-select-option>
+    </md-outlined-select>
     <span>times</span>
     ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
   `;
