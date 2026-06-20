@@ -486,6 +486,12 @@ export class UploadBarElement extends LitElement {
       if (value === "custom") {
         // Open the custom date selection modal
         this.isSelectingCustomDate = true;
+
+        if (this.expirySelectRef.value) {
+          // Set the select back to the default value instead of "Custom"
+          this.expirySelectRef.value.selectIndex(0);
+        }
+
         return;
       }
 
