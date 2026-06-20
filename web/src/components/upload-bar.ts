@@ -37,6 +37,11 @@ export class UploadBarElement extends LitElement {
       gap: 1rem;
       background-color: var(--dropspot-dark);
       opacity: 1;
+
+      /* Alter text colour on <md-outlined-select> from the default black-ish since the background is dark */
+      --md-outlined-select-text-field-input-text-color: currentColor;
+      --md-outlined-select-text-field-hover-input-text-color: currentColor;
+      --md-outlined-select-text-field-focus-input-text-color: currentColor;
     }
 
     :host([fading]) {
@@ -360,6 +365,15 @@ export class UploadBarElement extends LitElement {
     </md-select-option>
   `;
 
+  /** Renders a maximum download limit to set on a file */
+  private renderDownloadOption = (
+    maxDownloads: number,
+  ): TemplateResult<1> => html`
+    <md-select-option value="${maxDownloads}">
+      <div slot="headline">${maxDownloads}</div>
+    </md-select-option>
+  `;
+
   private renderCustomDateModal = (
     uploadedFileId: string,
     currentExpiresAt: Date,
@@ -442,6 +456,7 @@ export class UploadBarElement extends LitElement {
       const { value } = initiator;
 
       if (value === "custom") {
+        // Open the custom date selection modal
         this.isSelectingCustomDate = true;
         return;
       }
@@ -470,7 +485,11 @@ export class UploadBarElement extends LitElement {
       <span>File expires in</span>
       <!-- File expiry -->
       <md-outlined-select @close-menu="${handleExpiryChangeCloseMenu}">
-        <md-select-option selected aria-label="custom">
+        <md-select-option
+          selected
+          value="${currentExpiresAt.toISOString()}"
+          aria-label="current"
+        >
           <div slot="headline">${getRemainingTimeText(currentExpiresAt)}</div>
         </md-select-option>
         ${getExpiresAtOptions().map(this.renderExpiryOption)}
@@ -486,16 +505,10 @@ export class UploadBarElement extends LitElement {
       <span>and can be downloaded</span>
       <!-- Max downloads -->
       <md-outlined-select @close-menu="${handleDownloadCloseMenu}">
-        <md-select-option selected aria-label="Current"
+        <md-select-option selected aria-label="current"
           >${uploadResult.file.max_downloads}</md-select-option
         >
-        ${[1, 3, 5, 10].map(
-          (option) => html`
-            <md-select-option value="${option}">
-              <div slot="headline">${option}</div>
-            </md-select-option>
-          `,
-        )}
+        ${[1, 3, 5, 10].map(this.renderDownloadOption)}
       </md-outlined-select>
       <span>times</span>
       ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
