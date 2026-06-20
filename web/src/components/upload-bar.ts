@@ -105,6 +105,11 @@ export class UploadBarElement extends LitElement {
       font-weight: 600;
       color: #1a1a2e;
     }
+
+    /* Hide select options which can't be selected from the dropdown menu when it's open */
+    md-select-option[disabled] {
+      display: none;
+    }
   `;
 
   // NOTE(alec): Can't use a Lit property as this is set calling setAttribute
@@ -487,6 +492,7 @@ export class UploadBarElement extends LitElement {
       <md-outlined-select @close-menu="${handleExpiryChangeCloseMenu}">
         <md-select-option
           selected
+          disabled
           value="${currentExpiresAt.toISOString()}"
           aria-label="current"
         >
@@ -505,7 +511,7 @@ export class UploadBarElement extends LitElement {
       <span>and can be downloaded</span>
       <!-- Max downloads -->
       <md-outlined-select @close-menu="${handleDownloadCloseMenu}">
-        <md-select-option selected aria-label="current"
+        <md-select-option selected disabled aria-label="current"
           >${uploadResult.file.max_downloads}</md-select-option
         >
         ${[1, 3, 5, 10].map(this.renderDownloadOption)}
