@@ -274,6 +274,32 @@ export class UploadBarElement extends LitElement {
     }, 10000);
   };
 
+  /** Updates the default <md-select-option> text in the expiry dropdown */
+  private updateExpirySelectText = (): void => {
+    if (!this.expirySelectRef.value || !this.uploadResult) {
+      return;
+    }
+
+    // Set the select option to the most valid option
+    const select = this.expirySelectRef.value;
+
+    // The first option will be the disabled one that's hidden from the menu
+    const firstOption = select.querySelector<MdSelectOption>(
+      "md-select-option[disabled]",
+    );
+
+    if (!firstOption) {
+      return;
+    }
+
+    const parsedExpiresAt = parseISO(this.uploadResult.file.expires_at);
+    firstOption.value = this.uploadResult.file.expires_at;
+    firstOption.innerHTML = `
+              <div slot="headline">${getRemainingTimeText(addMinutes(parsedExpiresAt, 1))}</div>
+          `;
+    select.selectIndex(0);
+  };
+
   private handleUpdateExpiry = async (
     fileId: string,
     expiresAt: Date,
@@ -301,6 +327,9 @@ export class UploadBarElement extends LitElement {
       );
       throw e;
     }
+
+    // Update the default text in the dropdown and make it the default text
+    this.updateExpirySelectText();
   };
 
   // @ts-ignore
@@ -402,27 +431,6 @@ export class UploadBarElement extends LitElement {
 
       this.handleUpdateExpiry(uploadedFileId, dateTime).then(() => {
         this.isSelectingCustomDate = false;
-
-        // Set the select option to the most valid option
-        if (this.expirySelectRef.value && this.uploadResult) {
-          const select = this.expirySelectRef.value;
-
-          // The first option will be the disabled one that's hidden from the menu
-          const firstOption = select.querySelector<MdSelectOption>(
-            "md-select-option[disabled]",
-          );
-
-          if (!firstOption) {
-            return;
-          }
-
-          const parsedExpiresAt = parseISO(this.uploadResult.file.expires_at);
-          firstOption.value = this.uploadResult.file.expires_at;
-          firstOption.innerHTML = `
-              <div slot="headline">${getRemainingTimeText(addMinutes(parsedExpiresAt, 1))}</div>
-          `;
-          select.selectIndex(0);
-        }
       });
     };
 
