@@ -11,6 +11,8 @@ import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
 import type { CloseMenuEvent } from "@material/web/menu/internal/controllers/shared";
+import { MdSelectOption } from "@material/web/select/select-option";
+import type { MdOutlinedSelect } from "@material/web/select/outlined-select";
 
 import { getAuth } from "../auth";
 import { applyGlobalStyles } from "../style";
@@ -19,8 +21,6 @@ import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
 import { createDownloadUrl, saveFileLink } from "../storage";
-import { MdSelectOption } from "@material/web/select/select-option";
-import type { MdOutlinedSelect } from "@material/web/select/outlined-select";
 
 const FADE_TIMEOUT = 3000;
 
@@ -199,13 +199,13 @@ export class UploadBarElement extends LitElement {
   };
 
   private fadeOut = (): void => {
-    // this.setAttribute("fading", "");
+    this.setAttribute("fading", "");
 
     const timeout = setTimeout(() => {
       const isSameTimeout = timeout === this.activeFadeTimeout;
 
       if (isSameTimeout) {
-        // this.remove();
+        this.remove();
       }
     }, FADE_TIMEOUT);
 
@@ -332,7 +332,6 @@ export class UploadBarElement extends LitElement {
     this.updateExpirySelectText();
   };
 
-  // @ts-ignore
   private handleUpdateDownloadLimit = async (
     fileId: string,
     maxDownloads: number,
@@ -511,8 +510,6 @@ export class UploadBarElement extends LitElement {
 
     const handleDownloadCloseMenu = (e: CloseMenuEvent): void => {
       const { initiator } = e.detail;
-      e.preventDefault();
-      e.stopPropagation();
 
       if (!(initiator instanceof MdSelectOption)) {
         return;
@@ -541,21 +538,16 @@ export class UploadBarElement extends LitElement {
           <div slot="headline">${getRemainingTimeText(currentExpiresAt)}</div>
         </md-select-option>
         ${getExpiresAtOptions().map(this.renderExpiryOption)}
-        <md-select-option
-          value="custom"
-          @click="${() => {
-            this.isSelectingCustomDate = true;
-          }}"
-        >
+        <md-select-option value="custom">
           <div slot="headline">Custom</div>
         </md-select-option>
       </md-outlined-select>
       <span>and can be downloaded</span>
       <!-- Max downloads -->
       <md-outlined-select @close-menu="${handleDownloadCloseMenu}">
-        <md-select-option selected disabled aria-label="current"
-          >${uploadResult.file.max_downloads}</md-select-option
-        >
+        <md-select-option selected disabled aria-label="current">
+          <div slot="headline">${uploadResult.file.max_downloads}</div>
+        </md-select-option>
         ${[1, 3, 5, 10].map(this.renderDownloadOption)}
       </md-outlined-select>
       <span>times</span>
