@@ -18,13 +18,7 @@ import type { MdMenu } from "@material/web/menu/menu";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
-
-const createDownloadUrl = (identifier: string): URL => {
-  const url = new URL(window.location.href);
-  url.searchParams.set("file", identifier);
-
-  return url;
-};
+import { createDownloadUrl, saveFileLink } from "../storage";
 
 const FADE_TIMEOUT = 3000;
 
@@ -252,6 +246,10 @@ export class UploadBarElement extends LitElement {
 
     this.uploadingIntegrationSlug = null;
     this.uploadResult = result;
+
+    // Save the URL so that the refreshed files list has the URL saved in time
+    const link = createLink(result.file.id, result.encryption);
+    saveFileLink(result.file.id, link);
 
     const event: FileUploadEvent = new CustomEvent("file-upload", {
       detail: { upload: result },
@@ -534,7 +532,10 @@ export class UploadBarElement extends LitElement {
           <h3 class="text-white no-margin upload-file-title">
             Uploaded ${this.uploadResult.file.name}
           </h3>
-          <copy-button value="${url}" class="button-white"></copy-button>
+          <copy-button
+            value="${url.toString()}"
+            class="button-white"
+          ></copy-button>
         </div>
         <div class="upload-result-row">
           ${isLoggedIn
