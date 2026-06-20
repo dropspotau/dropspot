@@ -36,7 +36,7 @@ pub async fn get_upload_by_file_id(pool: &PgPool, id: &Uuid) -> Result<Upload, s
               upload_finished_at,
               upload_ip as "upload_ip: IpAddr",
               has_uploaded
-            from upload
+            from dropspot.upload upload
             where file_id = $1
             limit 1
         "#,
@@ -58,7 +58,7 @@ pub async fn create_upload(
     sqlx::query_as!(
         Upload,
         r#"
-            insert into upload (file_id, created_at, expires_at, upload_ip)
+            insert into dropspot.upload (file_id, created_at, expires_at, upload_ip)
             values ($1, $2, $3, $4::inet)
             returning 
               id,
@@ -83,7 +83,7 @@ pub async fn start_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Erro
     sqlx::query_as!(
         Upload,
         r#"
-            update upload
+            update dropspot.upload
             set upload_started_at = now()
             where id = $1
             returning
@@ -106,7 +106,7 @@ pub async fn finish_upload(pool: &PgPool, id: &Uuid) -> Result<Upload, sqlx::Err
     sqlx::query_as!(
         Upload,
         r#"
-            update upload
+            update dropspot.upload
             set upload_finished_at = now()
             where id = $1
             returning

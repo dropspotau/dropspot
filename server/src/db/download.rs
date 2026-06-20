@@ -35,8 +35,8 @@ pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sq
                 users.email "created_by_name?",
                 download.download_ip as "download_ip: IpAddr",
                 download.expires_at
-            from download
-            left join users
+            from dropspot.download download
+            left join dropspot.users users
             on users.id = download.created_by_id
             where download.id = $1
             limit 1
@@ -60,7 +60,7 @@ pub async fn create_download(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into download (file_id, created_at, created_by_id, download_ip, expires_at)
+            insert into dropspot.download (file_id, created_at, created_by_id, download_ip, expires_at)
             values ($1, $2, $3, $4, $5)
             returning id
         "#,

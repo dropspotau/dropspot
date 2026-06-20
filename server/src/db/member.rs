@@ -15,7 +15,7 @@ pub async fn get_organisation_member(
         r#"
             select
               is_admin
-            from member
+            from dropspot.member
             where organisation_id = $1 and user_id = $2
         "#,
         organisation_id,
@@ -34,7 +34,7 @@ pub async fn get_organisation_members(
         r#"
             select
               is_admin
-            from member
+            from dropspot.member
             where organisation_id = $1
         "#,
         organisation_id,
@@ -52,7 +52,7 @@ pub async fn create_organisation_member(
     sqlx::query_as!(
         Member,
         r#"
-            insert into member (organisation_id, user_id, is_admin)
+            insert into dropspot.member (organisation_id, user_id, is_admin)
             values ($1, $2, $3)
             returning is_admin
         "#,

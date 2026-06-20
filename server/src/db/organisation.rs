@@ -22,10 +22,10 @@ pub async fn get_default_organisation(pool: &PgPool) -> Result<Organisation, sql
         Organisation,
         r#"
             select
-              organisation.id,
-              organisation.name,
-              organisation.created_at
-            from organisation
+              id,
+              name,
+              created_at
+            from dropspot.organisation
             where name = $1
         "#,
         DEFAULT_ORGANISATION_NAME
@@ -39,10 +39,10 @@ pub async fn get_organisation_by_id(pool: &PgPool, id: &Uuid) -> Result<Organisa
         Organisation,
         r#"
             select
-              organisation.id,
-              organisation.name,
-              organisation.created_at
-            from organisation
+              id,
+              name,
+              created_at
+            from dropspot.organisation
             where id = $1
         "#,
         id
@@ -62,8 +62,8 @@ pub async fn get_organisation_for_user(
               organisation.id,
               organisation.name,
               organisation.created_at
-            from organisation
-            left join member
+            from dropspot.organisation organisation
+            left join dropspot.member member
             on member.organisation_id = organisation.id
             where member.user_id = $1
             limit 1
@@ -79,7 +79,7 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into organisation (name)
+            insert into dropspot.organisation (name)
             values ($1)
             returning id
         "#,

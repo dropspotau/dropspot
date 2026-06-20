@@ -44,8 +44,8 @@ pub async fn get_users(pool: &PgPool) -> Result<Vec<User>, sqlx::Error> {
               users.email,
               users.created_at,
               count(file.id)::int "file_count!"
-            from users
-            left join file
+            from dropspot.users users
+            left join dropspot.file file
             on file.created_by_id = users.id
             group by users.id
             order by users.created_at asc
@@ -66,8 +66,8 @@ pub async fn get_user_by_id(pool: &PgPool, id: &Uuid) -> Result<User, sqlx::Erro
               users.email,
               users.created_at,
               count(file.id)::int "file_count!"
-            from users
-            left join file
+            from dropspot.users users
+            left join dropspot.file file
             on file.created_by_id = users.id
             group by users.id
             having users.id = $1
@@ -91,8 +91,8 @@ pub async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<User, sqlx:
               users.email,
               users.created_at,
               count(file.id)::int "file_count!"
-            from users
-            left join file
+            from dropspot.users users
+            left join dropspot.file file
             on file.created_by_id = users.id
             group by users.id
             having users.email = $1
@@ -115,7 +115,7 @@ pub async fn get_user_password(pool: &PgPool, id: &Uuid) -> Result<String, sqlx:
         r#"
             select
               users.password
-            from users
+            from dropspot.users users
             where users.id = $1
             limit 1
         "#,
@@ -138,7 +138,7 @@ pub async fn create_user(
     let user_id = sqlx::query_as!(
         Id,
         r#"
-            insert into users (email, password, first_name, last_name)
+            insert into dropspot.users (email, password, first_name, last_name)
             values ($1, $2, $3, $4)
             returning id
         "#,
@@ -167,7 +167,7 @@ pub async fn update_user_name(
     let id = sqlx::query_as!(
         Id,
         r#"
-            update users
+            update dropspot.users
             set first_name = $2, last_name = $3, email = $4
             where id = $1
             returning id

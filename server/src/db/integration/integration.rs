@@ -27,7 +27,7 @@ pub async fn get_integrations(
               organisation_id,
               is_active,
               data as "data: Json<IntegrationData>"
-            from integration
+            from dropspot.integration
             where organisation_id = $1
         "#,
         organisation_id
@@ -50,7 +50,7 @@ pub async fn get_integration_by_slug(
               organisation_id,
               is_active,
               data as "data: Json<IntegrationData>"
-            from integration
+            from dropspot.integration
             where organisation_id = $1 and slug = $2::storage
             limit 1
         "#,
@@ -71,7 +71,7 @@ pub async fn upsert_integration(
     sqlx::query_as!(
         Integration,
         r#"
-            insert into integration (organisation_id, slug, is_active, data)
+            insert into dropspot.integration (organisation_id, slug, is_active, data)
             values ($1, $2, $3, $4)
             on conflict (organisation_id, slug)
             do update set

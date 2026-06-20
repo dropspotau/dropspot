@@ -9,7 +9,7 @@ pub async fn get_onboarding_status(pool: &PgPool, user_id: &Uuid) -> Result<bool
         r#"
             select exists (
               select id
-              from onboarding
+              from dropspot.onboarding
               where user_id = $1
             ) "exists!"
         "#,
@@ -28,7 +28,7 @@ pub async fn record_onboarding_completion(
     sqlx::query_as!(
         Id,
         r#"
-            insert into onboarding (user_id, completed_at)
+            insert into dropspot.onboarding (user_id, completed_at)
             values ($1, now())
             returning id
         "#,

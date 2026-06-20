@@ -87,10 +87,10 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
-            from file
-            left join download
+            from dropspot.file file
+            left join dropspot.download download
             on download.file_id = file.id
-            left join users
+            left join dropspot.users users
             on users.id = file.created_by_id
             group by file.id, users.id
             order by file.created_at asc
@@ -115,10 +115,10 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
-            from file
-            left join download
+            from dropspot.file file
+            left join dropspot.download download
             on download.file_id = file.id
-            left join users
+            left join dropspot.users users
             on users.id = file.created_by_id
             group by file.id, users.id
             having file.max_downloads < count(download.id) or now() > file.expires_at
@@ -144,10 +144,10 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               file.expires_at,
               file.max_downloads,
               count(download.id)::int "download_count!"
-            from file
-            left join download
+            from dropspot.file file
+            left join dropspot.download download
             on download.file_id = file.id
-            left join users
+            left join dropspot.users users
             on users.id = file.created_by_id
             group by file.id, users.id
             having file.id = $1
@@ -174,7 +174,7 @@ pub async fn create_file(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into file (name, size, storage, created_at, created_by_id, expires_at, max_downloads)
+            insert into dropspot.file (name, size, storage, created_at, created_by_id, expires_at, max_downloads)
             values ($1, $2, $3, $4, $5, $6, $7)
             returning id
         "#,
@@ -202,7 +202,7 @@ pub async fn update_file(
     let id = sqlx::query_as!(
         Id,
         r#"
-            update file
+            update dropspot.file
             set expires_at = $2, max_downloads = $3
             where id = $1
             returning id
@@ -221,7 +221,7 @@ pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx
     let ids = sqlx::query_as!(
         Id,
         r#"
-            delete from file
+            delete from dropspot.file
             where id = any($1)
             returning id
         "#,
