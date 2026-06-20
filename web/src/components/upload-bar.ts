@@ -26,6 +26,8 @@ const createDownloadUrl = (identifier: string): URL => {
   return url;
 };
 
+const FADE_TIMEOUT = 3000;
+
 /**
  * A component which shows upload progress of a file, as well as options about which provider to upload with when multiple are available
  */
@@ -39,6 +41,13 @@ export class UploadBarElement extends LitElement {
       border-radius: 1rem;
       gap: 1rem;
       background-color: var(--dropspot-dark);
+      opacity: 1;
+    }
+
+    :host([fading]) {
+      /* Fade out over time when disappearing, re-appear immediately when moused over */
+      transition: opacity ${FADE_TIMEOUT}ms linear;
+      opacity: 0;
     }
 
     .upload-result-row {
@@ -110,6 +119,9 @@ export class UploadBarElement extends LitElement {
   @state()
   private isSelectingCustomDate: boolean = false;
 
+  /** Used to prevent the element being removed at the end of the fadeOut timeout if the fade out was cancelled */
+  private activeFadeTimeout: number = 0;
+
   private expiryDropdownMenuRef: Ref<MdMenu> = createRef();
   private maxDownloadsDropdownMenuRef: Ref<MdMenu> = createRef();
   private customExpiresAtInputRef: Ref<HTMLInputElement> = createRef();
@@ -154,6 +166,15 @@ export class UploadBarElement extends LitElement {
         this.startUpload(this.integrations[0]);
       }
     });
+
+    // Start a fade, unless the mouse is over this element
+    this.addEventListener("mouseenter", this.preventFadeOut);
+    this.addEventListener("mouseleave", this.fadeOut);
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener("mouseenter", this.preventFadeOut);
+    this.removeEventListener("mouseleave", this.fadeOut);
   }
 
   public static create = (file: File): UploadBarElement => {
@@ -170,6 +191,25 @@ export class UploadBarElement extends LitElement {
     container.appendChild(element);
 
     return element;
+  };
+
+  private fadeOut = (): void => {
+    this.setAttribute("fading", "");
+
+    const timeout = setTimeout(() => {
+      const isSameTimeout = timeout === this.activeFadeTimeout;
+
+      if (isSameTimeout) {
+        this.remove();
+      }
+    }, FADE_TIMEOUT);
+
+    this.activeFadeTimeout = timeout;
+  };
+
+  private preventFadeOut = (): void => {
+    this.activeFadeTimeout = 0;
+    this.removeAttribute("fading");
   };
 
   public setFile = (file: File): void => {
@@ -218,6 +258,11 @@ export class UploadBarElement extends LitElement {
       bubbles: true,
     });
     this.dispatchEvent(event);
+
+    // Fade out the bar if the upload completes and the user takes no action
+    setTimeout(() => {
+      this.fadeOut();
+    }, 10000);
   };
 
   private handleUpdateExpiry = async (
