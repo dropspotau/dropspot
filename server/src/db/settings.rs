@@ -22,7 +22,7 @@ pub async fn get_organisation_settings(
               default_download_limit,
               allow_external_uploads,
               allow_external_downloads
-            from settings
+            from dropspot.settings
             where organisation_id = $1
         "#,
         organisation_id
@@ -43,7 +43,7 @@ pub async fn create_organisation_settings(
     let id = sqlx::query_as!(
         Id,
         r#"
-            insert into settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_external_uploads, allow_external_downloads)
+            insert into dropspot.settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_external_uploads, allow_external_downloads)
             values ($1, $2, $3, $4, $5)
             returning organisation_id id
         "#,
@@ -70,7 +70,7 @@ pub async fn update_organisation_settings(
     let organisation_id = sqlx::query_as!(
         Id,
         r#"
-            update settings
+            update dropspot.settings
             set
               default_file_expiry_minutes = $2,
               default_download_limit = $3,
