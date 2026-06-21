@@ -1,0 +1,43 @@
+envVarGroups:
+  - name: api-env
+    envVars:
+      - key: KEY
+        value: VALUE
+      - key: SQLX_OFFLINE
+        value: true
+
+projects:
+  - name: dropspot-render-template
+    environments:
+      - name: production
+        services:
+          - type: web
+            name: dropspot-api
+            runtime: rust
+            plan: free
+            repo: https://github.com/render-examples/full-stack-dropspot-template
+            branch: render-test
+            autoDeploy: false
+            healthCheckPath: /app/
+            buildCommand: cargo build --release && ./scripts/build-wasm.sh
+            preDeployCommand: cargo install sqlx && ./scripts/migrate-database.sh
+            envVars:
+              - fromGroup: api-env
+              - key: DROPSPOT_DATABASE_URL
+                value: production
+              - key: POSTGRES_SERVER
+                fromDatabase:
+                  name: fastapi-db
+                  property: connectionString
+            disk:
+              name: files
+              mountPath: /opt/data
+              sizeGB: 5
+
+        databases:
+          - name: dropspot-db
+            databaseName: dropspot
+            plan: free
+            postgresMajorVersion: 18
+            user: dropspot
+            region: oregon
