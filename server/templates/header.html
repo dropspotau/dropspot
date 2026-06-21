@@ -1,11 +1,13 @@
 {% if let Some(name) = name %}
-    <h3 class="no-margin">{{ name }}</h3>
+    <h1 class="no-margin">{{ name }}</h1>
 {% else %}
-    <h3 class="no-margin">DropSpot</h3>
+    <h1 class="no-margin">DropSpot</h1>
 {% endif %}
 
 {% if is_logged_in %}
-    <div></div>
+    <div>
+        <!-- Used as a spacer to move the left text to the end -->
+    </div>
 {% else %}
     <login-controller></login-controller>
 {% endif %}

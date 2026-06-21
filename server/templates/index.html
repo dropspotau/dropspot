@@ -9,7 +9,7 @@
     <script type="module" src="/static/dist/index.js"></script>
 </head>
 <body>
-    <header class="header" hx-get="/app/header" hx-trigger="load, login from:body" hx-target="this" hx-swap="innerHTML">
+    <header class="header" hx-get="/app/header" hx-trigger="login from:body" hx-target="this" hx-swap="innerHTML">
         {% let name = header.name %}
         {% let is_logged_in = header.is_logged_in %}
         {% include "header.html" %}
