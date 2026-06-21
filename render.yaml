@@ -24,10 +24,8 @@ projects:
             envVars:
               - fromGroup: api-env
               - key: DROPSPOT_DATABASE_URL
-                value: production
-              - key: POSTGRES_SERVER
                 fromDatabase:
-                  name: fastapi-db
+                  name: dropspot-db
                   property: connectionString
             disk:
               name: files
