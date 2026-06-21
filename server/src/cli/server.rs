@@ -18,8 +18,9 @@ use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_get_file,
-    handle_get_integration_by_slug, handle_get_integrations, handle_list_files, handle_login,
-    handle_preview_upload, handle_refresh_tokens, handle_update_file, handle_upsert_integration,
+    handle_get_integration_by_slug, handle_get_integrations, handle_health, handle_list_files,
+    handle_login, handle_preview_upload, handle_refresh_tokens, handle_update_file,
+    handle_upsert_integration,
 };
 
 #[cfg(feature = "web")]
@@ -47,6 +48,7 @@ pub async fn handle_watch() -> Result<(), ()> {
 
 pub fn get_api_router() -> Router<AppState> {
     Router::new()
+        .route("/health", get(handle_health))
         .route("/upload", post(handle_file_request_upload))
         .route("/upload/preview", get(handle_preview_upload))
         .route("/upload/{file_id}", post(handle_file_upload))
