@@ -26,6 +26,7 @@ main {
     flex: 1;
     height: 100%;
     width: 100%;
+    gap: 1rem;
 }
 
 @media (prefers-color-scheme: light) {
@@ -64,4 +65,10 @@ main {
     place-items: center;
     place-content: center;
     gap: 0.5rem;
+}
+
+.onboarding-preview {
+    display: flex;
+    place-items: center;
+    place-content: center;
 }

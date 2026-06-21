@@ -31,8 +31,12 @@ init().then(() => {
   loginAtStartup();
 });
 
+const main = document.querySelector("main");
 const settingsDialogButton = document.querySelector("#settings-popover-toggle");
 const filesDialogButton = document.querySelector("#files-popover-toggle");
+const onboardingPreviewTrigger = document.querySelector(
+  "#onboarding-preview-trigger",
+);
 
 if (settingsDialogButton) {
   settingsDialogButton.addEventListener("click", () => {
@@ -56,5 +60,21 @@ if (filesDialogButton) {
         bubbles: true,
       }),
     );
+  });
+}
+
+if (main && onboardingPreviewTrigger) {
+  onboardingPreviewTrigger.addEventListener("click", () => {
+    // Make onboarding appear if the unauthorised user has clicked the "See how it works." microlink
+    const hasExistingOnboarding = !!document.querySelector(
+      "dropspot-onboarding",
+    );
+
+    if (hasExistingOnboarding) {
+      return;
+    }
+
+    const onboarding = document.createElement("dropspot-onboarding");
+    main.appendChild(onboarding);
   });
 }

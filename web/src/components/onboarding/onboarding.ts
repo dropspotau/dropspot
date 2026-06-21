@@ -1,5 +1,5 @@
 import { html, css, LitElement, type TemplateResult } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 
 import { applyGlobalStyles } from "../../style";
@@ -77,6 +77,10 @@ export class OnboardingElement extends LitElement {
   // 0 === welcome, 1 === upload, 2 === settings, 3 === files, 4 === finished
   private step: 0 | 1 | 2 | 3 | 4 = 0;
 
+  /** Whether the onboarding-complete event should be triggered and bubbled */
+  @property({ attribute: "trigger-event", type: Boolean })
+  private triggerEvent: boolean = false;
+
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -147,11 +151,15 @@ export class OnboardingElement extends LitElement {
       filesPopover.close();
       hideTargetHighlight(filesDialogButton);
 
-      const event: OnboardingCompletedEvent = new CustomEvent(
-        "onboarding-complete",
-        { bubbles: true },
-      );
-      this.dispatchEvent(event);
+      if (this.triggerEvent) {
+        const event: OnboardingCompletedEvent = new CustomEvent(
+          "onboarding-complete",
+          { bubbles: true },
+        );
+        this.dispatchEvent(event);
+      } else {
+        this.remove();
+      }
     }
 
     this.step = Math.min(this.step + 1, 4) as typeof this.step;

@@ -47,6 +47,13 @@
                 </section>
             </dropspot-popover>
         </section>
+        {% if !is_logged_in %}
+            <section class="onboarding-preview">
+                <p class="no-margin">New to DropSpot?
+                    <b id="onboarding-preview-trigger" class="microlink">See how it works.</b>
+                </p>
+            </section>
+        {% endif %}
         <section id="linked-file"></section>
         <section id="recent-uploads"></section>
         <section id="toast-container"></section>
