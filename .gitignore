@@ -4,6 +4,9 @@
 # Test files
 /files
 
+# SQLx files
+/.sqlx
+
 # Built web portal files
 /static/dist
 
