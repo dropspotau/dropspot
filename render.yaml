@@ -21,6 +21,7 @@ projects:
             healthCheckPath: /app/
             buildCommand: cargo build --release && ./scripts/build-wasm.sh
             preDeployCommand: cargo install sqlx && ./scripts/migrate-database.sh
+            startCommand: cargo run --release --package dropspot-server server run
             envVars:
               - fromGroup: api-env
               - key: DROPSPOT_DATABASE_URL
