@@ -33,7 +33,7 @@ projects:
                   name: dropspot-api
                   property: host
               - key: PORT
-                value: 8000
+                value: 10000
             disk:
               name: files
               mountPath: /opt/data
