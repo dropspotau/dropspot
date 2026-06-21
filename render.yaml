@@ -44,3 +44,4 @@ projects:
             postgresMajorVersion: 18
             user: dropspot
             region: oregon
+            ipAllowList: [] # Only allow internal connections
