@@ -18,15 +18,19 @@ projects:
             branch: main
             autoDeploy: false
             healthCheckPath: /app/
-            buildCommand: cargo build --release && ./scripts/build-wasm.sh
-            preDeployCommand: cargo install sqlx && ./scripts/migrate-database.sh
-            startCommand: cargo run --release --package dropspot-server server run
+            buildCommand: ./scripts/deploy-build.sh
+            preDeployCommand: ./scripts/deploy-pre-deploy.sh
+            startCommand: ./scripts/deploy-start.sh
             envVars:
               - fromGroup: api-env
               - key: DROPSPOT_DATABASE_URL
                 fromDatabase:
                   name: dropspot-db
                   property: connectionString
+              - key: DROPSPOT_ENDPOINT
+                fromService:
+                  name: dropspot-api
+                  property: host
             disk:
               name: files
               mountPath: /opt/data
