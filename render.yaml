@@ -32,6 +32,8 @@ projects:
                   type: web
                   name: dropspot-api
                   property: host
+              - key: PORT
+                value: 8000
             disk:
               name: files
               mountPath: /opt/data
