@@ -4,7 +4,7 @@ envVarGroups:
       - key: KEY
         value: VALUE
       - key: SQLX_OFFLINE
-        value: true
+        value: false # Compile against the live database. It should be migrated before the build starts
 
 projects:
   - name: dropspot-render-template
@@ -15,7 +15,7 @@ projects:
             name: dropspot-api
             runtime: rust
             plan: starter
-            branch: main
+            branch: sqlx-offline
             autoDeploy: false
             healthCheckPath: /app/
             buildCommand: ./scripts/deploy-build.sh
