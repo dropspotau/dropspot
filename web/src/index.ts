@@ -77,4 +77,13 @@ if (main && onboardingPreviewTrigger) {
     const onboarding = document.createElement("dropspot-onboarding");
     main.appendChild(onboarding);
   });
+
+  document.addEventListener("login", () => {
+    // Remove the section when logging in
+    const previewSection = onboardingPreviewTrigger.closest("section");
+
+    if (previewSection) {
+      previewSection.remove();
+    }
+  });
 }
