@@ -29,6 +29,7 @@ projects:
                   property: connectionString
               - key: DROPSPOT_ENDPOINT
                 fromService:
+                  type: web
                   name: dropspot-api
                   property: host
             disk:
