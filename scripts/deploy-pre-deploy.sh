@@ -6,5 +6,5 @@ set -euo pipefail
 export DROPSPOT_ENDPOINT="https://${DROPSPOT_ENDPOINT}"
 export DATABASE_URL="$DROPSPOT_DATABASE_URL"
 
-cargo install sqlx
+cargo install sqlx-cli
 ./scripts/migrate-database.sh
