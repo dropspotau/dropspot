@@ -166,7 +166,7 @@ pub async fn handle_file_upload(
         };
 
         if let Err(e) = writer.write(&bytes.unwrap()).await {
-            eprintln!("Error writing to file: {e}");
+            tracing::error!("Error writing to file: {e}");
 
             if delete_files(pool, &[file.id]).await.is_err() {
                 let api_error = ApiError::new(

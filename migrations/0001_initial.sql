@@ -38,7 +38,8 @@ create table dropspot.file (
     expires_at timestamptz not null,
     max_downloads int not null,
     has_uploaded boolean not null default false,
-    storage storage not null
+    storage storage not null,
+    has_expired boolean not null default false
 );
 
 

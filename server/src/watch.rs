@@ -3,7 +3,7 @@ use std::time::Duration;
 use sqlx::PgPool;
 
 use crate::db::{
-    File, get_default_organisation, get_expired_files, get_integration_by_slug,
+    File, expire_file, get_default_organisation, get_files_to_expire, get_integration_by_slug,
     get_organisation_for_user,
 };
 use crate::state::AppState;
@@ -29,6 +29,11 @@ async fn delete_file(pool: &PgPool, file: &File) -> Result<(), ()> {
         return Err(());
     };
 
+    if let Err(e) = expire_file(pool, &file.id).await {
+        tracing::error!("Failed to mark file {} as expired: {e}", file.id);
+        return Err(());
+    };
+
     let storage = get_storage(&integration.data);
     storage.delete(file).await
 }
@@ -41,7 +46,7 @@ pub async fn watch_for_files(state: AppState) {
         tracing::info!("Watching for files...");
         tokio::time::sleep(Duration::new(1, 0)).await;
 
-        let expired_files = get_expired_files(pool).await;
+        let expired_files = get_files_to_expire(pool).await;
 
         if let Err(e) = expired_files {
             tracing::error!("Failed to get expired files: {e}");

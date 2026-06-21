@@ -20,6 +20,7 @@ pub struct File {
     pub expires_at: DateTime<Utc>,
     pub max_downloads: i32,
     pub download_count: i32,
+    pub has_expired: bool,
 }
 
 impl File {
@@ -86,7 +87,8 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              file.has_expired
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
@@ -100,7 +102,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
     .await
 }
 
-pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
+pub async fn get_files_to_expire(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
     sqlx::query_as!(
         File,
         r#"
@@ -114,14 +116,17 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              file.has_expired
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
             left join dropspot.users users
             on users.id = file.created_by_id
             group by file.id, users.id
-            having file.max_downloads <= count(download.id) or now() > file.expires_at
+            having
+                (file.max_downloads <= count(download.id) or now() > file.expires_at) and
+                file.has_expired is not true
             order by file.created_at asc
         "#
     )
@@ -143,7 +148,8 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              file.has_expired
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
@@ -215,6 +221,22 @@ pub async fn update_file(
     .await?;
 
     get_file_by_id(pool, &id.id).await
+}
+
+pub async fn expire_file(pool: &PgPool, id: &Uuid) -> Result<(), sqlx::Error> {
+    sqlx::query_as!(
+        Id,
+        r#"
+            update dropspot.file
+            set has_expired = true
+            where id = $1
+            returning id
+        "#,
+        id,
+    )
+    .fetch_one(pool)
+    .await
+    .map(|_id| ())
 }
 
 pub async fn delete_files(pool: &PgPool, ids: &[Uuid]) -> Result<Vec<Uuid>, sqlx::Error> {
