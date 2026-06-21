@@ -121,7 +121,7 @@ pub async fn get_expired_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> 
             left join dropspot.users users
             on users.id = file.created_by_id
             group by file.id, users.id
-            having file.max_downloads < count(download.id) or now() > file.expires_at
+            having file.max_downloads <= count(download.id) or now() > file.expires_at
             order by file.created_at asc
         "#
     )

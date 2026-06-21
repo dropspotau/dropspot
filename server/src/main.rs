@@ -71,7 +71,7 @@ enum AuthCommands {
 #[cfg(feature = "server")]
 #[derive(Subcommand)]
 enum ServerCommands {
-    #[command(about = "Watch for files")]
+    #[command(about = "Watch for expired files and delete them")]
     Watch,
     #[command(about = "Run the server")]
     Run,
