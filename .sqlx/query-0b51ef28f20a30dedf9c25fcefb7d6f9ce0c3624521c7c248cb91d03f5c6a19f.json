@@ -1,0 +1,87 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            select\n              id,\n              slug as \"slug: StorageType\",\n              organisation_id,\n              is_active,\n              data as \"data: Json<IntegrationData>\"\n            from dropspot.integration\n            where organisation_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "integration",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "slug: StorageType",
+        "type_info": {
+          "Custom": {
+            "name": "storage",
+            "kind": {
+              "Enum": [
+                "local",
+                "s3",
+                "gcs"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "integration",
+            "name": "slug"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "organisation_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "integration",
+            "name": "organisation_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "is_active",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "integration",
+            "name": "is_active"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "data: Json<IntegrationData>",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "integration",
+            "name": "data"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0b51ef28f20a30dedf9c25fcefb7d6f9ce0c3624521c7c248cb91d03f5c6a19f"
+}

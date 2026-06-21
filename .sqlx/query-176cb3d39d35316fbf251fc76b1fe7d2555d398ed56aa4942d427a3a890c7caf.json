@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            update dropspot.settings\n            set\n              default_file_expiry_minutes = $2,\n              default_download_limit = $3,\n              allow_external_uploads = $4,\n              allow_external_downloads = $5\n            where organisation_id = $1\n            returning organisation_id id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "organisation_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Int4",
+        "Bool",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "176cb3d39d35316fbf251fc76b1fe7d2555d398ed56aa4942d427a3a890c7caf"
+}
