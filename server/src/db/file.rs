@@ -20,7 +20,6 @@ pub struct File {
     pub expires_at: DateTime<Utc>,
     pub max_downloads: i32,
     pub download_count: i32,
-    pub has_expired: bool,
 }
 
 impl File {
@@ -87,8 +86,7 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!",
-              file.has_expired
+              count(download.id)::int "download_count!"
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
@@ -116,8 +114,7 @@ pub async fn get_files_to_expire(pool: &PgPool) -> Result<Vec<File>, sqlx::Error
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!",
-              file.has_expired
+              count(download.id)::int "download_count!"
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
@@ -148,8 +145,7 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!",
-              file.has_expired
+              count(download.id)::int "download_count!"
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
