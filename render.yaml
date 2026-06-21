@@ -14,7 +14,7 @@ projects:
           - type: web
             name: dropspot-api
             runtime: rust
-            plan: free
+            plan: starter
             branch: main
             autoDeploy: false
             healthCheckPath: /app/
