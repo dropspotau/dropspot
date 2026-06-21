@@ -17,7 +17,7 @@ projects:
             plan: starter
             branch: sqlx-offline
             autoDeploy: false
-            healthCheckPath: /app/
+            healthCheckPath: /api/health
             buildCommand: ./scripts/deploy-build.sh
             preDeployCommand: ./scripts/deploy-pre-deploy.sh
             startCommand: ./scripts/deploy-start.sh
