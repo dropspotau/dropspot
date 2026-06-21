@@ -1,1 +1,1 @@
-pub const ENDPOINT: &'static str = "http://localhost:8000";
+pub const ENDPOINT: &'static str = env!("DROPSPOT_ENDPOINT");
