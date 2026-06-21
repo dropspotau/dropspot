@@ -149,8 +149,19 @@ pub async fn handle_run_server() -> Result<(), ()> {
         .with_state(state)
         .into_make_service_with_connect_info::<SocketAddr>();
 
-    tracing::info!("Listening on port 8000");
-    let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
+    let port = std::env::var("PORT")
+        .map(|port| {
+            port.parse::<i32>()
+                .expect("Could not parse PORT environment variable")
+        })
+        .unwrap_or(8000);
+    let address = format!("0.0.0.0:{port}");
+    let listener = TcpListener::bind(&address)
+        .await
+        .expect(&format!("Could not bind to {address}"));
+
+    tracing::info!("Listening on {address}");
+
     if let Err(e) = axum::serve(listener, app).await {
         tracing::error!("Server run error: {e}");
     }
