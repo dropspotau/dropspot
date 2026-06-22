@@ -38,6 +38,10 @@ projects:
               name: files
               mountPath: /opt/data
               sizeGB: 5
+            domains:
+              - dropspot.au
+              - www.dropspot.au
+            renderSubdomainPolicy: disabled
 
         databases:
           - name: dropspot-db
