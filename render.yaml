@@ -28,10 +28,7 @@ projects:
                   name: dropspot-db
                   property: connectionString
               - key: DROPSPOT_ENDPOINT
-                fromService:
-                  type: web
-                  name: dropspot-api
-                  property: host
+                value: dropspot.au
               - key: DROPSPOT_PORT
                 value: 10000
             disk:
