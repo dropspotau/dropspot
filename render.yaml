@@ -41,8 +41,6 @@ projects:
             domains:
               - dropspot.au
               - www.dropspot.au
-              - jartis.dropspot.au
-              - www.jartis.dropspot.au
             renderSubdomainPolicy: disabled
 
         databases:
