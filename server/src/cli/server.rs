@@ -151,10 +151,10 @@ pub async fn handle_run_server() -> Result<(), ()> {
         .with_state(state)
         .into_make_service_with_connect_info::<SocketAddr>();
 
-    let port = std::env::var("PORT")
+    let port = std::env::var("DROPSPOT_PORT")
         .map(|port| {
             port.parse::<i32>()
-                .expect("Could not parse PORT environment variable")
+                .expect("Could not parse DROPSPOT_PORT environment variable")
         })
         .unwrap_or(8000);
     let address = format!("0.0.0.0:{port}");

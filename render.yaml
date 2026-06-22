@@ -32,7 +32,7 @@ projects:
                   type: web
                   name: dropspot-api
                   property: host
-              - key: PORT
+              - key: DROPSPOT_PORT
                 value: 10000
             disk:
               name: files
