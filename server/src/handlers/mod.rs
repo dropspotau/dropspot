@@ -2,6 +2,7 @@ mod download;
 mod file;
 mod health;
 mod integration;
+mod root;
 mod upload;
 mod user;
 mod utils;
@@ -15,6 +16,7 @@ pub use health::handle_health;
 pub use integration::{
     handle_get_integration_by_slug, handle_get_integrations, handle_upsert_integration,
 };
+pub use root::handle_root;
 pub use upload::{handle_file_request_upload, handle_file_upload, handle_preview_upload};
 pub use user::{handle_create_user, handle_login, handle_refresh_tokens};
 
