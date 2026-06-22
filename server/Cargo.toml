@@ -29,9 +29,10 @@ async-trait = "0.1.89"
 google-cloud-storage = "1.14.0"
 rpassword = "7.5.4"
 tower = { version = "0.5.3", features = ["util"] }
-tower-http = { version = "0.6.11", features = ["fs", "trace"] }
+tower-http = { version = "0.6.11", features = ["fs", "trace", "cors"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+http = "1.4.2"
 
 [features]
 default = ["client", "server", "web"] # Might remove this

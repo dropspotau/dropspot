@@ -7,8 +7,10 @@ use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
+use http::Method;
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing::{Span, info_span};
@@ -44,6 +46,14 @@ pub async fn handle_watch() -> Result<(), ()> {
     watch_for_files(state).await;
 
     Ok(())
+}
+
+fn get_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        // allow requests from any origin
+        .allow_origin(Any)
 }
 
 pub fn get_api_router() -> Router<AppState> {
@@ -111,11 +121,13 @@ pub async fn handle_run_server() -> Result<(), ()> {
 
     let api_router = get_api_router();
     let web_router = get_web_router();
+    let cors_layer = get_cors_layer();
 
     let app = Router::new()
         .nest("/api", api_router)
         .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())
+        .layer(cors_layer)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request<_>| {
