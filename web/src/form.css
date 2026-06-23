@@ -34,25 +34,26 @@
 
 /** Form title */
 .form-header {
-    overflow: hidden;
-    text-overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /** A form row */
 .form-row {
   display: flex;
   flex-flow: row;
+  place-items: center;
   gap: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f0f0f0;
 }
 
 /** An individual form field */
 .form-field {
-    flex: 1;
-    display: flex;
-    flex-flow: column;
-    gap: 6px;
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  gap: 6px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 1rem;
 }
 
 /** Form field label */

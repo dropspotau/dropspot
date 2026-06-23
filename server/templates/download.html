@@ -1,12 +1,6 @@
-<div class="form-row" style="min-height: 2rem; align-items: center;">
-    <div class="form-field" style="flex-direction: row; align-items: center; gap: 1rem;">
-        <span class="form-label">Downloaded By</span>
-        <span class="form-value">
-          {% if let Some(name) = download.created_by_name %}{{ name }}{% else %}Unknown{% endif %}
-        </span>
-    </div>
-    <div class="form-field" style="flex-direction: row; align-items: center; gap: 1rem;">
-        <span class="form-label">IP</span>
-        <span class="form-value">{{ download.download_ip }}</span>
-    </div>
+<div class="download">
+    <md-icon>account_circle</md-icon>
+    <span class="form-value">
+      {% if let Some(name) = download.created_by_name %}{{ name }}{% else %}Unknown{% endif %}
+    </span>
 </div>
