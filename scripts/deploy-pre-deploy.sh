@@ -2,5 +2,9 @@
 
 set -euo pipefail
 
-cargo install sqlx
+# Replace the Render URL with a proper one
+export DROPSPOT_ENDPOINT="https://${DROPSPOT_ENDPOINT}"
+export DATABASE_URL="$DROPSPOT_DATABASE_URL"
+
+cargo install sqlx-cli
 ./scripts/migrate-database.sh

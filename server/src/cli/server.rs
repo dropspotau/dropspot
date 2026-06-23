@@ -7,8 +7,10 @@ use axum::extract::MatchedPath;
 use axum::http::Request;
 use axum::response::Response;
 use axum::routing::{get, patch, post};
+use http::Method;
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing::{Span, info_span};
@@ -18,8 +20,9 @@ use crate::db::connect;
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_get_file,
-    handle_get_integration_by_slug, handle_get_integrations, handle_list_files, handle_login,
-    handle_preview_upload, handle_refresh_tokens, handle_update_file, handle_upsert_integration,
+    handle_get_integration_by_slug, handle_get_integrations, handle_health, handle_list_files,
+    handle_login, handle_preview_upload, handle_refresh_tokens, handle_root, handle_update_file,
+    handle_upsert_integration,
 };
 
 #[cfg(feature = "web")]
@@ -45,8 +48,17 @@ pub async fn handle_watch() -> Result<(), ()> {
     Ok(())
 }
 
+fn get_cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+        // allow requests from any origin
+        .allow_origin(Any)
+}
+
 pub fn get_api_router() -> Router<AppState> {
     Router::new()
+        .route("/health", get(handle_health))
         .route("/upload", post(handle_file_request_upload))
         .route("/upload/preview", get(handle_preview_upload))
         .route("/upload/{file_id}", post(handle_file_upload))
@@ -109,11 +121,14 @@ pub async fn handle_run_server() -> Result<(), ()> {
 
     let api_router = get_api_router();
     let web_router = get_web_router();
+    let cors_layer = get_cors_layer();
 
     let app = Router::new()
+        .route("/", get(handle_root))
         .nest("/api", api_router)
         .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())
+        .layer(cors_layer)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(|request: &Request<_>| {
@@ -149,8 +164,19 @@ pub async fn handle_run_server() -> Result<(), ()> {
         .with_state(state)
         .into_make_service_with_connect_info::<SocketAddr>();
 
-    tracing::info!("Listening on port 8000");
-    let listener = TcpListener::bind("127.0.0.1:8000").await.unwrap();
+    let port = std::env::var("DROPSPOT_PORT")
+        .map(|port| {
+            port.parse::<i32>()
+                .expect("Could not parse DROPSPOT_PORT environment variable")
+        })
+        .unwrap_or(8000);
+    let address = format!("0.0.0.0:{port}");
+    let listener = TcpListener::bind(&address)
+        .await
+        .expect(&format!("Could not bind to {address}"));
+
+    tracing::info!("Listening on {address}");
+
     if let Err(e) = axum::serve(listener, app).await {
         tracing::error!("Server run error: {e}");
     }

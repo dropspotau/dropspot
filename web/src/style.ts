@@ -7,9 +7,10 @@
 export const applyGlobalStyles = (shadowRoot: ShadowRoot): void => {
   // CORS rules apply to external style sheets like ones from Material, so ignore them
   const styleSheets = Array.from(document.styleSheets);
+
   const internalStyleSheets = styleSheets.filter((sheet) => {
-    const isExternal = sheet.href?.startsWith("https");
-    return !isExternal;
+    const isSameOrigin = !!sheet.href?.includes(window.location.origin);
+    return isSameOrigin;
   });
 
   const globalSheets = internalStyleSheets.map((x) => {

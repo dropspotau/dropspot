@@ -4,7 +4,7 @@ envVarGroups:
       - key: KEY
         value: VALUE
       - key: SQLX_OFFLINE
-        value: true
+        value: false # Compile against the live database. It should be migrated before the build starts
 
 projects:
   - name: dropspot-render-template
@@ -15,9 +15,9 @@ projects:
             name: dropspot-api
             runtime: rust
             plan: starter
-            branch: main
+            branch: sqlx-offline
             autoDeploy: false
-            healthCheckPath: /app/
+            healthCheckPath: /api/health
             buildCommand: ./scripts/deploy-build.sh
             preDeployCommand: ./scripts/deploy-pre-deploy.sh
             startCommand: ./scripts/deploy-start.sh
@@ -28,14 +28,17 @@ projects:
                   name: dropspot-db
                   property: connectionString
               - key: DROPSPOT_ENDPOINT
-                fromService:
-                  type: web
-                  name: dropspot-api
-                  property: host
+                value: dropspot.au
+              - key: DROPSPOT_PORT
+                value: 10000
             disk:
               name: files
               mountPath: /opt/data
               sizeGB: 5
+            domains:
+              - dropspot.au
+              - www.dropspot.au
+            renderSubdomainPolicy: disabled
 
         databases:
           - name: dropspot-db
@@ -44,3 +47,4 @@ projects:
             postgresMajorVersion: 18
             user: dropspot
             region: oregon
+            ipAllowList: [] # Only allow internal connections
