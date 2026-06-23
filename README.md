@@ -23,6 +23,7 @@ Requirements:
 * `sqlx`
 * Postgres >=18.0
 * The ability to at write to your OS's temporary directory
+### Docker coming soon!
 
 Setup:
 ```
@@ -64,7 +65,6 @@ dropspot file list
 ```
 
 If running through `cargo`, simply replace the `dropspot` command with `cargo run --package dropspot-server`
-### Docker coming soon!
 
 ## Crates
 ### Core
