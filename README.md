@@ -1,5 +1,6 @@
 # DropSpot
 A self-hostable server for timed-out and limited file uploads.
+Client-side file encryption and decryption - keys never leave the browser and all data sent is encrypted.
 
 ## Contains:
 * A server for running a web server which handles file uploads, downloads and user authentication
@@ -7,13 +8,24 @@ A self-hostable server for timed-out and limited file uploads.
 * Rust library to use from your own program
 * JavaScript library to use from websites (the same Rust library, compiled to WebAssembly!)
 
+## Stack
+* [Axum](https://github.com/tokio-rs/axum), a Rust-powered server, with data stored by...
+* [PostgreSQL](https://www.postgresql.org/), a very cool database, with interactions provided by...
+* [SQLx](https://github.com/transact-rs/sqlx), the Rust SQL toolkit. All these can be communicated with using...
+* [Clap](https://github.com/clap-rs/clap) command line builder for Rust! In addition to the command line, a JavaScript library for web using the same client library is provided with...
+* [wasm-pack](https://github.com/wasm-bindgen/wasm-pack) turning the client library into WebAssembly for use in the browser! This can be used with...
+* [LitJS](https://lit.dev/) web components for cool web interactivity, in conjunction with...
+* [Material Web](https://m3.material.io/develop/web) suite of web components for a familiar UI, served by...
+* [HTMX](https://four.htmx.org/)! Building interactives sites through the power of hypertext
+
 ## Integrations
 * Local storage
 * Google Cloud Storage
 * AWS S3 (coming soon&trade;!)
 
 ## Setup
-The setup assumes you have a PostgreSQL database running with a url provided in the `DROPSPOT_DATABASE_URL` environment variable.
+### Docker coming soon!
+The setup assumes you have a PostgreSQL database running with a valid connection string provided in the `DROPSPOT_DATABASE_URL` environment variable.
 
 Requirements:
 
@@ -21,7 +33,7 @@ Requirements:
 * `cargo`
 * `sqlx`
 * Postgres >=18.0
-* The ability to at write to your OS's temporary directory
+* The ability to write to your OS's temporary directory
 
 Setup:
 ```
@@ -31,7 +43,8 @@ Setup:
 # Run the server
 dropspot server run
 
-# Delete any files after they've been expired
+# Delete any encrypted files from disk after they've been expired
+# Note that expired will still not be able to be accessed from the application, this just frees up the physical memory
 dropspot server watch
 ```
 
@@ -46,7 +59,7 @@ dropspot file watch
 # Create a DropSpot user (optional)
 dropspot auth create
 
-# Log into said user
+# Log into said user (if you created one)
 dropspot auth login
 
 # Upload a file
@@ -72,25 +85,33 @@ The `dropspot-core` crate provides all the user-facing functionality needed to i
 The `dropspot-server` crate provides the server logic, database integration and CLI tooling required to run and interact with DropSpot
 
 ## Features
-* client - allows the `auth` and `file` commands to be run in the CLI
-* server - allows the `server` commands to be run in the CLI
-* web (enables server) - adds web portal endpoints into the server
+| Name | Description | Default |
+| --------------- | --------------- | --------------- |
+| `client` | Allows the `auth` and `file` commands to be run in the CLI | ✅ |
+| `server` | Enables the `server` commands to be run in the CLI | ✅ |
+| `web` | Enables web endpoints in the server | ✅ |
 
 
-### Running the local setup
+
+## Running the local setup
 ```
+./scripts/build-wasm.sh
 bacon run-server
 bacon build-web
 ```
 
 
-## Building WebAssembly
+### Building WebAssembly
 Run the `./scripts/build-wasm.sh` script :)
 
-## Building the web (assuming the WASM package has been built)
+### Building the web (assuming the WASM package has been built)
 ```
 cd web
 pnpm install
 pnpm build
 ```
 
+### Migrating the database (required if compiling with SQLX online)
+```
+./scripts/migrate-database.sh
+```
