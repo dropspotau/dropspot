@@ -1,6 +1,9 @@
 <div class="download">
-    <md-icon>account_circle</md-icon>
-    <span class="form-value">
-      {% if let Some(name) = download.created_by_name %}{{ name }}{% else %}Unknown{% endif %}
-    </span>
+    <div class="download-creator">
+        <md-icon>account_circle</md-icon>
+        <span class="form-value">
+          {% if let Some(name) = download.created_by_name %}{{ name }}{% else %}Unknown{% endif %}
+        </span>
+    </div>
+    <spam class="form-value">{{ download.created_at_slash_date() }}</span>
 </div>

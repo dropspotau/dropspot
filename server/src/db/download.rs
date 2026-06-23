@@ -21,6 +21,10 @@ impl Download {
     pub fn is_expired(&self) -> bool {
         Utc::now() > self.expires_at
     }
+
+    pub fn created_at_slash_date(&self) -> String {
+        format!("{}", self.created_at.format("%d/%m/%Y"))
+    }
 }
 
 pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sqlx::Error> {
