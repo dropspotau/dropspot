@@ -80,20 +80,24 @@ The `dropspot-server` crate provides the server logic, database integration and 
 
 
 
-### Running the local setup
+## Running the local setup
 ```
 bacon run-server
 bacon build-web
 ```
 
 
-## Building WebAssembly
+### Building WebAssembly
 Run the `./scripts/build-wasm.sh` script :)
 
-## Building the web (assuming the WASM package has been built)
+### Building the web (assuming the WASM package has been built)
 ```
 cd web
 pnpm install
 pnpm build
 ```
 
+### Migrating the database (required if compiling with SQLX online)
+```
+./scripts/migrate-database.sh
+```
