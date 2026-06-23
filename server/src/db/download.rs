@@ -51,22 +51,28 @@ pub async fn get_downloads_for_file(
     pool: &PgPool,
     file_id: &Uuid,
 ) -> Result<Vec<Download>, sqlx::Error> {
-    // NOTE(alec): JOIN implicitly becomes an INNER JOIN here, LEFT JOIN fails
+    // NOTE(alec): There's some funky stuff going on when filtering by download.file_id despite it
+    // being non-nullable. Running EXPLAIN on this query results in a RIGHT JOIN being done instead
+    //
+    // I think this might be a SQLx bug?
+    //
+    // As a workaround, all the download table rows are enforced as non-nullable because they really
+    // are
     sqlx::query_as!(
         Download,
         r#"
             select 
-                download.id,
-                download.file_id,
-                download.created_at,
+                download.id "id!",
+                download.file_id "file_id!",
+                download.created_at "created_at!",
                 users.id "created_by_id?",
                 users.email "created_by_name?",
-                download.download_ip as "download_ip: IpAddr",
-                download.expires_at
+                download.download_ip "download_ip!: IpAddr",
+                download.expires_at "expires_at!"
             from dropspot.download download
-            join dropspot.users users
+            left join dropspot.users users
             on users.id = download.created_by_id
-            where download.file_id = $1
+            where download.file_id = $1::uuid
         "#,
         file_id
     )
