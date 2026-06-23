@@ -92,6 +92,19 @@
                             <span id="file-detail-remaining-downloads" class="form-value badge">{{ file.get_remaining_downloads() }}</span>
                         </div>
                     </div>
+
+                    <div class="form-field">
+                        <div class="form-row">
+                            <span class="form-label">Downloads</span>
+                        </div>
+                    {% if let Some(downloads) = downloads_by_file.get(file.id) %}
+                        {% for download in downloads %}
+                            {% include "download.html" %}
+                        {% endfor %}
+                    {% else %}
+                        <h3 class="no-margin">No downloads yet</h3>
+                    {% endif %}
+                    </div>
                 </div>
             </div>
       </section>

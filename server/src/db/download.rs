@@ -47,6 +47,32 @@ pub async fn get_download_by_id(pool: &PgPool, id: &Uuid) -> Result<Download, sq
     .await
 }
 
+pub async fn get_downloads_for_file(
+    pool: &PgPool,
+    file_id: &Uuid,
+) -> Result<Vec<Download>, sqlx::Error> {
+    sqlx::query_as!(
+        Download,
+        r#"
+            select 
+                download.id,
+                download.file_id,
+                download.created_at,
+                users.id "created_by_id?",
+                users.email "created_by_name?",
+                download.download_ip as "download_ip: IpAddr",
+                download.expires_at
+            from dropspot.download download
+            left join dropspot.users users
+            on users.id = download.created_by_id
+            where download.file_id = $1
+        "#,
+        file_id
+    )
+    .fetch_all(pool)
+    .await
+}
+
 pub async fn create_download(
     pool: &PgPool,
     file_id: &Uuid,

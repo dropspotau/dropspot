@@ -12,9 +12,9 @@ mod upload;
 mod user;
 
 pub use connect::connect;
-pub use download::{Download, create_download, get_download_by_id};
+pub use download::{Download, create_download, get_download_by_id, get_downloads_for_file};
 pub use file::{
-    File, create_file, delete_files, expire_file, get_files_to_expire, get_file_by_id, get_files,
+    File, create_file, delete_files, expire_file, get_file_by_id, get_files, get_files_to_expire,
     update_file,
 };
 pub use integration::{Integration, get_integration_by_slug, get_integrations, upsert_integration};

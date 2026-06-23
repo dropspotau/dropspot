@@ -11,6 +11,7 @@ import "@material/web/select/select-option.js";
 import "@material/web/switch/switch.js";
 import init from "dropspot-core";
 
+import "./download.css";
 import "./header.css";
 import "./index.css";
 import "./file.css";

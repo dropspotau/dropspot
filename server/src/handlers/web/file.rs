@@ -1,11 +1,14 @@
+use std::collections::HashMap;
+
 use askama::Template;
 use axum::{
     extract::State,
     response::{IntoResponse, Response},
 };
+use uuid::Uuid;
 
 use crate::{
-    db::{File, User, get_files},
+    db::{Download, File, User, get_downloads_for_file, get_files},
     state::AppState,
 };
 
@@ -15,6 +18,7 @@ use super::template::HtmlTemplate;
 #[template(path = "files.html")]
 struct FilesTemplate {
     files: Vec<File>,
+    downloads_by_file: HashMap<Uuid, Vec<Download>>,
     is_empty: bool,
 }
 
@@ -40,6 +44,26 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
     .collect::<Vec<File>>();
     let is_empty = files.is_empty();
 
-    let template = FilesTemplate { files, is_empty };
+    // Mapping of file IDs to their downloads
+    let mut downloads_by_file = HashMap::<Uuid, Vec<Download>>::new();
+
+    for file in &files {
+        // TODO(alec): This is a nasty N+1 query. It would be good to make the database do the
+        // download retrieval all at once
+        let downloads = match get_downloads_for_file(pool, &file.id).await {
+            Ok(downloads) => downloads,
+            Err(e) => {
+                tracing::error!("Error retrieving downloads for file {}: {e}", file.id);
+                vec![]
+            }
+        };
+        downloads_by_file.insert(file.id, downloads);
+    }
+
+    let template = FilesTemplate {
+        files,
+        downloads_by_file,
+        is_empty,
+    };
     HtmlTemplate(template).into_response()
 }
