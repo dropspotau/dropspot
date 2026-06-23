@@ -24,7 +24,8 @@ Client-side file encryption and decryption - keys never leave the browser and al
 * AWS S3 (coming soon&trade;!)
 
 ## Setup
-The setup assumes you have a PostgreSQL database running with a url provided in the `DROPSPOT_DATABASE_URL` environment variable.
+### Docker coming soon!
+The setup assumes you have a PostgreSQL database running with a valid connection string provided in the `DROPSPOT_DATABASE_URL` environment variable.
 
 Requirements:
 
@@ -33,7 +34,6 @@ Requirements:
 * `sqlx`
 * Postgres >=18.0
 * The ability to write to your OS's temporary directory
-### Docker coming soon!
 
 Setup:
 ```
