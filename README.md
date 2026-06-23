@@ -64,6 +64,7 @@ dropspot file list
 ```
 
 If running through `cargo`, simply replace the `dropspot` command with `cargo run --package dropspot-server`
+### Docker coming soon!
 
 ## Crates
 ### Core
