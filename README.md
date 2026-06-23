@@ -8,6 +8,16 @@ Client-side file encryption and decryption - keys never leave the browser and al
 * Rust library to use from your own program
 * JavaScript library to use from websites (the same Rust library, compiled to WebAssembly!)
 
+## Stack
+* [Axum](https://github.com/tokio-rs/axum), a Rust-powered server, with data stored by...
+* [PostgreSQL](https://www.postgresql.org/), a very cool database, with interactions provided by...
+* [SQLx](https://github.com/transact-rs/sqlx), the Rust SQL toolkit. All these can be communicated with using...
+* [Clap](https://github.com/clap-rs/clap) command line builder for Rust! In addition to the command line, a JavaScript library for web using the same client library is provided with...
+* [wasm-pack](https://github.com/wasm-bindgen/wasm-pack) turning the client library into WebAssembly for use in the browser! This can be used with...
+* [LitJS](https://lit.dev/) web components for cool web interactivity, in conjunction with...
+* [Material Web](https://m3.material.io/develop/web) suite of web components for a familiar UI, served by...
+* [HTMX](https://four.htmx.org/)! Building interactives sites through the power of hypertext
+
 ## Integrations
 * Local storage
 * Google Cloud Storage
@@ -33,7 +43,8 @@ Setup:
 # Run the server
 dropspot server run
 
-# Delete any files after they've been expired
+# Delete any encrypted files from disk after they've been expired
+# Note that expired will still not be able to be accessed from the application, this just frees up the physical memory
 dropspot server watch
 ```
 
@@ -48,7 +59,7 @@ dropspot file watch
 # Create a DropSpot user (optional)
 dropspot auth create
 
-# Log into said user
+# Log into said user (if you created one)
 dropspot auth login
 
 # Upload a file
@@ -84,6 +95,7 @@ The `dropspot-server` crate provides the server logic, database integration and 
 
 ## Running the local setup
 ```
+./scripts/build-wasm.sh
 bacon run-server
 bacon build-web
 ```
