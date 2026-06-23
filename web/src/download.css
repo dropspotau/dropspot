@@ -1,0 +1,15 @@
+.download {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2rem;
+}
+
+.download-creator {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    gap: 1rem;
+}
