@@ -72,9 +72,12 @@ The `dropspot-core` crate provides all the user-facing functionality needed to i
 The `dropspot-server` crate provides the server logic, database integration and CLI tooling required to run and interact with DropSpot
 
 ## Features
-* client - allows the `auth` and `file` commands to be run in the CLI
-* server - allows the `server` commands to be run in the CLI
-* web (enables server) - adds web portal endpoints into the server
+| Name | Description | Default |
+| --------------- | --------------- | --------------- |
+| `client` | Allows the `auth` and `file` commands to be run in the CLI | ✅ |
+| `server` | Enables the `server` commands to be run in the CLI | ✅ |
+| `web` | Enables web endpoints in the server | ✅ |
+
 
 
 ### Running the local setup
