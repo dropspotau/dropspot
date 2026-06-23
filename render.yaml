@@ -15,7 +15,7 @@ projects:
             name: dropspot-api
             runtime: rust
             plan: starter
-            branch: sqlx-offline
+            branch: main
             autoDeploy: false
             healthCheckPath: /api/health
             buildCommand: ./scripts/deploy-build.sh
