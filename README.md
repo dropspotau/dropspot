@@ -1,5 +1,6 @@
 # DropSpot
 A self-hostable server for timed-out and limited file uploads.
+Client-side file encryption and decryption - keys never leave the browser and all data sent is encrypted.
 
 ## Contains:
 * A server for running a web server which handles file uploads, downloads and user authentication
