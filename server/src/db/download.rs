@@ -51,6 +51,7 @@ pub async fn get_downloads_for_file(
     pool: &PgPool,
     file_id: &Uuid,
 ) -> Result<Vec<Download>, sqlx::Error> {
+    // NOTE(alec): JOIN implicitly becomes an INNER JOIN here, LEFT JOIN fails
     sqlx::query_as!(
         Download,
         r#"
@@ -63,7 +64,7 @@ pub async fn get_downloads_for_file(
                 download.download_ip as "download_ip: IpAddr",
                 download.expires_at
             from dropspot.download download
-            left join dropspot.users users
+            join dropspot.users users
             on users.id = download.created_by_id
             where download.file_id = $1
         "#,
