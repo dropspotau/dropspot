@@ -32,7 +32,7 @@ Requirements:
 * `cargo`
 * `sqlx`
 * Postgres >=18.0
-* The ability to at write to your OS's temporary directory
+* The ability to write to your OS's temporary directory
 ### Docker coming soon!
 
 Setup:
