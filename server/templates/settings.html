@@ -74,58 +74,50 @@
     {% for user in users %}
         {% let is_current_user = user.id == current_user_id %}
         <section class="settings-page" menu-key="user-{{ user.id }}">
-            <div class="file-details-container">
-                {% if is_current_user %}
-                    {% include "user_edit.html" %}
-                {% else %}
-                    {% include "user_view.html" %}
-                {% endif %}
-            </div>
+            {% if is_current_user %}
+                {% include "user_edit.html" %}
+            {% else %}
+                {% include "user_view.html" %}
+            {% endif %}
         </section>
     {% endfor %}
 
     <!-- File limits -->
     <section class="settings-page" menu-key="limits">
-        <div class="file-details-container">
-            <h3 class="form-header">File Settings</h3>
-            {% include "limits.html" %}
-        </div>
+        <h3 class="form-header">File Settings</h3>
+        {% include "limits.html" %}
     </section>
 
     <!-- Integrations -->
     <section class="settings-page" menu-key="integrations">
-        <div class="file-details-container">
-            <h3 class="form-header">Integrations</h3>
+        <h3 class="form-header">Integrations</h3>
 
-            {% for integration in integrations %}
-                <li class="file-item" menu-navigate-to="integration-{{ integration.slug.to_string() }}">
-                    <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
-                    <div class="file-info">
-                        {{ integration.slug.full_name() }}
-                    </div>
-                </li>
-            {% endfor %}
-        </div>
+        {% for integration in integrations %}
+            <li class="file-item" menu-navigate-to="integration-{{ integration.slug.to_string() }}">
+                <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                <div class="file-info">
+                    {{ integration.slug.full_name() }}
+                </div>
+            </li>
+        {% endfor %}
     </section>
 
     {% for integration in integrations %}
         {% let slug = integration.slug.to_string() %}
         <section class="settings-page" menu-key="integration-{{ integration.slug.to_string() }}">
-            <div class="file-details-container">
-                <div class="form">
-                    <div class="form-row" style="align-items: center;">
-                        <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
-                        <h3>{{ integration.slug.full_name() }}</h3>
-                    </div>
-
-                    <integration-form 
-                        slug="{{ slug }}"
-                        {% if integration.is_active %}is-active{% endif %}
-                        {% for (field, value) in integration.data.to_map() %}
-                            data-{{ field }}="{{ value }}"
-                        {% endfor %}
-                    ></integration-form>
+            <div class="form">
+                <div class="form-row" style="align-items: center;">
+                    <integration-icon slug="{{ integration.slug.to_string() }}"></integration-icon>
+                    <h3>{{ integration.slug.full_name() }}</h3>
                 </div>
+
+                <integration-form 
+                    slug="{{ slug }}"
+                    {% if integration.is_active %}is-active{% endif %}
+                    {% for (field, value) in integration.data.to_map() %}
+                        data-{{ field }}="{{ value }}"
+                    {% endfor %}
+                ></integration-form>
             </div>
         </section>
     {% endfor %}
