@@ -20,19 +20,17 @@ export class TooltipElement extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
 
-    setTimeout(() => {
-      const target = this.getTarget();
+    const target = this.getTarget();
 
-      if (!target) {
-        console.error(
-          `Target ${this.targetSelector} not found for tooltip or is not an HTMLElement`,
-        );
-        return;
-      }
+    if (!target) {
+      console.error(
+        `Target ${this.targetSelector} not found for tooltip or is not an HTMLElement`,
+      );
+      return;
+    }
 
-      target.addEventListener("mouseenter", this.handleSelectorMouseEnter);
-      target.addEventListener("mouseleave", this.handleSelectorMouseLeave);
-    }, 0);
+    target.addEventListener("mouseenter", this.handleSelectorMouseEnter);
+    target.addEventListener("mouseleave", this.handleSelectorMouseLeave);
   }
 
   disconnectedCallback(): void {
@@ -53,7 +51,6 @@ export class TooltipElement extends LitElement {
 
   private getTarget = (): HTMLElement | null => {
     const rootNode = this.getRootNode();
-    console.debug(rootNode);
 
     if (!(rootNode instanceof Element) && !(rootNode instanceof ShadowRoot)) {
       console.error(
