@@ -15,4 +15,5 @@ export { OnboardingElement } from "./onboarding";
 export { PopoverElement } from "./popover";
 export { ModalElement } from "./modal";
 export { ToastElement } from "./toast";
+export { TooltipElement } from "./tooltip";
 import "./upload-circle";
