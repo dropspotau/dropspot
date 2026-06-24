@@ -39,9 +39,7 @@ export class TooltipElement extends LitElement {
     const target = this.getTarget();
 
     if (!target) {
-      console.error(
-        `Target ${this.targetSelector} not found for tooltip or is not an HTMLElement`,
-      );
+      // Target doesn't exist so don't bother removing its even listeners
       return;
     }
 
@@ -96,6 +94,6 @@ export class TooltipElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "dropsopt-tooltip": TooltipElement;
+    "dropspot-tooltip": TooltipElement;
   }
 }
