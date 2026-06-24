@@ -26,6 +26,7 @@ struct SettingsTemplate {
     download_limit: i32,
     allow_external_uploads: bool,
     allow_external_downloads: bool,
+    max_file_size_mb: i32,
     current_user_id: Uuid,
     integrations: Vec<Integration>,
 }
@@ -56,6 +57,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let download_limit = settings.default_download_limit;
     let allow_external_uploads = settings.allow_external_uploads;
     let allow_external_downloads = settings.allow_external_downloads;
+    let max_file_size_mb = settings.max_file_size_mb;
 
     let template = SettingsTemplate {
         users,
@@ -63,6 +65,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
         download_limit,
         allow_external_uploads,
         allow_external_downloads,
+        max_file_size_mb,
         current_user_id: current_user.id,
         integrations,
     };
@@ -79,15 +82,19 @@ pub(crate) struct UpdateSettingsTemplate {
 pub struct UpdateSettingsPayload {
     file_expiry_minutes: i32,
     download_limit: i32,
-
     #[serde(default)]
     allow_external_uploads: bool,
     #[serde(default)]
     allow_external_downloads: bool,
+    max_file_size_mb: i32,
 }
 
 impl UpdateSettingsPayload {
     pub fn validate(&self) -> bool {
+        if self.max_file_size_mb <= 0 {
+            return false;
+        }
+
         self.file_expiry_minutes > 0 && self.download_limit > 0
     }
 }
@@ -108,9 +115,14 @@ pub async fn handle_update_settings(
     };
 
     let can_edit = member.is_admin;
-    if !can_edit || !payload.validate() {
+    if !can_edit {
         let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::FORBIDDEN, HtmlTemplate(template)).into_response();
+    }
+
+    if !payload.validate() {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::BAD_REQUEST, HtmlTemplate(template)).into_response();
     }
 
     if update_organisation_settings(
@@ -120,6 +132,7 @@ pub async fn handle_update_settings(
         payload.download_limit,
         payload.allow_external_uploads,
         payload.allow_external_downloads,
+        payload.max_file_size_mb,
     )
     .await
     .is_err()

@@ -174,6 +174,10 @@ export class OnboardingElement extends LitElement {
         on its own.
       </p>
       <p class="no-margin">
+        Uploads are encrypted in the browser, and only decrypted if you have the key provided in the URL.
+        Nothing you uploaded is able to be seen in storage.
+      </p>
+      <p class="no-margin">
         You are able to customise where files upload to, how long they are
         downloadable for and how many times they can be downloaded.
       </p>

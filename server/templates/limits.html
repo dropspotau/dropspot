@@ -63,6 +63,19 @@
     </div>
     <div class="form-row">
         <div class="form-field">
+            <span class="form-label">Maximum file size</span>
+            <md-filled-text-field type="number" 
+                                  name="max_file_size_mb"
+                                  label="Maximum size in MB" 
+                                  value="{{ max_file_size_mb}}" 
+                                  min="1" 
+                                  pattern="\d+"
+                                  suffix-text="MB"
+            ></md-filled-text-field>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
             <span class="form-label">Save</span>
             <div>
                 <md-filled-button type="submit" class="button-success">Submit</md-filled-button>
