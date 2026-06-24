@@ -57,56 +57,54 @@
     </section>
     {% for file in files %}
         <section id="file-detail" class="settings-page" menu-key="file-{{ file.id }}">
-            <div class="file-details-container">
-                <div class="form">
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">File Name</span>
-                            <h3 id="file-detail-name" class="form-header no-margin">{{ file.name }}</h3>
-                        </div>
+            <div class="form">
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">File Name</span>
+                        <h3 id="file-detail-name" class="form-header no-margin">{{ file.name }}</h3>
                     </div>
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">File Size</span>
-                            <span id="file-detail-size" class="form-value">{{ file.get_formatted_size() }}</span>
-                        </div>
+                </div>
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">File Size</span>
+                        <span id="file-detail-size" class="form-value">{{ file.get_formatted_size() }}</span>
                     </div>
+                </div>
+          
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">Uploaded By</span>
+                        <span id="file-detail-uploaded-by" class="form-value">{{ file.get_creator_name() }}</span>
+                    </div>
+                </div>
               
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">Uploaded By</span>
-                            <span id="file-detail-uploaded-by" class="form-value">{{ file.get_creator_name() }}</span>
-                        </div>
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">Upload Date</span>
+                        <span id="file-detail-uploaded-at" class="form-value">{{ file.expires_at_slash_date() }}</span>
                     </div>
-                  
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">Upload Date</span>
-                            <span id="file-detail-uploaded-at" class="form-value">{{ file.expires_at_slash_date() }}</span>
-                        </div>
+                </div>
+              
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">Downloads Remaining</span>
+                        <span id="file-detail-remaining-downloads" class="form-value badge">{{ file.get_remaining_downloads() }}</span>
                     </div>
-                  
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">Downloads Remaining</span>
-                            <span id="file-detail-remaining-downloads" class="form-value badge">{{ file.get_remaining_downloads() }}</span>
-                        </div>
-                    </div>
+                </div>
 
-                    <div class="form-field">
-                        <div class="form-row">
-                            <span class="form-label">Downloads</span>
-                        </div>
-                        {% if let Some(downloads) = downloads_by_file.get(file.id) %}
-                            {% for download in downloads %}
-                                {% include "download.html" %}
-                            {% else %}
-                                <h3 class="no-margin">No downloads yet</h3>
-                            {% endfor %}
-                        {% else %}
-                            <h3 class="no-margin text-danger">Download retrieval failed. Please try again.</h3>
-                        {% endif %}
+                <div class="form-field">
+                    <div class="form-row">
+                        <span class="form-label">Downloads</span>
                     </div>
+                    {% if let Some(downloads) = downloads_by_file.get(file.id) %}
+                        {% for download in downloads %}
+                            {% include "download.html" %}
+                        {% else %}
+                            <h3 class="no-margin">No downloads yet</h3>
+                        {% endfor %}
+                    {% else %}
+                        <h3 class="no-margin text-danger">Download retrieval failed. Please try again.</h3>
+                    {% endif %}
                 </div>
             </div>
       </section>

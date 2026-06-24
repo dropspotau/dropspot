@@ -82,7 +82,8 @@ create table dropspot.settings (
     default_file_expiry_minutes int not null check (default_file_expiry_minutes > 0),
     default_download_limit int not null check (default_download_limit > 0),
     allow_external_uploads boolean not null,
-    allow_external_downloads boolean not null
+    allow_external_downloads boolean not null,
+    max_file_size_mb integer not null
 );
 
 -- A record of each user's onboarding completion
@@ -131,5 +132,5 @@ with default_organisation_id as (
     from dropspot.organisation
     where name = 'Default'
 )
-insert into dropspot.settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_external_uploads, allow_external_downloads)
-values ((select id from default_organisation_id limit 1), 60, 3, true, true);
+insert into dropspot.settings (organisation_id, default_file_expiry_minutes, default_download_limit, allow_external_uploads, allow_external_downloads, max_file_size_mb)
+values ((select id from default_organisation_id limit 1), 60, 3, true, true, 10);

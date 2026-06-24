@@ -2,7 +2,6 @@ import {
   createUser,
   login,
   validatePassword,
-  type ApiError,
   type LoginResult,
 } from "dropspot-core";
 import { html, css, LitElement, type TemplateResult } from "lit";
@@ -12,16 +11,12 @@ import type { MdFilledButton } from "@material/web/button/filled-button";
 import htmx from "htmx.org";
 
 import { setTokens, type LoginEvent } from "../auth";
+import { isApiError } from "../utils";
 import { applyGlobalStyles } from "../style";
 import { ToastElement } from "./toast";
 
 // Characters, numbers and symbols within a length of 8 and 64
 const PASSWORD_PATTERN = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#]).{8,64}";
-
-const isApiError = (error: any): error is ApiError =>
-  typeof error === "object" &&
-  error.type === "ApiError" &&
-  typeof error.message === "string";
 
 /** Starts the onboarding after a new user has been created */
 const startOnboarding = (): void => {

@@ -23,6 +23,14 @@ Client-side file encryption and decryption - keys never leave the browser and al
 * Google Cloud Storage
 * AWS S3 (coming soon&trade;!)
 
+## Roadmap
+* User invitations
+* Docker image
+* Groups and permissions
+* Multiple organisations per instance
+* Managed DropSpot instances
+* Peer-to-peer file transfers
+
 ## Setup
 ### Docker coming soon!
 The setup assumes you have a PostgreSQL database running with a valid connection string provided in the `DROPSPOT_DATABASE_URL` environment variable.

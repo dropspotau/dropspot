@@ -21,6 +21,7 @@ import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
 import { createDownloadUrl, saveFileLink } from "../storage";
+import { isApiError } from "../utils";
 
 const FADE_TIMEOUT = 3000;
 
@@ -227,13 +228,23 @@ export class UploadBarElement extends LitElement {
 
   private verifyUpload = async (): Promise<boolean> => {
     const auth = getAuth();
-    const uploadPreview = await previewUpload(auth, {
-      size: this.file.size,
-    });
-    const { can_upload: canUpload, integrations } = uploadPreview;
-    this.integrations = integrations;
 
-    return canUpload;
+    try {
+      const uploadPreview = await previewUpload(auth, {
+        size: this.file.size,
+      });
+      const { can_upload: canUpload, integrations } = uploadPreview;
+      this.integrations = integrations;
+
+      return canUpload;
+    } catch (e) {
+      const errorMessage = isApiError(e)
+        ? e.message
+        : "Sorry, there was an error uploading the file. Please try again.";
+      ToastElement.create(errorMessage, "danger");
+
+      return false;
+    }
   };
 
   private startUpload = async (integration: Integration): Promise<void> => {
