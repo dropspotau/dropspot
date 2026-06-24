@@ -5,6 +5,7 @@ import { deleteFile } from "dropspot-core";
 import { getAuth } from "../../auth";
 import { ToastElement } from "../toast";
 
+/** Element that deletes a given file when clicked */
 @customElement("delete-file")
 export class DeleteFileElement extends LitElement {
   static styles = css`
@@ -33,7 +34,8 @@ export class DeleteFileElement extends LitElement {
     this.removeEventListener("click", this.handleClick);
   }
 
-  private handleClick = async (): Promise<void> => {
+  private handleClick = async (e: MouseEvent): Promise<void> => {
+    e.stopPropagation();
     const auth = getAuth();
 
     if (!this.fileId || !auth) {
