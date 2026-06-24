@@ -60,6 +60,10 @@ export class LoginControllerElement extends LitElement {
       }
     }
 
+    .password-rules {
+      min-width: 20rem;
+    }
+
     .password-errors {
       display: flex;
       flex-flow: column;
@@ -283,6 +287,15 @@ export class LoginControllerElement extends LitElement {
         @keyup=${this.handleKeyUp}
       >
       </md-filled-text-field>
+      <md-icon id="password-requirements">info</md-icon>
+      <dropspot-tooltip target="#password-requirements">
+        <ul class="password-rules">
+          <li>Must contain at least eight characters</li>
+          <li>Must contain at least one letter</li>
+          <li>Must contain at least one number</li>
+          <li>Must contain at least one symbol</li>
+        </ul>
+      </dropspot-tooltip>
     </div>
     <span style="align-self: flex-start;">Add your name (optional)</span>
     <div class="form-row">

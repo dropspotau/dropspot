@@ -33,8 +33,16 @@ export class PopoverElement extends LitElement {
         left: calc(anchor(right) + 1rem);
       }
 
-      &[alignment="center"] {
+      &[alignment="top"] {
         position-area: top center;
+      }
+
+      &[alignment="center"] {
+        position-area: center center;
+      }
+
+      &[alignment="bottom"] {
+        position-area: bottom center;
       }
 
       &:popover-open {
@@ -46,7 +54,7 @@ export class PopoverElement extends LitElement {
   private popoverRef: Ref<HTMLDivElement> = createRef();
 
   @property()
-  private alignment: "left" | "center" | "right" = "right";
+  private alignment: "left" | "top" | "center" | "bottom" | "right" = "right";
 
   connectedCallback(): void {
     super.connectedCallback();
