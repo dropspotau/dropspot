@@ -110,13 +110,20 @@ pub async fn handle_file_upload(
         .into_response();
     }
 
-    let organisation = Some(organisation.unwrap());
-    let Ok(integration) =
-        get_integration_by_slug(pool, &organisation.unwrap().id, &file.storage).await
+    let organisation_id = organisation.unwrap().id;
+    let Ok(integration) = get_integration_by_slug(pool, &organisation_id, &file.storage).await
     else {
         return ApiError::new(
             format!("Integration not found for organisation"),
             StatusCode::UNAUTHORIZED,
+        )
+        .into_response();
+    };
+
+    let Ok(settings) = get_organisation_settings(pool, &organisation_id).await else {
+        return ApiError::new(
+            "Failed to retrieve settings for organisation".to_owned(),
+            StatusCode::NOT_FOUND,
         )
         .into_response();
     };
@@ -148,24 +155,46 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
+    let mut total_bytes: i32 = 0;
+    let maximum_file_size_bytes = settings.max_file_size_mb * 1024 * 1024;
+
     while let Some(bytes) = reader_stream.next().await {
         if bytes.is_err() {
             if delete_files(pool, &[file.id]).await.is_err() {
-                let api_error = ApiError::new(
+                return ApiError::new(
                     "Failed to upload file".to_owned(),
                     StatusCode::INTERNAL_SERVER_ERROR,
-                );
-                return api_error.into_response();
+                )
+                .into_response();
             };
 
-            let api_error = ApiError::new(
+            return ApiError::new(
                 "Failed to write file".to_owned(),
                 StatusCode::INTERNAL_SERVER_ERROR,
-            );
-            return api_error.into_response();
+            )
+            .into_response();
         };
 
-        if let Err(e) = writer.write(&bytes.unwrap()).await {
+        // Keep track if the byte size is too large
+        let bytes = bytes.unwrap();
+        total_bytes += bytes.len() as i32;
+
+        let has_exceeded_size = total_bytes > maximum_file_size_bytes;
+
+        if has_exceeded_size {
+            // TODO(alec): Clean up any uploads?
+            if delete_files(pool, &[file.id]).await.is_err() {
+                tracing::error!("Failed to delete uploading file while size is too large");
+            };
+
+            return ApiError::new(
+                "Maximum file size exceeded".to_owned(),
+                StatusCode::PAYLOAD_TOO_LARGE,
+            )
+            .into_response();
+        }
+
+        if let Err(e) = writer.write(&bytes).await {
             tracing::error!("Error writing to file: {e}");
 
             if delete_files(pool, &[file.id]).await.is_err() {
@@ -226,7 +255,7 @@ pub async fn handle_file_upload(
 pub async fn handle_preview_upload(
     State(state): State<AppState>,
     user: Option<User>,
-    Query(_payload): Query<PreviewUploadRequest>,
+    Query(payload): Query<PreviewUploadRequest>,
 ) -> Response {
     let pool = state.get_pool();
 
@@ -254,6 +283,14 @@ pub async fn handle_preview_upload(
             StatusCode::UNAUTHORIZED,
         )
         .into_response();
+    }
+
+    let file_size_mb = payload.size * 1024 * 1024;
+    let is_too_large = file_size_mb > settings.max_file_size_mb;
+
+    if is_too_large {
+        return ApiError::new("File is too large".to_owned(), StatusCode::BAD_REQUEST)
+            .into_response();
     }
 
     let upload_preiew = preview_upload(pool, &organisation.id).await;
