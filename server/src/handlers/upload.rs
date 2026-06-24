@@ -182,7 +182,9 @@ pub async fn handle_file_upload(
         let has_exceeded_size = total_bytes > maximum_file_size_bytes;
 
         if has_exceeded_size {
-            // TODO(alec): Clean up any uploads?
+            // TODO(alec): At the time of writing, all uploads write to a temporary directory before uploading
+            // anything. When actual streamed uploads are implemented, we'll want to actually clear
+            // up any half-uploaded files
             if delete_files(pool, &[file.id]).await.is_err() {
                 tracing::error!("Failed to delete uploading file while size is too large");
             };
