@@ -185,8 +185,8 @@ pub async fn handle_file_upload(
             // TODO(alec): At the time of writing, all uploads write to a temporary directory before uploading
             // anything. When actual streamed uploads are implemented, we'll want to actually clear
             // up any half-uploaded files
-            if delete_files(pool, &[file.id]).await.is_err() {
-                tracing::error!("Failed to delete uploading file while size is too large");
+            if let Err(e) = delete_files(pool, &[file.id]).await {
+                tracing::error!("Failed to delete uploading file while size is too large: {e}");
             };
 
             return ApiError::new(
@@ -215,7 +215,7 @@ pub async fn handle_file_upload(
         };
 
         if let Err(e) = writer.flush().await {
-            eprintln!("Error flushing to file: {e}");
+            tracing::error!("Error flushing to file: {e}");
 
             if delete_files(pool, &[file.id]).await.is_err() {
                 let api_error = ApiError::new(
@@ -234,7 +234,8 @@ pub async fn handle_file_upload(
     }
 
     if let Err(e) = storage.finish_upload(&file).await {
-        eprintln!("Error finishing upload: {e:?}");
+        tracing::error!("Error finishing upload: {e:?}");
+
         let api_error = ApiError::new(
             "Failed to upload file".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
