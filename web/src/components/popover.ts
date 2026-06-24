@@ -38,7 +38,7 @@ export class PopoverElement extends LitElement {
       }
 
       &[alignment="center"] {
-        position-area: top center;
+        position-area: center center;
       }
 
       &[alignment="bottom"] {

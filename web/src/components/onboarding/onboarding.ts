@@ -255,7 +255,7 @@ export class OnboardingElement extends LitElement {
 
   render() {
     return html`
-      <dropspot-popover alignment="center" ${ref(this.welcomePopoverRef)}>
+      <dropspot-popover alignment="top" ${ref(this.welcomePopoverRef)}>
         <section class="onboarding-popover welcome settings container">
           ${this.renderWelcome()}
         </section>
