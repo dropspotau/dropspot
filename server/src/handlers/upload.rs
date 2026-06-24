@@ -155,8 +155,8 @@ pub async fn handle_file_upload(
         return api_error.into_response();
     };
 
-    let mut total_bytes: i32 = 0;
-    let maximum_file_size_bytes = settings.max_file_size_mb * 1024 * 1024;
+    let mut total_bytes: i64 = 0;
+    let maximum_file_size_bytes = (settings.max_file_size_mb * 1024 * 1024) as i64;
 
     while let Some(bytes) = reader_stream.next().await {
         if bytes.is_err() {
@@ -177,7 +177,7 @@ pub async fn handle_file_upload(
 
         // Keep track if the byte size is too large
         let bytes = bytes.unwrap();
-        total_bytes += bytes.len() as i32;
+        total_bytes += bytes.len() as i64;
 
         let has_exceeded_size = total_bytes > maximum_file_size_bytes;
 
@@ -285,7 +285,7 @@ pub async fn handle_preview_upload(
         .into_response();
     }
 
-    let file_size_mb = payload.size * 1024 * 1024;
+    let file_size_mb = (payload.size / 1024 / 1024) as i32;
     let is_too_large = file_size_mb > settings.max_file_size_mb;
 
     if is_too_large {
