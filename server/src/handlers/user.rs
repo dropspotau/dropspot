@@ -126,6 +126,7 @@ pub async fn handle_create_user(
     )
     .await
     else {
+        tracing::error!("Could not create user");
         return ApiError::new(
             "Could not create user".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -136,6 +137,7 @@ pub async fn handle_create_user(
     let organisation = get_organisation_for_user(pool, &user.id).await;
 
     if let Err(e) = organisation {
+        tracing::error!("Could not get organisation for new user {}: {e}", user.id);
         let api_error: ApiError = LoginError::CreateUserError(e).into();
         return api_error.into_response();
     }
@@ -162,7 +164,7 @@ pub async fn handle_refresh_tokens(
     let claims = token_service.validate_refresh_token(&payload.refresh_token);
 
     if let Err(e) = claims {
-        eprintln!("Could not decode refresh token: {e:?}");
+        tracing::error!("Could not decode refresh token: {e:?}");
         let api_error: ApiError = LoginError::UserNotFound.into();
         return api_error.into_response();
     };
@@ -176,7 +178,7 @@ pub async fn handle_refresh_tokens(
     };
 
     let Ok(tokens) = token_service.generate_token_pair(user.id.clone(), user.email.clone()) else {
-        eprintln!("Could not generate access token");
+        tracing::error!("Could not generate access token");
         let api_error: ApiError = LoginError::UserNotFound.into();
         return api_error.into_response();
     };

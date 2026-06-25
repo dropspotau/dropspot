@@ -152,7 +152,6 @@ pub async fn create_user(
     is_admin: bool,
     password: &str,
 ) -> Result<User, sqlx::Error> {
-    let mut transaction = pool.begin().await?;
     let user_id = sqlx::query_as!(
         Id,
         r#"
@@ -172,10 +171,8 @@ pub async fn create_user(
         is_admin,
         password
     )
-    .fetch_one(&mut *transaction)
+    .fetch_one(pool)
     .await?;
-
-    transaction.commit().await?;
 
     get_user_by_id(pool, &user_id.id).await
 }

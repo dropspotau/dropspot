@@ -65,7 +65,7 @@ pub async fn get_organisation_for_user(
             from dropspot.organisation organisation
             left join dropspot.users users
             on users.organisation_id = organisation.id
-            where users.organisation_id = $1
+            where users.id = $1
             limit 1
         "#,
         user_id
