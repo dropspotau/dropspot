@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     db::{
-        Integration, User, get_integrations, get_organisation_for_user, get_organisation_member,
-        get_organisation_settings, get_users, update_organisation_member,
+        Integration, Member, User, get_integrations, get_organisation_for_user,
+        get_organisation_member, get_organisation_settings, get_users, update_organisation_member,
         update_organisation_settings, update_user_name,
     },
     handlers::utils::get_organisation_from_request_user,
@@ -23,7 +23,7 @@ use super::template::HtmlTemplate;
 #[derive(Template)]
 #[template(path = "settings.html")]
 struct SettingsTemplate {
-    users: Vec<User>,
+    members: Vec<Member>,
     file_expiry_minutes: i32,
     download_limit: i32,
     allow_external_uploads: bool,
@@ -62,7 +62,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let max_file_size_mb = settings.max_file_size_mb;
 
     let template = SettingsTemplate {
-        users,
+        members: users,
         file_expiry_minutes,
         download_limit,
         allow_external_uploads,
