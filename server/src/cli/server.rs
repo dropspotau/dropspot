@@ -4,10 +4,9 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::extract::MatchedPath;
-use axum::http::Request;
+use axum::http::{Method, Request};
 use axum::response::Response;
 use axum::routing::{get, patch, post};
-use http::Method;
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::cors::{Any, CorsLayer};

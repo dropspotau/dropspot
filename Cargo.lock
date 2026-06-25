@@ -849,7 +849,6 @@ dependencies = [
  "dropspot-core",
  "futures-util",
  "google-cloud-storage",
- "http",
  "http-serde",
  "jsonwebtoken",
  "regex",
