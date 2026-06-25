@@ -2,6 +2,9 @@ use askama::Template;
 use axum::extract::State;
 use axum::response::IntoResponse;
 
+#[cfg(not(feature = "web"))]
+use http::StatusCode;
+
 use crate::db::{User, get_onboarding_status};
 use crate::state::AppState;
 
@@ -16,6 +19,8 @@ struct IndexTemplate {
 }
 
 pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> impl IntoResponse {
+    #[cfg(not(feature = "web"))]
+    return StatusCode::NOT_FOUND.into_response();
     let header = get_header_template(user.as_ref());
 
     let mut should_show_onboarding = false;

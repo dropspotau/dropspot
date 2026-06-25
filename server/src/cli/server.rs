@@ -96,7 +96,6 @@ pub fn get_web_router() -> Router<AppState> {
 #[cfg(feature = "web")]
 pub fn get_web_router() -> Router<AppState> {
     Router::new()
-        .route("/", get(handle_index))
         .route("/header", get(handle_header))
         .route("/files", get(handle_files))
         .route("/settings", get(handle_settings))
@@ -124,8 +123,9 @@ pub async fn handle_run_server() -> Result<(), ()> {
     let cors_layer = get_cors_layer();
 
     let app = Router::new()
-        .nest("/", web_router)
+        .route("/", get(handle_index))
         .nest("/api", api_router)
+        .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())
         .layer(cors_layer)
         .layer(
