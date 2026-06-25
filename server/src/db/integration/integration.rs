@@ -67,6 +67,7 @@ pub async fn upsert_integration(
     slug: &StorageType,
     is_active: bool,
     data: &IntegrationData,
+    updated_by_id: Option<&Uuid>,
 ) -> Result<Integration, sqlx::Error> {
     sqlx::query_as!(
         Integration,
@@ -76,7 +77,9 @@ pub async fn upsert_integration(
             on conflict (organisation_id, slug)
             do update set
                 is_active = $3,
-                data = $4
+                data = $4,
+                updated_at = now(),
+                updated_by_id = $5
             returning
                 id,
                 slug as "slug: StorageType",
@@ -88,6 +91,7 @@ pub async fn upsert_integration(
         slug as &StorageType, // Needed for correct enum typing
         is_active,
         Json(data) as _,
+        updated_by_id,
     )
     .fetch_one(pool)
     .await

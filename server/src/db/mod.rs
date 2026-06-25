@@ -3,7 +3,6 @@ mod download;
 mod error;
 mod file;
 mod integration;
-mod member;
 mod onboarding;
 mod organisation;
 mod settings;
@@ -18,11 +17,6 @@ pub use file::{
     update_file,
 };
 pub use integration::{Integration, get_integration_by_slug, get_integrations, upsert_integration};
-
-pub use member::create_organisation_member;
-#[cfg(feature = "web")]
-pub use member::get_organisation_member;
-
 pub use organisation::{Organisation, get_default_organisation, get_organisation_for_user};
 
 #[cfg(feature = "web")]
@@ -36,4 +30,4 @@ pub use upload::{finish_upload, get_upload_by_file_id, preview_upload, start_upl
 
 pub use user::{User, create_user, get_user_by_email, get_user_by_id, get_user_password};
 #[cfg(feature = "web")]
-pub use user::{get_users, update_user_name};
+pub use user::{get_users, update_user};
