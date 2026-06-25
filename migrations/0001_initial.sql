@@ -2,30 +2,27 @@ create extension if not exists "uuid-ossp";
 
 create schema if not exists dropspot;
 
-create table dropspot.users (
-    id uuid primary key default uuid_generate_v4(),
-    email text not null,
-    password text not null,
-    first_name text not null,
-    last_name text not null,
-    created_at timestamptz not null default now()
-);
-
 create table dropspot.organisation (
     id uuid primary key default uuid_generate_v4(),
     name text not null,
     created_at timestamptz not null default now()
 );
 
-create table dropspot.member (
+create table dropspot.users (
     id uuid primary key default uuid_generate_v4(),
-    organisation_id uuid not null references dropspot.organisation (id) on delete cascade,
-    user_id uuid not null references dropspot.users on delete cascade,
+    email text not null,
+    password text not null,
+    first_name text not null,
+    last_name text not null,
     created_at timestamptz not null default now(),
+    updated_at timestamptz,
+    updated_by_id uuid references dropspot.users (id) on delete set null,
+    organisation_id uuid not null references dropspot.organisation (id) on delete cascade,
     is_admin boolean not null,
 
-    unique (organisation_id, user_id)
+    unique (organisation_id, id)
 );
+
 
 create type storage as enum ('local', 's3', 'gcs');
 
@@ -39,7 +36,9 @@ create table dropspot.file (
     max_downloads int not null,
     has_uploaded boolean not null default false,
     storage storage not null,
-    has_expired boolean not null default false
+    has_expired boolean not null default false,
+    updated_at timestamptz,
+    updated_by_id uuid references dropspot.users (id) on delete set null
 );
 
 
@@ -72,6 +71,8 @@ create table dropspot.integration (
     organisation_id uuid references dropspot.organisation (id) on delete cascade not null,
     is_active boolean not null,
     data jsonb not null,
+    updated_at timestamptz,
+    updated_by_id uuid references dropspot.users (id) on delete set null,
 
     unique(slug, organisation_id) -- One integration per type per organisation
 );
@@ -83,7 +84,9 @@ create table dropspot.settings (
     default_download_limit int not null check (default_download_limit > 0),
     allow_external_uploads boolean not null,
     allow_external_downloads boolean not null,
-    max_file_size_mb integer not null
+    max_file_size_mb integer not null,
+    updated_at timestamptz,
+    updated_by_id uuid references dropspot.users (id) on delete set null
 );
 
 -- A record of each user's onboarding completion
@@ -98,13 +101,14 @@ create table dropspot.onboarding (
 -- Indexes
 --
 
-create index idx_member_organisation_id on dropspot.member (organisation_id);
-create index idx_member_user_id on dropspot.member (user_id);
+create index idx_user_updated_by_id on dropspot.users (updated_by_id);
 create index idx_file_created_by_id on dropspot.file (created_by_id);
+create index idx_file_updated_by_id on dropspot.file (updated_by_id);
 create index idx_upload_file_id on dropspot.upload (file_id);
 create index idx_download_file_id on dropspot.download (file_id);
 create index idx_download_created_by_id on dropspot.download (created_by_id);
 create index idx_settings_organisation_id on dropspot.settings (organisation_id);
+create index idx_settings_updated_by_id on dropspot.settings (updated_by_id);
 
 
 --
