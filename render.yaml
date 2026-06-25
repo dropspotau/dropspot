@@ -36,8 +36,8 @@ projects:
               mountPath: /opt/data
               sizeGB: 5
             domains:
-              - dropspot.au
-              - www.dropspot.au
+              - app.dropspot.au
+              - www.app.dropspot.au
             renderSubdomainPolicy: disabled
 
         databases:
