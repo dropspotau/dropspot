@@ -15,4 +15,19 @@
             <span class="form-value badge">{{ user.file_count }}</span>
         </div>
     </div>
+    <div class="form-row">
+        <div class="form-field">
+            <span class="form-label">Administrator</span>
+            <div>
+                <!-- When the switch is unselected, the value isn't supplied (effectively false) -->
+                <md-switch icons 
+                           name="is_admin"
+                           value="true"
+                           {% if user.is_admin %}
+                               selected
+                           {% endif %}
+                ></md-switch>
+            </div>
+        </div>
+    </div>
 </div>
