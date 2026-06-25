@@ -63,9 +63,9 @@ pub async fn get_organisation_for_user(
               organisation.name,
               organisation.created_at
             from dropspot.organisation organisation
-            left join dropspot.member member
-            on member.organisation_id = organisation.id
-            where member.user_id = $1
+            left join dropspot.users users
+            on users.organisation_id = organisation.id
+            where users.organisation_id = $1
             limit 1
         "#,
         user_id
@@ -97,6 +97,7 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
         &IntegrationData::Local(LocalIntegrationData {
             folder: "files".to_owned(),
         }),
+        None,
     )
     .await?;
 

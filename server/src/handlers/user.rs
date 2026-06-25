@@ -18,7 +18,7 @@ use crate::{
     auth::password::{hash_password, verify_password},
     db::{
         User, create_user, get_default_organisation, get_organisation_for_user, get_user_by_email,
-        get_user_by_id, get_user_password,
+        get_user_by_id, get_user_password, get_users,
     },
     state::AppState,
     types::ApiError,
@@ -68,6 +68,22 @@ pub async fn handle_create_user(
 ) -> impl IntoResponse {
     let pool = state.get_pool();
 
+    let Ok(organisation) = get_default_organisation(pool).await else {
+        return ApiError::new(
+            "Could not retrieve default organisation for user creation".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
+    let Ok(existing_users) = get_users(pool, &organisation.id).await else {
+        return ApiError::new(
+            "Organisation users not found".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
+    let is_first_user = existing_users.is_empty();
+
     if let Ok(_existing) = get_user_by_email(pool, &payload.email).await {
         let api_error = ApiError::new(
             "A user with that email already exists".to_owned(),
@@ -96,24 +112,17 @@ pub async fn handle_create_user(
     let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
     let password_base64 = engine.encode(password_hash);
 
-    let Ok(organisation) = get_default_organisation(pool).await else {
-        return ApiError::new(
-            "Could not retrieve default organisation for user creation".to_owned(),
-            StatusCode::INTERNAL_SERVER_ERROR,
-        )
-        .into_response();
-    };
-
     let first_name = payload.first_name.unwrap_or("".to_owned());
     let last_name = payload.last_name.unwrap_or("".to_owned());
 
     let Ok(user) = create_user(
         pool,
         &payload.email,
-        &password_base64,
         &first_name,
         &last_name,
         &organisation.id,
+        is_first_user,
+        &password_base64,
     )
     .await
     else {

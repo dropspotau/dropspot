@@ -67,16 +67,18 @@ pub async fn upsert_integration(
     slug: &StorageType,
     is_active: bool,
     data: &IntegrationData,
+    updated_by_id: Option<&Uuid>,
 ) -> Result<Integration, sqlx::Error> {
     sqlx::query_as!(
         Integration,
         r#"
-            insert into dropspot.integration (organisation_id, slug, is_active, data)
-            values ($1, $2, $3, $4)
+            insert into dropspot.integration (organisation_id, slug, is_active, data, updated_at, updated_by_id)
+            values ($1, $2, $3, $4, now(), null)
             on conflict (organisation_id, slug)
             do update set
                 is_active = $3,
-                data = $4
+                data = $4,
+                updated_by_id = $5
             returning
                 id,
                 slug as "slug: StorageType",
@@ -88,6 +90,7 @@ pub async fn upsert_integration(
         slug as &StorageType, // Needed for correct enum typing
         is_active,
         Json(data) as _,
+        updated_by_id,
     )
     .fetch_one(pool)
     .await

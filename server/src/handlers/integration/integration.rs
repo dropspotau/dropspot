@@ -98,28 +98,34 @@ pub async fn handle_upsert_integration(
     Json(payload): Json<UpsertIntegrationPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();
-    let organisation = get_organisation_for_user(pool, &user.id).await;
-
-    if organisation.is_err() {
-        let api_error = ApiError::new(
+    let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
+        return ApiError::new(
             "Failed to load organisation".to_owned(),
-            StatusCode::INTERNAL_SERVER_ERROR,
-        );
-        return api_error.into_response();
+            StatusCode::FORBIDDEN,
+        )
+        .into_response();
     };
+
+    if !user.is_admin {
+        return ApiError::new(
+            "Only administrators can update integrations".to_owned(),
+            StatusCode::FORBIDDEN,
+        )
+        .into_response();
+    }
 
     let Ok(storage_type) = StorageType::try_from(slug) else {
         let api_error = ApiError::new("Bad request".to_owned(), StatusCode::BAD_REQUEST);
         return api_error.into_response();
     };
 
-    let organisation = organisation.unwrap();
     let result = upsert_integration(
         &pool,
         &organisation.id,
         &storage_type,
         payload.is_active,
         &payload.data,
+        Some(&user.id),
     )
     .await;
 

@@ -11,7 +11,6 @@ create table dropspot.organisation (
 create table dropspot.users (
     id uuid primary key default uuid_generate_v4(),
     email text not null,
-    password text not null,
     first_name text not null,
     last_name text not null,
     created_at timestamptz not null default now(),
@@ -21,6 +20,12 @@ create table dropspot.users (
     is_admin boolean not null,
 
     unique (organisation_id, id)
+);
+
+create table dropspot.password (
+    user_id uuid primary key references dropspot.users (id) on delete cascade,
+    password text not null,
+    updated_at timestamptz
 );
 
 
@@ -102,6 +107,7 @@ create table dropspot.onboarding (
 --
 
 create index idx_user_updated_by_id on dropspot.users (updated_by_id);
+create index idx_password_user_id on dropspot.password (user_id);
 create index idx_file_created_by_id on dropspot.file (created_by_id);
 create index idx_file_updated_by_id on dropspot.file (updated_by_id);
 create index idx_upload_file_id on dropspot.upload (file_id);
