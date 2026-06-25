@@ -28,7 +28,6 @@ create table dropspot.password (
     updated_at timestamptz
 );
 
-
 create type storage as enum ('local', 's3', 'gcs');
 
 create table dropspot.file (
@@ -46,7 +45,6 @@ create table dropspot.file (
     updated_by_id uuid references dropspot.users (id) on delete set null
 );
 
-
 -- 1-1 table recording how a file was uploaded. A file can only be uploaded by one person
 create table dropspot.upload (
     id uuid primary key default uuid_generate_v4(),
@@ -58,7 +56,6 @@ create table dropspot.upload (
     upload_ip inet not null,
     has_uploaded boolean not null generated always as (upload_finished_at is not null) stored
 );
-
 
 -- But a file can be downloaded by multiple people
 create table dropspot.download (
@@ -115,8 +112,8 @@ create index idx_file_updated_by_id on dropspot.file (updated_by_id);
 create index idx_upload_file_id on dropspot.upload (file_id);
 create index idx_download_file_id on dropspot.download (file_id);
 create index idx_download_created_by_id on dropspot.download (created_by_id);
-create index idx_integration_organisation_id on dropspot.integration (organisation_id)
-create index idx_integration_updated_by_id on dropspot.integration (updated_by_id)
+create index idx_integration_organisation_id on dropspot.integration (organisation_id);
+create index idx_integration_updated_by_id on dropspot.integration (updated_by_id);
 create index idx_settings_organisation_id on dropspot.settings (organisation_id);
 create index idx_settings_updated_by_id on dropspot.settings (updated_by_id);
 

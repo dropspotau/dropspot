@@ -29,6 +29,7 @@ struct SettingsTemplate {
     allow_external_downloads: bool,
     max_file_size_mb: i32,
     current_user: User,
+    is_only_admin: bool,
     integrations: Vec<Integration>,
 }
 
@@ -63,6 +64,11 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     let allow_external_uploads = settings.allow_external_uploads;
     let allow_external_downloads = settings.allow_external_downloads;
     let max_file_size_mb = settings.max_file_size_mb;
+    let is_only_admin = users
+        .iter()
+        .filter(|u| u.id != user.id && u.is_admin)
+        .collect::<Vec<&User>>()
+        .is_empty();
 
     let template = SettingsTemplate {
         users,
@@ -72,6 +78,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
         allow_external_downloads,
         max_file_size_mb,
         current_user: user,
+        is_only_admin,
         integrations,
     };
     HtmlTemplate(template).into_response()
@@ -148,10 +155,10 @@ pub async fn handle_update_settings(
 
 #[derive(Deserialize)]
 pub struct UpdateUserPayload {
-    first_name: Option<String>,
-    last_name: Option<String>,
-    email: Option<String>,
-    is_admin: Option<bool>,
+    first_name: String,
+    last_name: String,
+    email: String,
+    is_admin: bool,
 }
 
 pub async fn handle_update_user(
@@ -163,6 +170,10 @@ pub async fn handle_update_user(
     let pool = state.get_pool();
 
     let Ok(user) = get_user_by_id(pool, &id).await else {
+        let template = UpdateSettingsTemplate { success: false };
+        return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
+    };
+    let Ok(all_users) = get_users(pool, &user.organisation_id).await else {
         let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::NOT_FOUND, HtmlTemplate(template)).into_response();
     };
@@ -182,25 +193,26 @@ pub async fn handle_update_user(
         return (StatusCode::UNAUTHORIZED, HtmlTemplate(template)).into_response();
     }
 
-    let can_update_admin_status = current_user.is_admin;
+    // Prevent the last admin from demoting themselves
+    let is_only_admin = all_users
+        .into_iter()
+        .filter(|u| u.id != current_user.id && u.is_admin)
+        .collect::<Vec<User>>()
+        .is_empty();
+    let can_update_admin_status = current_user.is_admin && !is_only_admin;
 
-    if !can_update_admin_status && payload.is_admin.is_some() {
+    if !can_update_admin_status && payload.is_admin != user.is_admin {
         let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::BAD_REQUEST, HtmlTemplate(template)).into_response();
     }
 
-    let first_name = payload.first_name.unwrap_or(user.first_name.clone());
-    let last_name = payload.last_name.unwrap_or(user.last_name.clone());
-    let email = payload.email.unwrap_or(user.email.clone());
-    let is_admin = payload.is_admin.unwrap_or(user.is_admin);
-
     if let Err(e) = update_user(
         pool,
         &id,
-        &first_name,
-        &last_name,
-        &email,
-        is_admin,
+        &payload.first_name,
+        &payload.last_name,
+        &payload.email,
+        payload.is_admin,
         &current_user.id,
     )
     .await
