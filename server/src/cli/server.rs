@@ -15,6 +15,9 @@ use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing::{Span, info_span};
 
+#[cfg(not(feature = "web"))]
+use axum::http::StatusCode;
+
 use crate::db::connect;
 
 use crate::handlers::{
@@ -123,7 +126,12 @@ pub async fn handle_run_server() -> Result<(), ()> {
     let cors_layer = get_cors_layer();
 
     let app = Router::new()
-        .route("/", get(handle_index))
+        .route("/", cfg_select! {
+            feature = "web" => get(handle_index),
+            _ => get(async || {
+                StatusCode::NOT_FOUND
+            })
+        })
         .nest("/api", api_router)
         .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())
