@@ -199,9 +199,15 @@ pub async fn handle_update_user(
         .filter(|u| u.id != current_user.id && u.is_admin)
         .collect::<Vec<User>>()
         .is_empty();
-    let can_update_admin_status = current_user.is_admin && !is_only_admin;
+    let can_update_admin_status = match is_only_admin {
+        // Only allow when promoting someone else
+        true => current_user.is_admin && user.id != current_user.id && payload.is_admin,
+        // Only allow when changing someone else
+        false => current_user.is_admin && user.id != current_user.id,
+    };
 
     if !can_update_admin_status && payload.is_admin != user.is_admin {
+        // Admin status attempted to be changed when it shouldn't have been
         let template = UpdateSettingsTemplate { success: false };
         return (StatusCode::BAD_REQUEST, HtmlTemplate(template)).into_response();
     }
