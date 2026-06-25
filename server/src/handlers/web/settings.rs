@@ -28,7 +28,7 @@ struct SettingsTemplate {
     allow_external_uploads: bool,
     allow_external_downloads: bool,
     max_file_size_mb: i32,
-    current_user_id: Uuid,
+    current_user: User,
     integrations: Vec<Integration>,
 }
 
@@ -71,7 +71,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
         allow_external_uploads,
         allow_external_downloads,
         max_file_size_mb,
-        current_user_id: user.id,
+        current_user: user,
         integrations,
     };
     HtmlTemplate(template).into_response()

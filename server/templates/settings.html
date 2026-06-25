@@ -72,7 +72,8 @@
     </section>
 
     {% for user in users %}
-        {% let is_current_user = user.id == current_user_id %}
+        {% let is_current_user = user.id == current_user.id %}
+        {% let can_change_admin = current_user.is_admin && user.id != current_user.id && user.organisation_id == current_user.organisation_id %}
         <section class="settings-page" menu-key="user-{{ user.id }}">
             {% if is_current_user %}
                 {% include "user_edit.html" %}

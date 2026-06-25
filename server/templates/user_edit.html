@@ -34,6 +34,24 @@
     </div>
     <div class="form-row">
         <div class="form-field">
+            <span class="form-label">Administrator</span>
+            <div>
+                <!-- When the switch is unselected, the value isn't supplied (effectively false) -->
+                <md-switch icons 
+                           name="is_admin"
+                           value="true"
+                           {% if !can_change_admin %}
+                                disabled
+                           {% endif %}
+                           {% if user.is_admin %}
+                               selected
+                           {% endif %}
+                ></md-switch>
+            </div>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-field">
             <span class="form-label">Joined At</span>
             <span class="form-value">{{ user.created_at_slash_date() }}</span>
         </div>
