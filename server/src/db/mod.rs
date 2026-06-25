@@ -21,7 +21,7 @@ pub use integration::{Integration, get_integration_by_slug, get_integrations, up
 
 pub use member::create_organisation_member;
 #[cfg(feature = "web")]
-pub use member::get_organisation_member;
+pub use member::{get_organisation_member, update_organisation_member};
 
 pub use organisation::{Organisation, get_default_organisation, get_organisation_for_user};
 

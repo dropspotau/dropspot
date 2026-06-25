@@ -2,6 +2,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 pub struct Member {
+    pub id: Uuid,
     pub is_admin: bool,
 }
 
@@ -14,6 +15,7 @@ pub async fn get_organisation_member(
         Member,
         r#"
             select
+              id,
               is_admin
             from dropspot.member
             where organisation_id = $1 and user_id = $2
@@ -33,6 +35,7 @@ pub async fn get_organisation_members(
         Member,
         r#"
             select
+              id,
               is_admin
             from dropspot.member
             where organisation_id = $1
@@ -54,10 +57,30 @@ pub async fn create_organisation_member(
         r#"
             insert into dropspot.member (organisation_id, user_id, is_admin)
             values ($1, $2, $3)
-            returning is_admin
+            returning id, is_admin
         "#,
         organisation_id,
         user_id,
+        is_admin
+    )
+    .fetch_one(pool)
+    .await
+}
+
+pub async fn update_organisation_member(
+    pool: &PgPool,
+    member_id: &Uuid,
+    is_admin: bool,
+) -> Result<Member, sqlx::Error> {
+    sqlx::query_as!(
+        Member,
+        r#"
+            update dropspot.member
+            set is_admin = $2
+            where id = $1
+            returning id, is_admin
+        "#,
+        member_id,
         is_admin
     )
     .fetch_one(pool)
