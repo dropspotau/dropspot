@@ -7,7 +7,7 @@ envVarGroups:
         value: false # Compile against the live database. It should be migrated before the build starts
 
 projects:
-  - name: dropspot-render
+  - name: dropspot
     environments:
       - name: production
         services:
