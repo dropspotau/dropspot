@@ -4,10 +4,9 @@ use std::time::Duration;
 
 use axum::Router;
 use axum::extract::MatchedPath;
-use axum::http::Request;
+use axum::http::{Method, Request};
 use axum::response::Response;
 use axum::routing::{get, patch, post};
-use http::Method;
 use tokio::net::TcpListener;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::cors::{Any, CorsLayer};
@@ -15,13 +14,16 @@ use tower_http::services::{ServeDir, ServeFile};
 use tower_http::trace::TraceLayer;
 use tracing::{Span, info_span};
 
+#[cfg(not(feature = "web"))]
+use axum::http::StatusCode;
+
 use crate::db::connect;
 
 use crate::handlers::{
     handle_create_user, handle_delete_file, handle_file_download, handle_file_request_download,
     handle_file_request_upload, handle_file_upload, handle_get_file,
     handle_get_integration_by_slug, handle_get_integrations, handle_health, handle_list_files,
-    handle_login, handle_preview_upload, handle_refresh_tokens, handle_root, handle_update_file,
+    handle_login, handle_preview_upload, handle_refresh_tokens, handle_update_file,
     handle_upsert_integration,
 };
 
@@ -96,7 +98,6 @@ pub fn get_web_router() -> Router<AppState> {
 #[cfg(feature = "web")]
 pub fn get_web_router() -> Router<AppState> {
     Router::new()
-        .route("/", get(handle_index))
         .route("/header", get(handle_header))
         .route("/files", get(handle_files))
         .route("/settings", get(handle_settings))
@@ -124,7 +125,12 @@ pub async fn handle_run_server() -> Result<(), ()> {
     let cors_layer = get_cors_layer();
 
     let app = Router::new()
-        .route("/", get(handle_root))
+        .route("/", cfg_select! {
+            feature = "web" => get(handle_index),
+            _ => get(async || {
+                StatusCode::NOT_FOUND
+            })
+        })
         .nest("/api", api_router)
         .nest("/app", web_router)
         .nest_service("/static", serve_dir.clone())

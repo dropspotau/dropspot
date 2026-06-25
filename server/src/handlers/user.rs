@@ -1,5 +1,6 @@
 use axum::{
     extract::{Json, State},
+    http::StatusCode,
     response::IntoResponse,
 };
 use base64::{
@@ -11,7 +12,6 @@ use dropspot_core::{
     auth::validate_password,
     user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
 };
-use reqwest::StatusCode;
 use thiserror::Error;
 
 use crate::{
