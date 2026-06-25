@@ -106,13 +106,17 @@ create table dropspot.onboarding (
 -- Indexes
 --
 
+create index idx_user_email on dropspot.users (email);
 create index idx_user_updated_by_id on dropspot.users (updated_by_id);
+create index idx_user_organisation_id on dropspot.users (organisation_id);
 create index idx_password_user_id on dropspot.password (user_id);
 create index idx_file_created_by_id on dropspot.file (created_by_id);
 create index idx_file_updated_by_id on dropspot.file (updated_by_id);
 create index idx_upload_file_id on dropspot.upload (file_id);
 create index idx_download_file_id on dropspot.download (file_id);
 create index idx_download_created_by_id on dropspot.download (created_by_id);
+create index idx_integration_organisation_id on dropspot.integration (organisation_id)
+create index idx_integration_updated_by_id on dropspot.integration (updated_by_id)
 create index idx_settings_organisation_id on dropspot.settings (organisation_id);
 create index idx_settings_updated_by_id on dropspot.settings (updated_by_id);
 
