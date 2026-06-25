@@ -72,12 +72,13 @@ pub async fn upsert_integration(
     sqlx::query_as!(
         Integration,
         r#"
-            insert into dropspot.integration (organisation_id, slug, is_active, data, updated_at, updated_by_id)
-            values ($1, $2, $3, $4, now(), null)
+            insert into dropspot.integration (organisation_id, slug, is_active, data)
+            values ($1, $2, $3, $4)
             on conflict (organisation_id, slug)
             do update set
                 is_active = $3,
                 data = $4,
+                updated_at = now(),
                 updated_by_id = $5
             returning
                 id,
