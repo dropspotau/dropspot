@@ -212,13 +212,13 @@ pub async fn handle_login(
 
     let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
     let Ok(password) = engine.decode(password_base64.unwrap()) else {
-        eprintln!("Could not decode");
+        tracing::error!("Could not decode");
         let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
         return api_error.into_response();
     };
 
     let Ok(password) = str::from_utf8(&password) else {
-        eprintln!("Could not decode 2");
+        tracing::error!("Could not decode 2");
         let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
         return api_error.into_response();
     };
