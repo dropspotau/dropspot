@@ -104,6 +104,9 @@ export class LoginControllerElement extends LitElement {
   @state()
   private passwordErrors: string[] = [];
 
+  @state()
+  private loginError: string | null = null;
+
   private submitButtonRef: Ref<MdFilledButton> = createRef();
 
   connectedCallback(): void {
@@ -117,6 +120,7 @@ export class LoginControllerElement extends LitElement {
   private handleLogin = async (event: SubmitEvent): Promise<false> => {
     event.preventDefault();
     event.stopPropagation();
+    this.loginError = null;
 
     const form = event.target;
 
@@ -180,7 +184,7 @@ export class LoginControllerElement extends LitElement {
         errorMessage = e.message;
       }
 
-      ToastElement.create(errorMessage, "danger");
+      this.loginError = errorMessage;
     } finally {
       this.isSubmitting = false;
       this.passwordErrors = [];
@@ -231,6 +235,7 @@ export class LoginControllerElement extends LitElement {
 
   private handleToggleSignup = (): void => {
     this.isSigningUp = !this.isSigningUp;
+    this.loginError = null;
   };
 
   private renderPasswordErrors = (errors: string[]): TemplateResult<1> => html`
@@ -337,6 +342,13 @@ export class LoginControllerElement extends LitElement {
         <form class="form container text-primary" @submit="${this.handleLogin}">
           ${this.isSigningUp ? this.renderSignup() : this.renderSignin()}
           <hr />
+          ${this.loginError
+            ? html`
+                <dropspot-alert variant="danger">
+                  ${this.loginError}
+                </dropspot-alert>
+              `
+            : ""}
           <section class="form-row">
             <p class="no-margin text-primary">
               <span>${subtitleText}</span>

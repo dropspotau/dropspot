@@ -12,7 +12,6 @@ use dropspot_core::{
     auth::validate_password,
     user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
 };
-use thiserror::Error;
 
 use crate::{
     auth::password::{hash_password, verify_password},
@@ -23,33 +22,6 @@ use crate::{
     state::AppState,
     types::ApiError,
 };
-
-#[derive(Error, Debug)]
-pub enum LoginError {
-    #[error("Could not create user")]
-    CreateUserError(sqlx::Error),
-
-    #[error("Could not create user")]
-    CreateUserPasswordError,
-
-    #[error("Invalid email or password")]
-    UserLookupError(sqlx::Error),
-
-    #[error("User not found")]
-    UserNotFound,
-
-    #[error("Passwords do not match")]
-    PasswordMismatch,
-}
-
-impl Into<ApiError> for LoginError {
-    fn into(self) -> ApiError {
-        ApiError {
-            message: self.to_string(),
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
 
 impl From<User> for ApiUser {
     fn from(user: User) -> Self {
@@ -69,15 +41,17 @@ pub async fn handle_create_user(
     let pool = state.get_pool();
 
     let Ok(organisation) = get_default_organisation(pool).await else {
+        tracing::error!("Could not retrieve default organisation for user creation");
         return ApiError::new(
-            "Could not retrieve default organisation for user creation".to_owned(),
+            "Sorry, there was an error creating your user. Please try again.".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
     };
     let Ok(existing_users) = get_users(pool, &organisation.id).await else {
+        tracing::error!("Organisation users not found: {}", organisation.id);
         return ApiError::new(
-            "Organisation users not found".to_owned(),
+            "Sorry, there was an error creating your user. Please try again.".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
@@ -105,8 +79,12 @@ pub async fn handle_create_user(
     }
 
     let Ok(password_hash) = hash_password(&payload.password) else {
-        let api_error: ApiError = LoginError::CreateUserPasswordError.into();
-        return api_error.into_response();
+        tracing::error!("Could not hash password");
+        return ApiError::new(
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
     };
 
     let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
@@ -128,7 +106,7 @@ pub async fn handle_create_user(
     else {
         tracing::error!("Could not create user");
         return ApiError::new(
-            "Could not create user".to_owned(),
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
@@ -138,15 +116,25 @@ pub async fn handle_create_user(
 
     if let Err(e) = organisation {
         tracing::error!("Could not get organisation for new user {}: {e}", user.id);
-        let api_error: ApiError = LoginError::CreateUserError(e).into();
-        return api_error.into_response();
+        return ApiError::new(
+            "Could not create user".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
     }
 
     // Generate tokens
-    let tokens = state
+    let Ok(tokens) = state
         .get_token_service()
-        .generate_token_pair(user.id, user.email.clone())
-        .unwrap();
+        .generate_token_pair(user.id.clone(), user.email.clone())
+    else {
+        tracing::error!("Could not generate access token");
+        return ApiError::new(
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
 
     Json(LoginResult {
         user: ApiUser::from(user),
@@ -165,22 +153,31 @@ pub async fn handle_refresh_tokens(
 
     if let Err(e) = claims {
         tracing::error!("Could not decode refresh token: {e:?}");
-        let api_error: ApiError = LoginError::UserNotFound.into();
-        return api_error.into_response();
+        return ApiError::new(
+            "Sorry, there was an error signing back in. Please try again.".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
     };
 
     let claims = claims.unwrap();
     let user_id = &claims.sub;
 
     let Ok(user) = get_user_by_id(pool, user_id).await else {
-        let api_error: ApiError = LoginError::UserNotFound.into();
-        return api_error.into_response();
+        return ApiError::new(
+            "Token refresh user not found".to_owned(),
+            StatusCode::NOT_FOUND,
+        )
+        .into_response();
     };
 
     let Ok(tokens) = token_service.generate_token_pair(user.id.clone(), user.email.clone()) else {
         tracing::error!("Could not generate access token");
-        let api_error: ApiError = LoginError::UserNotFound.into();
-        return api_error.into_response();
+        return ApiError::new(
+            "Sorry, there was an error signing back in. Please try again.".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
     };
 
     Json(LoginResult {
@@ -195,32 +192,29 @@ pub async fn handle_login(
     Json(payload): Json<LoginPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();
-    let user = get_user_by_email(pool, &payload.email).await;
-
-    if let Err(e) = user {
-        let api_error: ApiError = LoginError::UserLookupError(e).into();
-        return api_error.into_response();
+    let default_error = ApiError::new(
+        "Invalid email or password".to_owned(),
+        StatusCode::FORBIDDEN,
+    );
+    let Ok(user) = get_user_by_email(pool, &payload.email).await else {
+        return default_error.into_response();
     };
-
-    let user = user.unwrap();
     let password_base64 = get_user_password(pool, &user.id).await;
 
     if let Err(e) = password_base64 {
-        let api_error: ApiError = LoginError::UserLookupError(e).into();
-        return api_error.into_response();
+        tracing::error!("Could not get user password: {}: {e}", user.id);
+        return default_error.into_response();
     };
 
     let engine = GeneralPurpose::new(&STANDARD, NO_PAD);
     let Ok(password) = engine.decode(password_base64.unwrap()) else {
-        eprintln!("Could not decode");
-        let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
-        return api_error.into_response();
+        tracing::error!("Could not decode password");
+        return default_error.into_response();
     };
 
     let Ok(password) = str::from_utf8(&password) else {
-        eprintln!("Could not decode 2");
-        let api_error: ApiError = LoginError::UserLookupError(sqlx::Error::RowNotFound).into();
-        return api_error.into_response();
+        tracing::error!("Could not convert password from UTF-8");
+        return default_error.into_response();
     };
 
     let matches = match verify_password(&payload.password, password) {
@@ -229,15 +223,22 @@ pub async fn handle_login(
     };
 
     if !matches {
-        let api_error: ApiError = LoginError::PasswordMismatch.into();
-        return api_error.into_response();
+        // Invalid password, don't bother logging
+        return default_error.into_response();
     }
 
     // Generate tokens
-    let tokens = state
+    let Ok(tokens) = state
         .get_token_service()
         .generate_token_pair(user.id, user.email.clone())
-        .unwrap();
+    else {
+        tracing::error!("Could not generate tokens for user {}", user.id);
+        return ApiError::new(
+            "Sorry, there was an error signing in. Please try again.".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
 
     Json(LoginResult {
         user: ApiUser::from(user),
