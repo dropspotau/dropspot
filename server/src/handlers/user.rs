@@ -124,7 +124,10 @@ pub async fn handle_create_user(
     }
 
     // Generate tokens
-    let Ok(tokens) = token_service.generate_token_pair(user.id.clone(), user.email.clone()) else {
+    let Ok(tokens) = state
+        .get_token_service()
+        .generate_token_pair(user.id.clone(), user.email.clone())
+    else {
         tracing::error!("Could not generate access token");
         return ApiError::new(
             "Sorry, there was an error creating your user. Please try again".to_owned(),
