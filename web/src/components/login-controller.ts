@@ -344,9 +344,9 @@ export class LoginControllerElement extends LitElement {
           <hr />
           ${this.loginError
             ? html`
-                <dropspot-alert variant="danger"
-                  >${this.loginError}</dropspot-alert
-                >
+                <dropspot-alert variant="danger">
+                  ${this.loginError}
+                </dropspot-alert>
               `
             : ""}
           <section class="form-row">
