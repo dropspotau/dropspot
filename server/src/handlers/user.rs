@@ -81,7 +81,7 @@ pub async fn handle_create_user(
     let Ok(password_hash) = hash_password(&payload.password) else {
         tracing::error!("Could not hash password");
         return ApiError::new(
-            "Could not create user".to_owned(),
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
@@ -106,7 +106,7 @@ pub async fn handle_create_user(
     else {
         tracing::error!("Could not create user");
         return ApiError::new(
-            "Could not create user".to_owned(),
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
         .into_response();
@@ -124,10 +124,14 @@ pub async fn handle_create_user(
     }
 
     // Generate tokens
-    let tokens = state
-        .get_token_service()
-        .generate_token_pair(user.id, user.email.clone())
-        .unwrap();
+    let Ok(tokens) = token_service.generate_token_pair(user.id.clone(), user.email.clone()) else {
+        tracing::error!("Could not generate access token");
+        return ApiError::new(
+            "Sorry, there was an error creating your user. Please try again".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
 
     Json(LoginResult {
         user: ApiUser::from(user),
