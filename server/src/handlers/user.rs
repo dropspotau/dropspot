@@ -189,19 +189,13 @@ pub async fn handle_login(
     Json(payload): Json<LoginPayload>,
 ) -> impl IntoResponse {
     let pool = state.get_pool();
-    let user = get_user_by_email(pool, &payload.email).await;
-
     let default_error = ApiError::new(
         "Invalid email or password".to_owned(),
         StatusCode::FORBIDDEN,
     );
-
-    if let Err(e) = user {
-        tracing::error!("User lookup failure for email {}: {e}", payload.email);
+    let Ok(user) = get_user_by_email(pool, &payload.email).await else {
         return default_error.into_response();
     };
-
-    let user = user.unwrap();
     let password_base64 = get_user_password(pool, &user.id).await;
 
     if let Err(e) = password_base64 {
@@ -226,7 +220,7 @@ pub async fn handle_login(
     };
 
     if !matches {
-        tracing::error!("Password mismatch");
+        // Invalid password, don't bother logging
         return default_error.into_response();
     }
 
