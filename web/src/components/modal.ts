@@ -17,7 +17,7 @@ export class ModalElement extends LitElement {
       gap: 2rem;
       background-color: #ffffff;
       border-radius: 0.5rem;
-      box-shadow: var(--dropspot-box-shadow-inset), 0 0 0.5rem rgba(0, 0, 0, 0.2);
+      box-shadow: var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-semi-minor);
       max-height: var(--modal-max-height);
       max-width: var(--modal-max-width);
       padding: 2rem;
