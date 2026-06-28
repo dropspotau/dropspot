@@ -36,10 +36,9 @@ export class CopyButtonElement extends LitElement {
 
   private handleClick = async (): Promise<void> => {
     if (!this.value) {
-      console.error(
+      throw new Error(
         "<copy-button> was provided with no `value` attribute to copy",
       );
-      return;
     }
 
     try {
