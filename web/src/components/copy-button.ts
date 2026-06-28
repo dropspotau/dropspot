@@ -2,7 +2,7 @@ import { html, css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import { ToastElement } from "./toast";
-import "./copy-button.css";
+import { applyGlobalStyles } from "../style";
 
 @customElement("copy-button")
 export class CopyButtonElement extends LitElement {
@@ -13,13 +13,17 @@ export class CopyButtonElement extends LitElement {
   `;
 
   @property()
-  private value: string = "placeholder";
+  private value: string | null = null;
 
   @state()
   private hasCopied: boolean = false;
 
   connectedCallback() {
     super.connectedCallback();
+
+    if (this.shadowRoot) {
+      applyGlobalStyles(this.shadowRoot);
+    }
 
     this.addEventListener("click", this.handleClick);
   }
@@ -31,6 +35,13 @@ export class CopyButtonElement extends LitElement {
   }
 
   private handleClick = async (): Promise<void> => {
+    if (!this.value) {
+      console.error(
+        "<copy-button> was provided with no `value` attribute to copy",
+      );
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(this.value);
     } catch (e) {
@@ -47,9 +58,11 @@ export class CopyButtonElement extends LitElement {
   };
 
   render() {
-    return html`<md-filled-button
-      >${this.hasCopied ? "Copied!" : "Copy"}</md-filled-button
-    >`;
+    return html`
+      <md-filled-button class="button-white">
+        ${this.hasCopied ? "Copied!" : "Copy"}
+      </md-filled-button>
+    `;
   }
 }
 
