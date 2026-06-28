@@ -13,6 +13,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { getAuth } from "../../auth";
 import { applyGlobalStyles } from "../../style";
 import { ToastElement } from "../toast";
+import { isApiError } from "../../utils";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {
@@ -157,12 +158,19 @@ export class IntegrationFormElement extends LitElement {
       return;
     }
 
-    await upsertIntegration(
-      { is_active: this.isActive, data: this.data },
-      auth,
-      this.slug,
-    );
-    ToastElement.create("Updated!", "success");
+    try {
+      await upsertIntegration(
+        { is_active: this.isActive, data: this.data },
+        auth,
+        this.slug,
+      );
+      ToastElement.create("Updated!", "success");
+    } catch (e) {
+      const errorMessage = isApiError(e)
+        ? e.message
+        : "Sorry, there was an error updating the ingration. Please try again.";
+      ToastElement.create(errorMessage, "danger");
+    }
   };
 
   render() {

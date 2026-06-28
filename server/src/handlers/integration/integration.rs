@@ -114,10 +114,36 @@ pub async fn handle_upsert_integration(
         .into_response();
     }
 
+    let Ok(integrations) = get_integrations(pool, &organisation.id).await else {
+        return ApiError::new(
+            "Could not load integrations for organisation".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
+
     let Ok(storage_type) = StorageType::try_from(slug) else {
-        let api_error = ApiError::new("Bad request".to_owned(), StatusCode::BAD_REQUEST);
+        let api_error = ApiError::new(
+            "Invalid integration slug".to_owned(),
+            StatusCode::BAD_REQUEST,
+        );
         return api_error.into_response();
     };
+
+    // Prevent disabling of the last active integration method
+    let has_no_other_active_integration = integrations
+        .iter()
+        .filter(|i| i.is_active && i.slug != storage_type)
+        .collect::<Vec<&Integration>>()
+        .is_empty();
+
+    if !payload.is_active && has_no_other_active_integration {
+        return ApiError::new(
+            "At least one file integration must be active".to_owned(),
+            StatusCode::BAD_REQUEST,
+        )
+        .into_response();
+    }
 
     let result = upsert_integration(
         &pool,
