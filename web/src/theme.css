@@ -23,6 +23,7 @@
   --dropspot-box-shadow: 0 0 21px 7px rgb(255, 255, 255, 0.5);
   --dropspot-box-shadow-semi-minor: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
   --dropspot-box-shadow-minor: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --dropspot-box-shadow-inset: inset 0 0 0.75rem 0.25rem rgba(0, 0, 0, 0.05);
   --dropspot-grey: #B9B9B9;
   --dropspot-grey-light: #DFDFDF;
   --dropspot-grey-lighter: #EDEDED;
