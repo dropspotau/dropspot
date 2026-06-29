@@ -55,10 +55,16 @@ export class FilePreviewElement extends LitElement {
       gap: 0.5rem;
     }
 
-    .download {
+    .file-preview {
+      width: 6rem;
+      height: 6rem;
+      border-radius: 0.5rem;
+      background-color: var(--dropspot-grey);
       display: flex;
       place-items: center;
       place-content: center;
+      --md-icon-size: 2rem;
+      font-size: 2rem;
     }
   `;
 
@@ -124,9 +130,10 @@ export class FilePreviewElement extends LitElement {
         break;
       case "file":
         previewHtml = html`
-          <div class="download" @click="${this.handleDownload}">
-            <md-icon>download</md-icon>
+          <div class="file-preview">
+            <md-icon>file_save</md-icon>
           </div>
+          <dropspot-alert variant="info">Documents can't currently be previewed</dropspot-alert>
         `;
         break;
       case "text":
