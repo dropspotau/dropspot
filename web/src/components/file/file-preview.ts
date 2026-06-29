@@ -2,6 +2,23 @@ import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { download } from "../../download";
 
+export type PreviewType = "image" | "video" | "audio" | "text" | "file";
+
+export const getFilePreviewType = (mimeType: string): PreviewType | null => {
+  const previewType = mimeType.split("/").at(0);
+
+  if (!previewType) {
+    return null;
+  }
+
+  if (["font", "application"].includes(previewType)) {
+    return "file";
+  }
+
+  // The remaining MIME types map to preview types
+  return previewType as PreviewType;
+};
+
 @customElement("file-preview")
 export class FilePreviewElement extends LitElement {
   static styles = css`
@@ -36,6 +53,12 @@ export class FilePreviewElement extends LitElement {
       display: flex;
       place-items: center;
       gap: 0.5rem;
+    }
+
+    .download {
+      display: flex;
+      place-items: center;
+      place-content: center;
     }
   `;
 
@@ -99,6 +122,13 @@ export class FilePreviewElement extends LitElement {
       case "audio":
         previewHtml = html`<audio src="${this.blobUrl}" />`;
         break;
+      case "file":
+        previewHtml = html`
+          <div class="download" @click="${this.handleDownload}">
+            <md-icon>download</md-icon>
+          </div>
+        `;
+        break;
       case "text":
         previewHtml = html`<pre class="text">${this.blobUrl}</pre>`;
         break;
@@ -124,17 +154,6 @@ export class FilePreviewElement extends LitElement {
   }
 }
 
-export type PreviewType = "image" | "video" | "audio" | "text";
-
-export const getFilePreviewType = (mimeType: string): PreviewType | null => {
-  const previewType = mimeType.split("/").at(0);
-
-  if (!previewType) {
-    return null;
-  }
-
-  return previewType as PreviewType;
-};
 declare global {
   interface HTMLElementTagNameMap {
     "file-preview": FilePreviewElement;
