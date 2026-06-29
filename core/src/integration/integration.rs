@@ -74,8 +74,7 @@ pub async fn get_integrations(auth: Authentication) -> Result<Vec<Integration>, 
             .json::<ApiError>()
             .await
             .map(Error::ApiError)
-            .map_err(|_e| Error::JsonError)
-            .unwrap());
+            .map_err(|_e| Error::JsonError)?);
     }
 
     let result = response
@@ -108,8 +107,7 @@ pub async fn upsert_integration(
             .json::<ApiError>()
             .await
             .map(Error::ApiError)
-            .map_err(|_e| Error::JsonError)
-            .unwrap());
+            .map_err(|_e| Error::JsonError)?);
     }
 
     let result = response
