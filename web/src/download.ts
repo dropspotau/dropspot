@@ -128,6 +128,7 @@ const initialiseDownload = async (): Promise<void> => {
       const filePreviewElement = document.createElement("file-preview");
       filePreviewElement.setAttribute("name", file.name);
       filePreviewElement.setBuffer(buffer);
+      filePreviewElement.setAttribute("mime-type", file.mime_type);
       linkedFileElement.appendChild(filePreviewElement);
     });
   }

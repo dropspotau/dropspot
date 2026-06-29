@@ -851,6 +851,7 @@ dependencies = [
  "google-cloud-storage",
  "http-serde",
  "jsonwebtoken",
+ "mime_guess",
  "regex",
  "reqwest",
  "rpassword",

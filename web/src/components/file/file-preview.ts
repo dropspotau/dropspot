@@ -42,6 +42,9 @@ export class FilePreviewElement extends LitElement {
   @property()
   private name: string = "";
 
+  @property({ attribute: "mime-type" })
+  private mimeType: string = "";
+
   @state()
   private blobUrl: string | null = null;
 
@@ -87,7 +90,11 @@ export class FilePreviewElement extends LitElement {
         previewHtml = html`<img src="${this.blobUrl}" />`;
         break;
       case "video":
-        previewHtml = html`<video src="${this.blobUrl}" controls />`;
+        previewHtml = html`
+          <video controls>
+            <source src="${this.blobUrl}" type="${this.mimeType}" />
+          </video>
+        `;
         break;
       case "audio":
         previewHtml = html`<audio src="${this.blobUrl}" />`;
