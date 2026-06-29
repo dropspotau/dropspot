@@ -82,7 +82,7 @@ export class FilePreviewElement extends LitElement {
   };
 
   render() {
-    const previewType = getFilePreviewType(this.name);
+    const previewType = getFilePreviewType(this.mimeType);
     let previewHtml: TemplateResult<1>;
 
     switch (previewType) {
@@ -126,32 +126,15 @@ export class FilePreviewElement extends LitElement {
 
 export type PreviewType = "image" | "video" | "audio" | "text";
 
-export const getFilePreviewType = (fileName: string): PreviewType | null => {
-  const extension = fileName.split(".").pop();
+export const getFilePreviewType = (mimeType: string): PreviewType | null => {
+  const previewType = mimeType.split("/").at(0);
 
-  if (!extension) {
+  if (!previewType) {
     return null;
   }
 
-  if (["png", "jpg", "jpeg", "gif", "svg", "webp"].includes(extension)) {
-    return "image";
-  }
-
-  if (["mp4", "webm", "ogg", "mp3", "wav", "flac"].includes(extension)) {
-    return "video";
-  }
-
-  if (["mp3", "wav", "flac"].includes(extension)) {
-    return "audio";
-  }
-
-  if (["txt", "md", "html", "css", "js"].includes(extension)) {
-    return "text";
-  }
-
-  return null;
+  return previewType as PreviewType;
 };
-
 declare global {
   interface HTMLElementTagNameMap {
     "file-preview": FilePreviewElement;
