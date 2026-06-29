@@ -12,8 +12,8 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import { getAuth } from "../../auth";
 import { applyGlobalStyles } from "../../style";
-import { ToastElement } from "../toast";
 import { isApiError } from "../../utils";
+import { ToastElement } from "../toast";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {
