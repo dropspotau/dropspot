@@ -11,7 +11,11 @@ export const getFilePreviewType = (mimeType: string): PreviewType | null => {
     return null;
   }
 
-  if (["font", "application"].includes(previewType)) {
+  if (mimeType === "text/plain" || mimeType === "application/json") {
+    return "text";
+  }
+
+  if (["text", "font", "application"].includes(previewType)) {
     return "file";
   }
 
@@ -133,7 +137,9 @@ export class FilePreviewElement extends LitElement {
           <div class="file-preview">
             <md-icon>file_save</md-icon>
           </div>
-          <dropspot-alert variant="info">Documents can't currently be previewed</dropspot-alert>
+          <dropspot-alert variant="info"
+            >Documents can't currently be previewed</dropspot-alert
+          >
         `;
         break;
       case "text":

@@ -168,7 +168,7 @@ export class IntegrationFormElement extends LitElement {
     } catch (e) {
       const errorMessage = isApiError(e)
         ? e.message
-        : "Sorry, there was an error updating the ingration. Please try again.";
+        : "Sorry, there was an error updating the integration. Please try again.";
       ToastElement.create(errorMessage, "danger");
     }
   };
