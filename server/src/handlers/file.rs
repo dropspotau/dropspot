@@ -46,6 +46,7 @@ impl From<File> for ApiFile {
             remaining_downloads: file.get_remaining_downloads(),
             max_downloads: file.max_downloads,
             is_expired: file.is_expired(),
+            mime_type: file.get_mime_type().to_owned(),
         }
     }
 }

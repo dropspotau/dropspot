@@ -1,6 +1,7 @@
 use std::net::IpAddr;
 
 use chrono::{DateTime, Utc};
+use mime_guess::from_ext;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -55,6 +56,13 @@ impl File {
 
     pub fn get_extension(&self) -> String {
         self.name.split('.').last().unwrap_or("txt").to_string()
+    }
+
+    pub fn get_mime_type(&self) -> &'static str {
+        let extension = self.get_extension();
+        let guess = from_ext(&extension);
+
+        guess.first_raw().unwrap_or("application/octet-stream")
     }
 
     pub fn get_path(&self) -> String {

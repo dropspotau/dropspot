@@ -2,6 +2,27 @@ import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { download } from "../../download";
 
+export type PreviewType = "image" | "video" | "audio" | "text" | "file";
+
+export const getFilePreviewType = (mimeType: string): PreviewType | null => {
+  const previewType = mimeType.split("/").at(0);
+
+  if (!previewType) {
+    return null;
+  }
+
+  if (mimeType === "text/plain" || mimeType === "application/json") {
+    return "text";
+  }
+
+  if (["text", "font", "application"].includes(previewType)) {
+    return "file";
+  }
+
+  // The remaining MIME types map to preview types
+  return previewType as PreviewType;
+};
+
 @customElement("file-preview")
 export class FilePreviewElement extends LitElement {
   static styles = css`
@@ -37,10 +58,25 @@ export class FilePreviewElement extends LitElement {
       place-items: center;
       gap: 0.5rem;
     }
+
+    .file-preview {
+      width: 6rem;
+      height: 6rem;
+      border-radius: 0.5rem;
+      background-color: var(--dropspot-grey);
+      display: flex;
+      place-items: center;
+      place-content: center;
+      --md-icon-size: 2rem;
+      font-size: 2rem;
+    }
   `;
 
   @property()
   private name: string = "";
+
+  @property({ attribute: "mime-type" })
+  private mimeType: string = "";
 
   @state()
   private blobUrl: string | null = null;
@@ -79,7 +115,7 @@ export class FilePreviewElement extends LitElement {
   };
 
   render() {
-    const previewType = getFilePreviewType(this.name);
+    const previewType = getFilePreviewType(this.mimeType);
     let previewHtml: TemplateResult<1>;
 
     switch (previewType) {
@@ -87,10 +123,24 @@ export class FilePreviewElement extends LitElement {
         previewHtml = html`<img src="${this.blobUrl}" />`;
         break;
       case "video":
-        previewHtml = html`<video src="${this.blobUrl}" controls />`;
+        previewHtml = html`
+          <video controls>
+            <source src="${this.blobUrl}" type="${this.mimeType}" />
+          </video>
+        `;
         break;
       case "audio":
         previewHtml = html`<audio src="${this.blobUrl}" />`;
+        break;
+      case "file":
+        previewHtml = html`
+          <div class="file-preview">
+            <md-icon>file_save</md-icon>
+          </div>
+          <dropspot-alert variant="info"
+            >Documents can't currently be previewed</dropspot-alert
+          >
+        `;
         break;
       case "text":
         previewHtml = html`<pre class="text">${this.blobUrl}</pre>`;
@@ -116,34 +166,6 @@ export class FilePreviewElement extends LitElement {
     `;
   }
 }
-
-export type PreviewType = "image" | "video" | "audio" | "text";
-
-export const getFilePreviewType = (fileName: string): PreviewType | null => {
-  const extension = fileName.split(".").pop();
-
-  if (!extension) {
-    return null;
-  }
-
-  if (["png", "jpg", "jpeg", "gif", "svg", "webp"].includes(extension)) {
-    return "image";
-  }
-
-  if (["mp4", "webm", "ogg", "mp3", "wav", "flac"].includes(extension)) {
-    return "video";
-  }
-
-  if (["mp3", "wav", "flac"].includes(extension)) {
-    return "audio";
-  }
-
-  if (["txt", "md", "html", "css", "js"].includes(extension)) {
-    return "text";
-  }
-
-  return null;
-};
 
 declare global {
   interface HTMLElementTagNameMap {
