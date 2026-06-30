@@ -16,6 +16,7 @@ export class ModalElement extends LitElement {
       flex-flow: column;
       gap: 2rem;
       background-color: #ffffff;
+      border: none;
       border-radius: 0.5rem;
       box-shadow: var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-semi-minor);
       max-height: var(--modal-max-height);
@@ -27,7 +28,7 @@ export class ModalElement extends LitElement {
       }
 
       @media (prefers-color-scheme: dark) {
-          background-color: var(--dropspot-primary-darker);
+          background-color: var(--dropspot-primary-dark);
       }
     }
 

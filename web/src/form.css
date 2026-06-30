@@ -52,7 +52,7 @@
   display: flex;
   flex-flow: column;
   gap: 6px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--dropspot-grey);
   padding-bottom: 1rem;
 }
 

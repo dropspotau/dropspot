@@ -21,6 +21,14 @@
     }
 }
 
+.file-menu-title {
+    align-self: center;
+
+    @media (prefers-color-scheme: dark) {
+        color: #FFFFFF;
+    }
+}
+
 .file-menu-wrapper {
     display: flex;
     flex-direction: column;
@@ -71,6 +79,10 @@
 .file-empty-title {
   color: var(--dropspot-grey-darker);
   font-size: 1.5rem;
+
+  @media (prefers-color-scheme: dark) {
+    color: #FFFFFF;
+  }
 }
 
 .file-empty-subtitle {
