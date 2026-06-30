@@ -19,6 +19,10 @@
         --menu-height: 80dvh;
         --menu-width: 100dvh;
     }
+
+    @media (prefers-color-scheme: dark) {
+        color: #FFFFFF; /* Contrast with the dark background */
+    }
 }
 
 .settings-menu-wrapper {
