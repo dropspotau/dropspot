@@ -22,6 +22,8 @@ import "./theme.css";
 import "./uploads.css";
 import "./utils.css";
 
+import "./background";
+
 import { loginAtStartup } from "./auth";
 
 // Import all components

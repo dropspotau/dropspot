@@ -1,0 +1,18 @@
+.background-morning {
+    background-image: var(--dropspot-background-morning);
+}
+
+.background-day {
+    background-image: var(--dropspot-background-day);
+}
+
+.background-evening {
+    background-image: var(--dropspot-background-evening);
+}
+
+.background-night {
+    background-image: var(--dropspot-background-night);
+
+    /* Darken the dark theme further for contrast */
+    --dropspot-dark: #000000;
+}

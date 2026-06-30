@@ -42,6 +42,11 @@
   --dropspot-font: "Roboto", "Helvetica", "Arial", sans-serif;
   --dropspot-font-plain: system-ui;
 
+  --dropspot-background-morning: linear-gradient(var(--dropspot-primary-dark), var(--dropspot-primary-light));
+  --dropspot-background-day: linear-gradient(var(--dropspot-primary-dark), var(--dropspot-primary));
+  --dropspot-background-evening: linear-gradient(var(--dropspot-primary-darker), var(--dropspot-primary-dark));
+  --dropspot-background-night: linear-gradient(#000000, var(--dropspot-primary-darkest));
+  --dropspot-background: var(--dropspot-background-morning);
 
   /** Icons */
   --icon-dark-background-colour: #FFFFFF;
@@ -59,10 +64,22 @@
     --info-drawer-width: 72dvw;
   }
 
+  @media (prefers-color-scheme: dark) {
+    --dropspot-background: var(--dropspot-background-night);
+
+    /* Darken the dark theme further for contrast */
+    --dropspot-dark: #000000;
+  }
+
   /** Popover */
   --popover-background-colour: #FFFFFF;
 
   /** Material Web */
   --md-sys-color-primary: var(--dropspot-primary);
   --md-sys-color-error: var(--dropspot-danger);
+  --md-sys-color-on-surface-variant: var(--dropspot-grey-dark);
+
+  @media (prefers-color-scheme: dark) {
+    --md-sys-color-on-surface-variant: #FFFFFF;
+  }
 }

@@ -17,7 +17,7 @@ body {
   place-items: center;
   height: 100dvh;
   width: 100dvw;
-  background-color: var(--dropspot-primary);
+  background-image: var(--dropspot-background);
 }
 
 main {

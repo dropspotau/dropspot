@@ -52,22 +52,30 @@
   display: flex;
   flex-flow: column;
   gap: 6px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--dropspot-grey);
   padding-bottom: 1rem;
 }
 
 /** Form field label */
 .form-label {
   font-size: 13px;
-  color: #777;
+  color: var(--dropspot-grey-darker);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
+
+  @media (prefers-color-scheme: dark) {
+    color: var(--dropspot-grey-light);
+  }
 }
 
 /** Form field value. Used to display a value when a field can't be edited */
 .form-value {
   font-size: 16px;
-  color: #333;
+  color: var(--dropspot-dark);
   font-weight: 500;
+
+  @media (prefers-color-scheme: dark) {
+    color: var(--dropspot-grey-light);
+  }
 }

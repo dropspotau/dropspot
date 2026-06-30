@@ -8,6 +8,10 @@
 
     .text-primary {
         color: var(--dropspot-primary);
+
+      @media (prefers-color-scheme: dark) {
+          color: #FFFFFF; /* Show a contrast against the dark background */
+      }
     }
 
     .text-danger {
@@ -62,6 +66,17 @@
     md-filled-text-field {
         --md-filled-field-container-color: #FFFFFF;
         --md-filled-field-disabled-container-color: #FFFFFF;
+
+      @media (prefers-color-scheme: dark) {
+        --md-filled-field-container-color: var(--dropspot-primary-dark);
+        --md-filled-field-disabled-container-color: var(--dropspot-primary-dark);
+        --md-filled-text-field-label-text-color: #FFFFFF;
+        --md-filled-text-field-hover-label-text-color: #FFFFFF;
+        --md-filled-text-field-focus-label-text-color: #FFFFFF;
+        --md-filled-text-field-input-text-color: #FFFFFF;
+        --md-filled-text-field-hover-input-text-color: #FFFFFF;
+        --md-filled-text-field-focus-input-text-color: #FFFFFF;
+      }
     }
 
     .icon-success {
