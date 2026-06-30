@@ -2,6 +2,7 @@ import "./background.css";
 
 /** Sets the background colour to a theme based on the day */
 const setBackgroundColour = (): void => {
+  // TODO(alec): I really like this but if people deliberately want a dark mode, it's probably better to just show the dropspot-background-night colour
   const now = new Date();
   const hour = now.getHours();
 
