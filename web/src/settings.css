@@ -41,12 +41,16 @@
 
 .section-label {
   font-size: 13px;
-  color: #777;
+  color: var(--dropspot-grey-darker);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
   margin: 0 0 12px 0;
   padding: 0 12px;
+
+  @media (prefers-color-scheme: dark) {
+    color: #FFFFFF;
+  }
 }
 
 /* List Items */
@@ -71,6 +75,14 @@
   &:hover {
     background-color: var(--dropspot-hover);
     cursor: pointer;
+
+    @media (prefers-color-scheme: dark) {
+      color: var(--dropspot-primary);
+
+      .settings-item-title, .settings-item-desc, .settings-action {
+        color: var(--dropspot-primary);
+      }
+    }
   }
 
   &[disabled] {
@@ -104,12 +116,20 @@
 
 .settings-item-title {
   font-weight: 600;
-  color: #333;
+  color: var(--dropspot-grey-darker);
+
+  @media (prefers-color-scheme: dark) {
+    color: var(--dropspot-grey-light);
+  }
 }
 
 .settings-item-desc {
   font-size: 13px;
   color: var(--dropspot-teal-dark);
+
+  @media (prefers-color-scheme: dark) {
+    color: #FFFFFF;
+  }
 }
 
 /* Chevron/Action Icon */
@@ -124,7 +144,7 @@
 .settings-field-update-result {
     display: flex;
     place-items: center;
-    justify-content: center;;
+    justify-content: center;
     flex: 0 0 2rem;
     height: 2rem;
 }
