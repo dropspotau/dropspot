@@ -14,6 +14,10 @@ export class PopoverElement extends LitElement {
       color: var(--dropspot-primary);
       border-radius: 0.5rem;
       box-shadow: var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-minor);
+
+      @media (prefers-color-scheme: dark) {
+          background-color: var(--dropspot-primary-dark);
+      }
     }
 
     .popover[popover] {

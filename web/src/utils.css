@@ -8,6 +8,10 @@
 
     .text-primary {
         color: var(--dropspot-primary);
+
+      @media (prefers-color-scheme: dark) {
+          color: #FFFFFF; /* Show a contrast against the dark background */
+      }
     }
 
     .text-danger {
@@ -62,6 +66,11 @@
     md-filled-text-field {
         --md-filled-field-container-color: #FFFFFF;
         --md-filled-field-disabled-container-color: #FFFFFF;
+
+      @media (prefers-color-scheme: dark) {
+        --md-filled-field-container-color: var(--dropspot-primary-darker);
+        --md-filled-field-disabled-container-color: var(--dropspot-primary-darker);
+      }
     }
 
     .icon-success {

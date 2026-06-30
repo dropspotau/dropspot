@@ -25,6 +25,10 @@ export class ModalElement extends LitElement {
       &[open] {
         display: flex;
       }
+
+      @media (prefers-color-scheme: dark) {
+          background-color: var(--dropspot-primary-darker);
+      }
     }
 
     .modal-header {
