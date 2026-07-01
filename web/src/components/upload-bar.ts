@@ -487,7 +487,7 @@ export class UploadBarElement extends LitElement {
   ): TemplateResult<1> => html`
     <span>
       File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
-      be downloaded <b>${uploadResult.file.max_downloads} times</b>
+      be downloaded <b>${pluralise("time", uploadResult.file.max_downloads)}</b>
     </span>
   `;
 
@@ -537,7 +537,6 @@ export class UploadBarElement extends LitElement {
       }
     };
 
-    console.debug(uploadResult.file.max_downloads);
     return html`
       <span>File expires in</span>
       <!-- File expiry -->

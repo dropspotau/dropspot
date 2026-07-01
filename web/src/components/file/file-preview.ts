@@ -33,6 +33,10 @@ export class FilePreviewElement extends LitElement {
     .title {
       color: var(--dropspot-primary);
       margin: 0;
+
+      @media (prefers-color-scheme: dark) {
+        color: #FFFFFF;
+      }
     }
 
     .text {
