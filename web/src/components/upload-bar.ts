@@ -21,7 +21,7 @@ import { createRef, ref, type Ref } from "lit/directives/ref.js";
 import { getExpiresAtOptions, getRemainingTimeText } from "./date-utils";
 import { addMinutes, format, parseISO } from "date-fns";
 import { createDownloadUrl, saveFileLink } from "../storage";
-import { isApiError } from "../utils";
+import { isApiError, pluralise } from "../utils";
 
 const FADE_TIMEOUT = 3000;
 
@@ -487,7 +487,7 @@ export class UploadBarElement extends LitElement {
   ): TemplateResult<1> => html`
     <span>
       File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
-      be downloaded <b>${uploadResult.file.max_downloads} times</b>
+      be downloaded <b>${pluralise("time", uploadResult.file.max_downloads)}</b>
     </span>
   `;
 
@@ -565,7 +565,7 @@ export class UploadBarElement extends LitElement {
         </md-select-option>
         ${[1, 3, 5, 10].map(this.renderDownloadOption)}
       </md-outlined-select>
-      <span>times</span>
+      <span>${pluralise("time", uploadResult.file.max_downloads)}</span>
       ${this.renderCustomDateModal(uploadResult.file.id, currentExpiresAt)}
     `;
   };
