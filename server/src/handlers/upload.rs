@@ -25,6 +25,10 @@ use crate::{
     types::ApiError,
 };
 
+// The endpoint which is called to initiate a file upload. This returns an Upload instance which can
+// then be used with the handle_file_upload endpoint to actually upload the file.
+//
+// This validates if the requesting user can actually upload a file.
 pub async fn handle_file_request_upload(
     ConnectInfo(address): ConnectInfo<SocketAddr>,
     headers: HeaderMap,
@@ -62,8 +66,16 @@ pub async fn handle_file_request_upload(
         .into_response();
     }
 
-    let expires_at = Utc::now() + Duration::minutes(settings.default_file_expiry_minutes as i64);
-    let max_downloads = settings.default_download_limit;
+    // Unauthorised uploads can only be downloaded once and within five minutes
+    let duration_minutes = match user.is_some() {
+        true => settings.default_file_expiry_minutes as i64,
+        false => 5,
+    };
+    let expires_at = Utc::now() + Duration::minutes(duration_minutes);
+    let max_downloads = match user.is_some() {
+        true => settings.default_download_limit,
+        false => 1,
+    };
 
     let file = create_file(
         pool,
@@ -86,6 +98,7 @@ pub async fn handle_file_request_upload(
     Json(file.unwrap()).into_response()
 }
 
+// The endpoint which actually handles uploading an encrypted file's contents.
 pub async fn handle_file_upload(
     State(state): State<AppState>,
     user: Option<User>,
