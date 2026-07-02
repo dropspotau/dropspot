@@ -219,7 +219,7 @@ export class UploadBarElement extends LitElement {
           this.remove();
         }
       }, FADE_TIMEOUT);
-    }, FADE_TIMEOUT);
+    }, FADE_TIMEOUT * 2);
 
     this.activeFadeTimeout = timeout;
   };
