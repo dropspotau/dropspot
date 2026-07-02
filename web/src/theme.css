@@ -82,6 +82,7 @@
   --md-sys-color-surface-container-highest: #e0e3e2;
 
   @media (prefers-color-scheme: dark) {
+    --md-sys-color-primary: #FFFFFF;
     --md-sys-color-on-surface: #FFFFFF;
     --md-sys-color-on-surface-variant: #FFFFFF;
   }
