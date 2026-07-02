@@ -54,6 +54,7 @@ export class CopyFileLinkElement extends LitElement {
     }
 
     const downloadUrl = createDownloadUrl(this.link);
+
     navigator.clipboard
       .writeText(downloadUrl.toString())
       .then(() => {

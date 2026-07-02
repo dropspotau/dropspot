@@ -79,7 +79,9 @@
   --md-sys-color-secondary: var(--dropspot-grey-dark);
   --md-sys-color-error: var(--dropspot-danger);
   --md-sys-color-on-surface-variant: var(--dropspot-grey-dark);
-  --md-sys-color-surface-container-highest: #e0e3e2;
+  --md-sys-color-surface-container: var(--dropspot-dark);
+  --md-sys-color-surface-container-highest: #FFFFFF;
+    --md-sys-color-surface-container: var(--dropspot-grey-darker);
 
   @media (prefers-color-scheme: dark) {
     --md-sys-color-primary: #FFFFFF;

@@ -23,24 +23,6 @@
                 <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options" ignore-menu-navigation>
                     <md-icon>more_vert</md-icon>
                 </md-icon-button>
-                <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed" style="cursor: default;">
-                    <copy-file-link file-id="{{ file.id }}">
-                        <md-menu-item>
-                            <div slot="headline" class="menu-item">
-                                <md-icon>link</md-icon>
-                                <span>Copy</span>
-                            </div>
-                        </md-menu-item>
-                    </copy-file-link>
-                    <delete-file file-id="{{ file.id }}">
-                        <md-menu-item>
-                            <div slot="headline" class="menu-item text-danger">
-                                <md-icon>delete</md-icon>
-                                <span>Delete</span>
-                            </div>
-                        </md-menu-item>
-                    </delete-file>
-                </md-menu>
                 <script type="module">
                     const actionButton = document.querySelector(`#file-actions-{{ file.id }}`);
                     const actionMenu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
@@ -52,6 +34,24 @@
                     }
                 </script>
             </li>
+            <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed" style="cursor: default;">
+                <copy-file-link file-id="{{ file.id }}">
+                    <md-menu-item>
+                        <div slot="headline" class="menu-item">
+                            <md-icon>link</md-icon>
+                            <span>Copy</span>
+                        </div>
+                    </md-menu-item>
+                </copy-file-link>
+                <delete-file file-id="{{ file.id }}">
+                    <md-menu-item>
+                        <div slot="headline" class="menu-item text-danger">
+                            <md-icon>delete</md-icon>
+                            <span>Delete</span>
+                        </div>
+                    </md-menu-item>
+                </delete-file>
+            </md-menu>
         {% endfor %}
       </ul>
     </section>
