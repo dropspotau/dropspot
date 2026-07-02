@@ -4,7 +4,7 @@ Client-side file encryption and decryption - keys never leave the browser and al
 
 ![DropSpot](promo.png)
 <div align="center">
-  <a href="https://app.dropspot.au">Try it out!</a>
+  <h3><a href="https://app.dropspot.au">Try it out!</a></h3>
 </div>
 
 ## Contains:
