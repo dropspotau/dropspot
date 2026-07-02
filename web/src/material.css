@@ -45,7 +45,7 @@
 
         /* Underline colours */
         --md-filled-field-focus-active-indicator-color: var(--dropspot-primary);
-        --md-filled-field-hover-active-indicator-color: var(--dropspot-primary); /* optional, hover state */
+        --md-filled-field-hover-active-indicator-color: var(--dropspot-primary);
 
         @media (prefers-color-scheme: dark) {
           --md-filled-field-container-color: var(--dropspot-primary-dark);
