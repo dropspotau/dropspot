@@ -8,7 +8,7 @@ use base64::{
     alphabet::URL_SAFE,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::{
+use dropspot::{
     auth::Authentication,
     download::download,
     encryption::Encryption,

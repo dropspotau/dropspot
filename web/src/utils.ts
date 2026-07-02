@@ -1,4 +1,4 @@
-import type { ApiError } from "dropspot-core";
+import type { ApiError } from "@dropspot/dropspot-js";
 
 export const isApiError = (error: any): error is ApiError =>
   typeof error === "object" && typeof error.message === "string";

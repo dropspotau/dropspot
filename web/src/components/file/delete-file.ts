@@ -1,6 +1,6 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { deleteFile } from "dropspot-core";
+import { deleteFile } from "@dropspot/dropspot-js";
 
 import { getAuth } from "../../auth";
 import { ToastElement } from "../toast";

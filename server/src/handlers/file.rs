@@ -3,12 +3,11 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::Utc;
-use dropspot_core::file::{File as ApiFile, UpdateFilePayload};
+use dropspot::file::{File as ApiFile, UpdateFilePayload};
 use reqwest::StatusCode;
-use thiserror::Error;
 use uuid::Uuid;
 
-use crate::types::ApiError;
+use crate::{db::get_files_by_uploader_id, types::ApiError};
 use crate::{db::update_file, state::AppState};
 use crate::{
     db::{
@@ -17,24 +16,6 @@ use crate::{
     },
     storage::get_storage,
 };
-
-#[derive(Error, Debug)]
-pub enum FileError {
-    #[error("Could not list files")]
-    FileListError(sqlx::Error),
-
-    #[error("Could not retrieve file")]
-    FileRetrieveError(sqlx::Error),
-}
-
-impl Into<ApiError> for FileError {
-    fn into(self) -> ApiError {
-        ApiError {
-            message: self.to_string(),
-            status: StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-}
 
 impl From<File> for ApiFile {
     fn from(file: File) -> Self {
@@ -51,17 +32,21 @@ impl From<File> for ApiFile {
     }
 }
 
-pub async fn handle_list_files(State(state): State<AppState>) -> Response {
+pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Response {
     let pool = state.get_pool();
-    let files = get_files(&pool).await;
-
-    if let Err(e) = files {
-        let api_error: ApiError = FileError::FileListError(e).into();
-        return api_error.into_response();
-    }
+    let files = match user.is_admin {
+        true => get_files(pool).await,
+        false => get_files_by_uploader_id(pool, &user.id).await,
+    };
+    let Ok(files) = files else {
+        return ApiError::new(
+            "Could not list files".to_owned(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .into_response();
+    };
 
     let files = files
-        .unwrap()
         .into_iter()
         .map(|file| ApiFile::from(file))
         .collect::<Vec<ApiFile>>();
@@ -69,18 +54,23 @@ pub async fn handle_list_files(State(state): State<AppState>) -> Response {
     Json(files).into_response()
 }
 
-pub async fn handle_get_file(State(state): State<AppState>, Path(id): Path<Uuid>) -> Response {
+pub async fn handle_get_file(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    user: User,
+) -> Response {
     let pool = state.get_pool();
-    let file = get_file_by_id(&pool, &id)
-        .await
-        .map(|file| ApiFile::from(file));
+    let Ok(file) = get_file_by_id(&pool, &id).await else {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    };
 
-    if let Err(e) = file {
-        let api_error: ApiError = FileError::FileRetrieveError(e).into();
-        return api_error.into_response();
+    // Admins and uploaders can view this file
+    let can_view_file = user.is_admin || file.created_by_id == Some(user.id);
+    if !can_view_file {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
-    Json(file.unwrap()).into_response()
+    Json(ApiFile::from(file)).into_response()
 }
 
 pub async fn handle_update_file(

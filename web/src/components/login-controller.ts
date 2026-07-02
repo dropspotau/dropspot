@@ -3,7 +3,7 @@ import {
   login,
   validatePassword,
   type LoginResult,
-} from "dropspot-core";
+} from "@dropspot/dropspot-js";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";

@@ -1,7 +1,7 @@
 use std::net::IpAddr;
 
 use chrono::{DateTime, Duration, Utc};
-use dropspot_core::{
+use dropspot::{
     integration::integration::Integration as ApiIntegration, upload::PreviewUploadResult,
 };
 use serde::{Deserialize, Serialize};

@@ -2,7 +2,7 @@
 // JWT generation and validation
 
 use chrono::Duration;
-use dropspot_core::user::TokenPair;
+use dropspot::user::TokenPair;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode};
 use thiserror::Error;
 use uuid::Uuid;
@@ -49,11 +49,7 @@ impl TokenService {
     }
 
     /// Generate access token
-    fn generate_access_token(
-        &self,
-        user_id: Uuid,
-        email: String,
-    ) -> Result<String, TokenError> {
+    fn generate_access_token(&self, user_id: Uuid, email: String) -> Result<String, TokenError> {
         let claims = AccessClaims::new(user_id, email, self.access_token_ttl);
 
         encode(&Header::default(), &claims, &self.encoding_key).map_err(TokenError::EncodingFailed)

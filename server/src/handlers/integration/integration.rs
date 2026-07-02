@@ -3,9 +3,7 @@ use axum::{
     extract::{Path, State},
     response::IntoResponse,
 };
-use dropspot_core::integration::integration::{
-    Integration as ApiIntegration, UpsertIntegrationPayload,
-};
+use dropspot::integration::integration::{Integration as ApiIntegration, UpsertIntegrationPayload};
 use reqwest::StatusCode;
 
 use crate::{

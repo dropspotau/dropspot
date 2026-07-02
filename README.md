@@ -2,6 +2,11 @@
 A self-hostable server for timed-out and limited file uploads.
 Client-side file encryption and decryption - keys never leave the browser and all data sent is encrypted.
 
+![DropSpot](promo.png)
+<div align="center">
+  <h3><a href="https://app.dropspot.au">Try it out!</a></h3>
+</div>
+
 ## Contains:
 * A server for running a web server which handles file uploads, downloads and user authentication
 * CLI tool for interacting with the server from the command line
@@ -101,9 +106,10 @@ The `dropspot-server` crate provides the server logic, database integration and 
 
 
 
-## Running the local setup
+## Local development environment
 ```
 ./scripts/build-wasm.sh
+./scripts/migrate-database.sh
 bacon run-server
 bacon build-web
 ```

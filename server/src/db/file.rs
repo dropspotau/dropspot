@@ -108,6 +108,39 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
     .await
 }
 
+pub async fn get_files_by_uploader_id(
+    pool: &PgPool,
+    user_id: &Uuid,
+) -> Result<Vec<File>, sqlx::Error> {
+    sqlx::query_as!(
+        File,
+        r#"
+            select
+              file.id,
+              file.name,
+              file.size,
+              file.storage as "storage: StorageType",
+              file.created_at,
+              users.id "created_by_id?",
+              users.email "created_by_name?",
+              file.expires_at,
+              file.max_downloads,
+              count(download.id)::int "download_count!"
+            from dropspot.file file
+            left join dropspot.download download
+            on download.file_id = file.id
+            left join dropspot.users users
+            on users.id = file.created_by_id
+            where users.id = $1
+            group by file.id, users.id
+            order by file.created_at asc
+        "#,
+        user_id
+    )
+    .fetch_all(pool)
+    .await
+}
+
 pub async fn get_files_to_expire(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
     sqlx::query_as!(
         File,

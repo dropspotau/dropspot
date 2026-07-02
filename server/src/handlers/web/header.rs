@@ -19,7 +19,7 @@ pub async fn handle_header(user: Option<User>) -> impl IntoResponse {
 
 pub(crate) fn get_header_template(user: Option<&User>) -> HeaderTemplate {
     let is_logged_in = user.is_some();
-    let name = user.map(|u| u.get_name());
+    let name = user.map(|u| u.get_short_name());
 
     HeaderTemplate { name, is_logged_in }
 }

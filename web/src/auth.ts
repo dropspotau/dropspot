@@ -3,7 +3,7 @@ import {
   type Authentication,
   type TokenPair,
   type User,
-} from "dropspot-core";
+} from "@dropspot/dropspot-js";
 import htmx from "htmx.org";
 import { ToastElement } from "./components";
 

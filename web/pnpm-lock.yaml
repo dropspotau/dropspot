@@ -8,15 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@dropspot/dropspot-js':
+        specifier: file:../core/pkg
+        version: dropspot-core@file:../core/pkg
       '@material/web':
         specifier: 2.4.1
         version: 2.4.1
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
-      dropspot-core:
-        specifier: file:../core/pkg
-        version: file:../core/pkg
       htmx.org:
         specifier: 4.0.0-beta4
         version: 4.0.0-beta4

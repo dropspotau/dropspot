@@ -1,7 +1,7 @@
 .file-menu {
     --menu-padding: 1rem;
     --menu-height: 32dvh;
-    --menu-width: 16dvw;
+    --menu-width: 26rem;
 
     position: relative;
     display: flex;
@@ -51,6 +51,10 @@
     padding: 0; /* Remove default list padding */
     gap: 1rem;
     width: 100%;
+
+    li {
+        list-style: none;
+    }
 
     &[hidden] {
         display: none;

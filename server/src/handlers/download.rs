@@ -6,7 +6,7 @@ use axum::{
     http::HeaderMap,
     response::{IntoResponse, Response},
 };
-use dropspot_core::download::Download as ApiDownload;
+use dropspot::download::Download as ApiDownload;
 use reqwest::StatusCode;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;

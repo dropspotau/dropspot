@@ -1,8 +1,8 @@
 use async_trait::async_trait;
-use dropspot_core::integration::integration::{
+use dropspot::integration::integration::{
     GcsIntegrationData, IntegrationData, LocalIntegrationData,
 };
-use dropspot_core::storage::StorageType as ApiStorageType;
+use dropspot::storage::StorageType as ApiStorageType;
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use tokio::io::{AsyncRead, AsyncWrite};

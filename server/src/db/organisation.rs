@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use dropspot_core::integration::integration::{IntegrationData, LocalIntegrationData};
+use dropspot::integration::integration::{IntegrationData, LocalIntegrationData};
 use sqlx::PgPool;
 use uuid::Uuid;
 

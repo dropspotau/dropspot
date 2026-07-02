@@ -78,14 +78,21 @@
   --md-sys-color-primary: var(--dropspot-primary);
   --md-sys-color-secondary: var(--dropspot-grey-dark);
   --md-sys-color-error: var(--dropspot-danger);
+
+  /* White menu backgrounds with primary or grey text */
+  --md-sys-color-on-surface: var(--dropspot-primary);
   --md-sys-color-on-surface-variant: var(--dropspot-grey-dark);
-  --md-sys-color-surface-container: var(--dropspot-dark);
+  --md-sys-color-surface-container: #FFFFFF;
   --md-sys-color-surface-container-highest: #FFFFFF;
-  --md-sys-color-surface-container: var(--dropspot-grey-darker);
+  --md-sys-color-surface-container: #FFFFFF;
 
   @media (prefers-color-scheme: dark) {
+    /* Dark menu backgrounds with white text */
     --md-sys-color-primary: #FFFFFF;
     --md-sys-color-on-surface: #FFFFFF;
     --md-sys-color-on-surface-variant: #FFFFFF;
+    --md-sys-color-surface-container: var(--dropspot-dark);
+    --md-sys-color-surface-container-highest: #FFFFFF;
+    --md-sys-color-surface-container: var(--dropspot-grey-darker);
   }
 }
