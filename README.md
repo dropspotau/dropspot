@@ -2,8 +2,8 @@
 A self-hostable server for timed-out and limited file uploads.
 Client-side file encryption and decryption - keys never leave the browser and all data sent is encrypted.
 
+![DropSpot](promo.png)
 <div align="center">
-  ![DropSpot](promo.png)
   <a href="https://app.dropspot.au">Try it out!</a>
 </div>
 
