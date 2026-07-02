@@ -201,6 +201,13 @@ export class UploadBarElement extends LitElement {
 
   private fadeOut = (): void => {
     const timeout = setTimeout(() => {
+      const isSameTimeout = timeout === this.activeFadeTimeout;
+
+      if (!isSameTimeout) {
+        // Don't begin the fade if it was interrupted
+        return;
+      }
+
       // Start fading out
       this.setAttribute("fading", "");
 
