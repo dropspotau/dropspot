@@ -103,9 +103,10 @@ The `dropspot-server` crate provides the server logic, database integration and 
 
 
 
-## Running the local setup
+## Local development environment
 ```
 ./scripts/build-wasm.sh
+./scripts/migrate-database.sh
 bacon run-server
 bacon build-web
 ```
