@@ -47,19 +47,19 @@
         --md-filled-field-focus-active-indicator-color: var(--dropspot-primary);
         --md-filled-field-hover-active-indicator-color: var(--dropspot-primary); /* optional, hover state */
 
-      @media (prefers-color-scheme: dark) {
-        --md-filled-field-container-color: var(--dropspot-primary-dark);
-        --md-filled-field-disabled-container-color: var(--dropspot-primary-dark);
-        --md-filled-text-field-label-text-color: #FFFFFF;
-        --md-filled-text-field-hover-label-text-color: #FFFFFF;
-        --md-filled-text-field-focus-label-text-color: #FFFFFF;
-        --md-filled-text-field-input-text-color: #FFFFFF;
-        --md-filled-text-field-hover-input-text-color: #FFFFFF;
-        --md-filled-text-field-focus-input-text-color: #FFFFFF;
+        @media (prefers-color-scheme: dark) {
+          --md-filled-field-container-color: var(--dropspot-primary-dark);
+          --md-filled-field-disabled-container-color: var(--dropspot-primary-dark);
+          --md-filled-text-field-label-text-color: #FFFFFF;
+          --md-filled-text-field-hover-label-text-color: #FFFFFF;
+          --md-filled-text-field-focus-label-text-color: #FFFFFF;
+          --md-filled-text-field-input-text-color: #FFFFFF;
+          --md-filled-text-field-hover-input-text-color: #FFFFFF;
+          --md-filled-text-field-focus-input-text-color: #FFFFFF;
 
-        /* Underline colours */
-        --md-filled-field-focus-active-indicator-color: #FFFFFF;
-        --md-filled-field-hover-active-indicator-color: #FFFFFF;
-      }
+          /* Underline colours */
+          --md-filled-field-focus-active-indicator-color: #FFFFFF;
+          --md-filled-field-hover-active-indicator-color: #FFFFFF;
+        }
     }
 }
