@@ -30,6 +30,14 @@ impl User {
         self.email.clone()
     }
 
+    pub fn get_short_name(&self) -> String {
+        if !self.first_name.is_empty() {
+            return self.first_name.clone();
+        }
+
+        self.email.clone()
+    }
+
     pub fn created_at_slash_date(&self) -> String {
         format!("{}", self.created_at.format("%d/%m/%Y"))
     }
