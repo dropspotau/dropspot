@@ -484,12 +484,26 @@ export class UploadBarElement extends LitElement {
   private renderUnauthedOptions = (
     uploadResult: UploadResult,
     currentExpiresAt: Date,
-  ): TemplateResult<1> => html`
-    <span>
-      File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
-      be downloaded <b>${pluralise("time", uploadResult.file.max_downloads)}</b>
-    </span>
-  `;
+  ): TemplateResult<1> => {
+    const handleSigninClick = (): void => {
+      const loginController = document.querySelector("login-controller");
+
+      if (loginController) {
+        loginController.open();
+      }
+    };
+
+    return html`
+      <span>
+        File expires in <b>${getRemainingTimeText(currentExpiresAt)}</b> and can
+        be downloaded
+        <b>${pluralise("time", uploadResult.file.max_downloads)}</b>.
+
+        <b class="microlink" @click="${handleSigninClick}">Sign in</b> to enable
+        larger limits.
+      </span>
+    `;
+  };
 
   /** Renders the bottom row of the upload result when a user is logged in */
   private renderAuthedOptions = (
