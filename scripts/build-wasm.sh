@@ -12,8 +12,6 @@ fi
 # Assume this is run in the project root
 cd "$base_dir/core" || exit 1
 wasm-pack build --target web --scope dropspot
-# tmp=$(mktemp)
-# jq '.name = "@dropspot/dropspot-js"' pkg/package.json > "$tmp" && mv "$tmp" pkg/package.json
 
 cd "$base_dir/web" || exit 1
 rm -rf node_modules
