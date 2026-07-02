@@ -76,10 +76,13 @@
 
   /** Material Web */
   --md-sys-color-primary: var(--dropspot-primary);
+  --md-sys-color-secondary: var(--dropspot-grey-dark);
   --md-sys-color-error: var(--dropspot-danger);
   --md-sys-color-on-surface-variant: var(--dropspot-grey-dark);
+  --md-sys-color-surface-container-highest: #e0e3e2;
 
   @media (prefers-color-scheme: dark) {
+    --md-sys-color-on-surface: #FFFFFF;
     --md-sys-color-on-surface-variant: #FFFFFF;
   }
 }

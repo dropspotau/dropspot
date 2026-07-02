@@ -22,63 +22,6 @@
         margin: 0;
     }
 
-    .button-white {
-        --md-filled-button-container-color: #FFFFFF;
-        --md-filled-button-label-text-color: var(--dropspot-primary);
-        --md-filled-button-hover-label-text-color: var(--dropspot-primary);
-        --md-filled-button-focus-label-text-color: var(--dropspot-primary);
-        --md-filled-button-pressed-label-text-color: var(--dropspot-primary);
-    }
-
-    .button-primary {
-        --md-filled-button-container-color: var(--dropspot-primary);
-        --md-filled-button-label-text-color: #FFFFFF;
-        --md-filled-button-hover-label-text-color: #FFFFFF;
-        --md-filled-button-focus-label-text-color: #FFFFFF;
-        --md-filled-button-pressed-label-text-color: #FFFFFF;
-    }
-
-    .button-success {
-        --md-filled-button-container-color: var(--dropspot-success);
-        --md-filled-button-label-text-color: #FFFFFF;
-        --md-filled-button-hover-label-text-color: #FFFFFF;
-        --md-filled-button-focus-label-text-color: #FFFFFF;
-        --md-filled-button-pressed-label-text-color: #FFFFFF;
-    }
-
-    .md-icon-button-white {
-        --md-icon-button-icon-color: #FFFFFF;
-        --md-icon-button-selected-icon-color: #FFFFFF;
-        --md-icon-button-focus-icon-color: #FFFFFF;
-        --md-icon-button-disabled-icon-color: #FFFFFF;
-        --md-icon-button-hover-icon-color: #FFFFFF;
-        --md-icon-button-pressed-icon-color: #FFFFFF;
-    }
-
-
-    md-switch {
-        --md-switch-selected-track-color: var(--dropspot-success);
-        --md-switch-selected-hover-track-color: var(--dropspot-success);
-        --md-switch-selected-focus-track-color: var(--dropspot-success);
-        --md-switch-selected-pressed-track-color: var(--dropspot-success);
-    }
-
-    md-filled-text-field {
-        --md-filled-field-container-color: #FFFFFF;
-        --md-filled-field-disabled-container-color: #FFFFFF;
-
-      @media (prefers-color-scheme: dark) {
-        --md-filled-field-container-color: var(--dropspot-primary-dark);
-        --md-filled-field-disabled-container-color: var(--dropspot-primary-dark);
-        --md-filled-text-field-label-text-color: #FFFFFF;
-        --md-filled-text-field-hover-label-text-color: #FFFFFF;
-        --md-filled-text-field-focus-label-text-color: #FFFFFF;
-        --md-filled-text-field-input-text-color: #FFFFFF;
-        --md-filled-text-field-hover-input-text-color: #FFFFFF;
-        --md-filled-text-field-focus-input-text-color: #FFFFFF;
-      }
-    }
-
     .icon-success {
         color: var(--dropspot-success);
     }
