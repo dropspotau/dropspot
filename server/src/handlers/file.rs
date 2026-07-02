@@ -8,7 +8,7 @@ use reqwest::StatusCode;
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::types::ApiError;
+use crate::{db::get_files_by_uploader_id, types::ApiError};
 use crate::{db::update_file, state::AppState};
 use crate::{
     db::{
@@ -51,9 +51,12 @@ impl From<File> for ApiFile {
     }
 }
 
-pub async fn handle_list_files(State(state): State<AppState>) -> Response {
+pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Response {
     let pool = state.get_pool();
-    let files = get_files(&pool).await;
+    let files = match user.is_admin {
+        true => get_files(pool).await,
+        false => get_files_by_uploader_id(pool, &user.id).await,
+    };
 
     if let Err(e) = files {
         let api_error: ApiError = FileError::FileListError(e).into();
