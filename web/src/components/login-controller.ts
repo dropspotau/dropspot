@@ -206,6 +206,11 @@ export class LoginControllerElement extends LitElement {
     return false;
   };
 
+  /** Public API to open the login modal programmatically. */
+  public open = (): void => {
+    this.isOpen = true
+  }
+
   private handleClick = (): void => {
     this.isOpen = true;
   };
