@@ -59,6 +59,7 @@
           gdk
           gcloud-login
           opencode
+          jq
         ] ++ rustDeps ++ tsDeps ++ editorDeps;
       in
       {

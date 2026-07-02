@@ -4,7 +4,7 @@ import {
   type IntegrationData,
   type LocalIntegrationData,
   type StorageType,
-} from "dropspot-core";
+} from "@dropspot/dropspot-js";
 import { MdSwitch } from "@material/web/switch/switch";
 import { MdFilledTextField } from "@material/web/textfield/filled-text-field";
 import { html, css, LitElement, type TemplateResult } from "lit";

@@ -22,7 +22,7 @@ tokio-util.workspace = true
 uuid.workspace = true
 regex.workspace = true
 
-dropspot-core.path = "../core"
+dropspot.path = "../core"
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 argon2 = "0.5.3"
 async-trait = "0.1.89"

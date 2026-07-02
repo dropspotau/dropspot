@@ -7,8 +7,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::{Duration, Utc};
-use dropspot_core::upload::CreateFileBody;
-use dropspot_core::{file::File as ApiFile, upload::PreviewUploadRequest};
+use dropspot::{file::File as ApiFile, upload::{PreviewUploadRequest, CreateFileBody}};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
 use tokio::io::AsyncWriteExt;

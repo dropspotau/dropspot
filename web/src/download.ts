@@ -4,7 +4,7 @@ import {
   getFile,
   type Link,
   type File,
-} from "dropspot-core";
+} from "@dropspot/dropspot-js";
 import { getAuth } from "./auth";
 import { ToastElement } from "./components";
 

@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::Utc;
-use dropspot_core::file::{File as ApiFile, UpdateFilePayload};
+use dropspot::file::{File as ApiFile, UpdateFilePayload};
 use reqwest::StatusCode;
 use thiserror::Error;
 use uuid::Uuid;

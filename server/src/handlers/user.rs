@@ -8,7 +8,7 @@ use base64::{
     alphabet::STANDARD,
     engine::{GeneralPurpose, general_purpose::NO_PAD},
 };
-use dropspot_core::{
+use dropspot::{
     auth::validate_password,
     user::{AccessTokenRequest, CreateUserPayload, LoginPayload, LoginResult, User as ApiUser},
 };

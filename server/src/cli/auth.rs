@@ -1,6 +1,6 @@
 use std::io::{BufRead, Write};
 
-use dropspot_core::user::{CreateUserPayload, create_user, login};
+use dropspot::user::{CreateUserPayload, create_user, login};
 
 use crate::auth::storage::save_login;
 

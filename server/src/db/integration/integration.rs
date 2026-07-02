@@ -1,4 +1,4 @@
-use dropspot_core::integration::integration::IntegrationData;
+use dropspot::integration::integration::IntegrationData;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, prelude::FromRow, types::Json};
 use uuid::Uuid;

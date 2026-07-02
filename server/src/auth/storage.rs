@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 
-use dropspot_core::user::refresh_tokens;
+use dropspot::user::refresh_tokens;
 
 pub fn save_login(refresh_token: &str) -> Result<(), std::io::Error> {
     // TODO(alec): Save this to .config or similar

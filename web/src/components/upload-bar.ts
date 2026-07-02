@@ -6,7 +6,7 @@ import {
   type UploadResult,
   type Integration,
   type StorageType,
-} from "dropspot-core";
+} from "@dropspot/dropspot-js";
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
