@@ -76,10 +76,16 @@
 
   /** Material Web */
   --md-sys-color-primary: var(--dropspot-primary);
+  --md-sys-color-secondary: var(--dropspot-grey-dark);
   --md-sys-color-error: var(--dropspot-danger);
   --md-sys-color-on-surface-variant: var(--dropspot-grey-dark);
+  --md-sys-color-surface-container: var(--dropspot-dark);
+  --md-sys-color-surface-container-highest: #FFFFFF;
+  --md-sys-color-surface-container: var(--dropspot-grey-darker);
 
   @media (prefers-color-scheme: dark) {
+    --md-sys-color-primary: #FFFFFF;
+    --md-sys-color-on-surface: #FFFFFF;
     --md-sys-color-on-surface-variant: #FFFFFF;
   }
 }

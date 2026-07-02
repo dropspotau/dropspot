@@ -13,44 +13,46 @@
         <ul id="file-list" class="file-list">
         {% for file in files %}
             <li id="file-{{ file.id }}" class="file-item" menu-navigate-to="file-{{ file.id }}">
-                <div class="file-item-main">
-                    <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
-                    <div class="file-info">
-                        <span class="file-name">{{ file.name }}</span>
-                        <span class="file-size">{{ file.get_formatted_size() }}</span>
+                <div style="display: contents">
+                    <div class="file-item-main">
+                        <file-icon class="file-icon" extension="{{ file.get_extension() }}"></file-icon>
+                        <div class="file-info">
+                            <span class="file-name">{{ file.name }}</span>
+                            <span class="file-size">{{ file.get_formatted_size() }}</span>
+                        </div>
                     </div>
-                </div>
-                <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options" ignore-menu-navigation>
-                    <md-icon>more_vert</md-icon>
-                </md-icon-button>
-                <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed" style="cursor: default;">
-                    <copy-file-link file-id="{{ file.id }}">
-                        <md-menu-item>
-                            <div slot="headline" class="menu-item">
-                                <md-icon>link</md-icon>
-                                <span>Copy</span>
-                            </div>
-                        </md-menu-item>
-                    </copy-file-link>
-                    <delete-file file-id="{{ file.id }}">
-                        <md-menu-item>
-                            <div slot="headline" class="menu-item text-danger">
-                                <md-icon>delete</md-icon>
-                                <span>Delete</span>
-                            </div>
-                        </md-menu-item>
-                    </delete-file>
-                </md-menu>
-                <script type="module">
-                    const actionButton = document.querySelector(`#file-actions-{{ file.id }}`);
-                    const actionMenu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
+                    <md-icon-button id="file-actions-{{ file.id }}" class="file-action" aria-label="More options" ignore-menu-navigation>
+                        <md-icon>more_vert</md-icon>
+                    </md-icon-button>
+                    <script type="module">
+                        const actionButton = document.querySelector(`#file-actions-{{ file.id }}`);
+                        const actionMenu = document.querySelector(`#file-actions-{{ file.id }}-menu`);
 
-                    if (actionButton && actionMenu) {
-                        actionButton.addEventListener("click", (e) => {
-                            actionMenu.open = !actionMenu.open;
-                        });
-                    }
-                </script>
+                        if (actionButton && actionMenu) {
+                            actionButton.addEventListener("click", (e) => {
+                                actionMenu.open = !actionMenu.open;
+                            });
+                        }
+                    </script>
+                    <md-menu id="file-actions-{{ file.id }}-menu" anchor="file-actions-{{ file.id }}" positioning="fixed" style="cursor: default;">
+                        <copy-file-link file-id="{{ file.id }}">
+                            <md-menu-item>
+                                <div slot="headline" class="menu-item">
+                                    <md-icon>link</md-icon>
+                                    <span>Copy</span>
+                                </div>
+                            </md-menu-item>
+                        </copy-file-link>
+                        <delete-file file-id="{{ file.id }}">
+                            <md-menu-item>
+                                <div slot="headline" class="menu-item text-danger">
+                                    <md-icon>delete</md-icon>
+                                    <span>Delete</span>
+                                </div>
+                            </md-menu-item>
+                        </delete-file>
+                    </md-menu>
+                </div>
             </li>
         {% endfor %}
       </ul>

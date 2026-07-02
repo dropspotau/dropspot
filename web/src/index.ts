@@ -13,9 +13,10 @@ import init from "dropspot-core";
 
 import "./download.css";
 import "./header.css";
-import "./index.css";
 import "./file.css";
 import "./form.css";
+import "./index.css";
+import "./material.css";
 import "./menu.css";
 import "./settings.css";
 import "./theme.css";
