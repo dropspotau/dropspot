@@ -52,6 +52,10 @@
     gap: 1rem;
     width: 100%;
 
+    li {
+        list-style: none;
+    }
+
     &[hidden] {
         display: none;
     }
