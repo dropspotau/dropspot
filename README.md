@@ -5,7 +5,7 @@ Client-side file encryption and decryption - keys never leave the browser and al
 ![DropSpot](promo.png)
 <div align="center">
   <h3><a href="https://app.dropspot.au">Try it out!</a></h3>
-  <p>(The only data which gets saved is your file's name and size. The actual contents can't be seen).</p>
+  <p>(Have no fear, the only data which gets saved is your file's name and size. The actual contents can't be seen).</p>
 </div>
 
 ## Contains:
