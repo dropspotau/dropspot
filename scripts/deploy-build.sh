@@ -3,9 +3,17 @@
 set -euo pipefail
 
 if [[ $# -gt 0 && $1 == "migrate" ]]; then
-    SHOULD_MIGRATE=$1
+    if [[ $1 == "migrate" ]]; then
+        SHOULD_MIGRATE=true
+    elif [[ $1 == "no-migrate" ]]; then
+        SHOULD_MIGRATE=false
+    else 
+        echo "First argument must state \"migrate\" or \"no-migrate\""
+        exit 1
+    fi
 else
-    SHOULD_MIGRATE=false
+    echo "First argument must state \"migrate\" or \"no-migrate\""
+    exit 1
 fi
 
 # Replace the Render URL with a proper one
