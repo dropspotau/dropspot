@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: dropspot
     ports:
       - "5432:5432"
+    networks:
+      - dropspot
     # volumes:
     #   - db_data:/var/lib/postgresql/data
   api:
@@ -16,19 +18,25 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@localhost:5432/dropspot"
+        DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@db:5432/dropspot"
         DROPSPOT_ENDPOINT: "http://localhost:8000"
         DROPSPOT_PORT: 8000
         SHOULD_MIGRATE: migrate
     environment:
-      DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@localhost:5432/dropspot"
+      DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@db:5432/dropspot"
       DROPSPOT_ENDPOINT: "http://localhost:8000"
       DROPSPOT_PORT: 8000
     ports:
       - "8000:8000"
+    networks:
+      - dropspot
     depends_on:
       - db
 
 
 volumes:
   db_data:
+
+networks:
+  dropspot:
+    driver: bridge
