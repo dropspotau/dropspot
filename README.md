@@ -46,7 +46,7 @@ Requirements:
 ### Server:
 * `cargo`
 * `sqlx`
-* Postgres >=18.0
+* Postgres >=14.0.0
 * The ability to write to your OS's temporary directory
 
 Setup:
