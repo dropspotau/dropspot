@@ -17,18 +17,10 @@ struct IndexTemplate {
 }
 
 pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> impl IntoResponse {
+    let server_config = state.get_server_config();
     let header = get_header_template(user.as_ref());
 
-    let should_show_disclaimer = std::env::var("DROPSPOT_WEB_SHOW_DISCLAIMER")
-        .unwrap_or("false".to_owned())
-        .parse::<bool>();
-
-    if should_show_disclaimer.is_err() {
-        tracing::error!("Could not parse DROPSPOT_WEB_SHOW_DISCLAIMER as a boolean. Defaulting to false.");
-    };
-
-    let should_show_disclaimer = should_show_disclaimer.unwrap_or(false);
-
+    let should_show_disclaimer = server_config.should_show_disclaimer;
     let mut should_show_onboarding = false;
 
     if let Some(user) = user {
