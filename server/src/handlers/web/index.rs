@@ -13,11 +13,14 @@ use super::template::HtmlTemplate;
 struct IndexTemplate {
     header: HeaderTemplate,
     should_show_onboarding: bool,
+    should_show_disclaimer: bool,
 }
 
 pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> impl IntoResponse {
+    let server_config = state.get_server_config();
     let header = get_header_template(user.as_ref());
 
+    let should_show_disclaimer = server_config.should_show_disclaimer;
     let mut should_show_onboarding = false;
 
     if let Some(user) = user {
@@ -29,6 +32,7 @@ pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> 
     let template = IndexTemplate {
         header,
         should_show_onboarding,
+        should_show_disclaimer,
     };
     HtmlTemplate(template)
 }

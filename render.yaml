@@ -31,6 +31,8 @@ projects:
                 value: app.dropspot.au
               - key: DROPSPOT_PORT
                 value: 10000
+              - key: DROPSPOT_WEB_SHOW_DISCLAIMER
+                value: true
             disk:
               name: files
               mountPath: /opt/data
