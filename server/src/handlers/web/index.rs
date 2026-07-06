@@ -24,7 +24,7 @@ pub async fn handle_index(State(state): State<AppState>, user: Option<User>) -> 
         .parse::<bool>();
 
     if should_show_disclaimer.is_err() {
-        tracing::error!("Could not parse DROPSPOT_WEB_SHOW_CLAIMER as a boolean. Defaulting to false.");
+        tracing::error!("Could not parse DROPSPOT_WEB_SHOW_DISCLAIMER as a boolean. Defaulting to false.");
     };
 
     let should_show_disclaimer = should_show_disclaimer.unwrap_or(false);
