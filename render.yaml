@@ -18,7 +18,7 @@ projects:
             branch: main
             autoDeploy: false
             healthCheckPath: /api/health
-            buildCommand: ./scripts/deploy-build.sh
+            buildCommand: ./scripts/deploy-build.sh migrate
             preDeployCommand: ./scripts/deploy-pre-deploy.sh
             startCommand: ./scripts/deploy-start.sh
             envVars:
@@ -31,6 +31,8 @@ projects:
                 value: app.dropspot.au
               - key: DROPSPOT_PORT
                 value: 10000
+              - key: DROPSPOT_WEB_SHOW_DISCLAIMER
+                value: true
             disk:
               name: files
               mountPath: /opt/data
