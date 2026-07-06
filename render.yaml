@@ -18,7 +18,7 @@ projects:
             branch: main
             autoDeploy: false
             healthCheckPath: /api/health
-            buildCommand: ./scripts/deploy-build.sh migrate
+            buildCommand: ./scripts/deploy-build.sh
             preDeployCommand: ./scripts/deploy-pre-deploy.sh
             startCommand: ./scripts/deploy-start.sh
             envVars:
