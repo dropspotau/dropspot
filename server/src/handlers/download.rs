@@ -56,22 +56,6 @@ pub async fn handle_file_request_download(
         .into_response();
     };
 
-    // let Ok(upload_organisation) = get_organisation_for_user(pool, &user_id).await else {
-    //     return ApiError::new(
-    //         "Could not find uploader's organisation".to_owned(),
-    //         StatusCode::NOT_FOUND,
-    //     )
-    //     .into_response();
-    // };
-    //
-    // let Ok(settings) = get_organisation_settings(pool, &upload_organisation.id).await else {
-    //     return ApiError::new(
-    //         "Could not find uploader's organisation's settings".to_owned(),
-    //         StatusCode::NOT_FOUND,
-    //     )
-    //     .into_response();
-    // };
-
     if organisation.id != file.organisation_id {
         tracing::error!(
             "Download organisation mismatch: {} - {} vs {}",
