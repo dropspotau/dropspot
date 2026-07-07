@@ -8,7 +8,7 @@ pub fn can_see_file(file: &File, user: Option<&User>) -> bool {
         return true;
     }
 
-    if user.is_none() {
+    if user.is_none() && file.can_download_externally {
         return true;
     }
 

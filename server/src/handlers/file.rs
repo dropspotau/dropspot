@@ -62,14 +62,14 @@ pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Res
 pub async fn handle_get_file(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    user: User,
+    user: Option<User>,
 ) -> Response {
     let pool = state.get_pool();
     let Ok(file) = get_file_by_id(&pool, &id).await else {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    if !can_see_file(&file, Some(&user)) {
+    if !can_see_file(&file, user.as_ref()) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 

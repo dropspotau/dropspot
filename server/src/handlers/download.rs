@@ -43,7 +43,12 @@ pub async fn handle_file_request_download(
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
+    if !can_see_file(&file, user.as_ref()) {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
+
     let Ok(organisation) = get_organisation_from_request_user(pool, user.as_ref()).await else {
+        tracing::error!("FAILED TO LOAD ORGanISTION");
         return ApiError::new(
             "Failed to retrieve organisation".to_owned(),
             StatusCode::UNAUTHORIZED,
@@ -51,47 +56,30 @@ pub async fn handle_file_request_download(
         .into_response();
     };
 
-    if let Some(user_id) = file.created_by_id {
-        let Ok(upload_organisation) = get_organisation_for_user(pool, &user_id).await else {
-            return ApiError::new(
-                "Could not find uploader's organisation".to_owned(),
-                StatusCode::NOT_FOUND,
-            )
-            .into_response();
-        };
+    // let Ok(upload_organisation) = get_organisation_for_user(pool, &user_id).await else {
+    //     return ApiError::new(
+    //         "Could not find uploader's organisation".to_owned(),
+    //         StatusCode::NOT_FOUND,
+    //     )
+    //     .into_response();
+    // };
+    //
+    // let Ok(settings) = get_organisation_settings(pool, &upload_organisation.id).await else {
+    //     return ApiError::new(
+    //         "Could not find uploader's organisation's settings".to_owned(),
+    //         StatusCode::NOT_FOUND,
+    //     )
+    //     .into_response();
+    // };
 
-        let Ok(settings) = get_organisation_settings(pool, &upload_organisation.id).await else {
-            return ApiError::new(
-                "Could not find uploader's organisation's settings".to_owned(),
-                StatusCode::NOT_FOUND,
-            )
-            .into_response();
-        };
-
-        if organisation.id != upload_organisation.id {
-            return ApiError::new(
-                "Download organisation mismatch".to_owned(),
-                StatusCode::FORBIDDEN,
-            )
-            .into_response();
-        }
-
-        // Users can download if they're logged in, or the organisation allows unauthorised downloads
-        let is_unpermitted_anonymous_download =
-            user.is_none() && !settings.allow_external_downloads;
-
-        if is_unpermitted_anonymous_download {
-            return ApiError::new(
-                "The organisation does not permit unauthorised downloads".to_owned(),
-                StatusCode::NOT_FOUND,
-            )
-            .into_response();
-        }
-
-        if !can_see_file(&file, user.as_ref()) {
-            return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND)
-                .into_response();
-        }
+    if organisation.id != file.organisation_id {
+        tracing::error!(
+            "Download organisation mismatch: {} - {} vs {}",
+            file.id,
+            organisation.id,
+            file.organisation_id
+        );
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
     if file.is_expired() {

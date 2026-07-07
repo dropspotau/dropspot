@@ -42,7 +42,8 @@ create table dropspot.file (
     storage storage not null,
     has_expired boolean not null default false,
     updated_at timestamptz,
-    updated_by_id uuid references dropspot.users (id) on delete set null
+    updated_by_id uuid references dropspot.users (id) on delete set null,
+    organisation_id uuid not null references dropspot.organisation (id) on delete cascade
 );
 
 -- 1-1 table recording how a file was uploaded. A file can only be uploaded by one person
