@@ -21,6 +21,7 @@ pub struct File {
     pub expires_at: DateTime<Utc>,
     pub max_downloads: i32,
     pub download_count: i32,
+    pub organisation_id: Uuid,
 }
 
 impl File {
@@ -94,13 +95,16 @@ pub async fn get_files(pool: &PgPool) -> Result<Vec<File>, sqlx::Error> {
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              organisation.id organisation_id
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
             left join dropspot.users users
             on users.id = file.created_by_id
-            group by file.id, users.id
+            left join dropspot.organisation organisation
+            on organisation.id = users.organisation_id
+            group by file.id, users.id, organisation.id
             order by file.created_at asc
         "#
     )
@@ -125,14 +129,17 @@ pub async fn get_files_by_uploader_id(
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              organisation.id organisation_id
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
             left join dropspot.users users
             on users.id = file.created_by_id
+            left join dropspot.organisation organisation
+            on organisation.id = users.organisation_id
             where users.id = $1
-            group by file.id, users.id
+            group by file.id, users.id, organisation.id
             order by file.created_at asc
         "#,
         user_id
@@ -155,16 +162,18 @@ pub async fn get_files_to_expire(pool: &PgPool) -> Result<Vec<File>, sqlx::Error
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              organisation.id organisation_id
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
             left join dropspot.users users
             on users.id = file.created_by_id
-            group by file.id, users.id
-            having
-                (file.max_downloads <= count(download.id) or now() > file.expires_at) and
-                file.has_expired is not true
+            left join dropspot.organisation organisation
+            on organisation.id = users.organisation_id
+            where file.has_expired is not true
+            group by file.id, users.id, organisation.id
+            having file.max_downloads <= count(download.id) or now() > file.expires_at
             order by file.created_at asc
         "#
     )
@@ -186,14 +195,17 @@ pub async fn get_file_by_id(pool: &PgPool, id: &Uuid) -> Result<File, sqlx::Erro
               users.email "created_by_name?",
               file.expires_at,
               file.max_downloads,
-              count(download.id)::int "download_count!"
+              count(download.id)::int "download_count!",
+              organisation.id organisation_id
             from dropspot.file file
             left join dropspot.download download
             on download.file_id = file.id
             left join dropspot.users users
             on users.id = file.created_by_id
-            group by file.id, users.id
-            having file.id = $1
+            left join dropspot.organisation organisation
+            on organisation.id = users.organisation_id
+            where file.id = $1
+            group by file.id, users.id, organisation.id
             limit 1
         "#,
         id

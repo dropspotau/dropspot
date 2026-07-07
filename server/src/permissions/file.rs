@@ -1,7 +1,7 @@
-use crate::db::{File, Organisation, User};
+use crate::db::{File, User};
 
 // Whether a user can see the file
-pub fn can_see_file(file: &File, organisation: &Organisation, user: Option<&User>) -> bool {
+pub fn can_see_file(file: &File, user: Option<&User>) -> bool {
     // Admins and anyone in the same organisation can view this file
     if file.created_by_id.is_none() {
         // Anonymous upload, anyone can view
@@ -14,7 +14,7 @@ pub fn can_see_file(file: &File, organisation: &Organisation, user: Option<&User
 
     // Otherwise, admins can view it
     let user = user.unwrap();
-    let is_same_organisation = user.organisation_id == organisation.id;
+    let is_same_organisation = user.organisation_id == file.organisation_id;
 
     if is_same_organisation {
         return true;
