@@ -11,6 +11,8 @@ mod handlers;
 #[cfg(feature = "server")]
 mod middleware;
 #[cfg(feature = "server")]
+mod permissions;
+#[cfg(feature = "server")]
 mod state;
 #[cfg(feature = "server")]
 mod storage;
