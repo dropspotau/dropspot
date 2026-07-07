@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     db::{Download, File, User, get_downloads_for_file, get_files},
+    permissions::file::can_see_file,
     state::AppState,
 };
 
@@ -31,6 +32,8 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
         let template = FilesUnAuthedTemplate {};
         return HtmlTemplate(template).into_response();
     }
+
+    let user = user.unwrap();
     let pool = state.get_pool();
     let files = match get_files(pool).await {
         Ok(files) => files,
@@ -40,7 +43,7 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
         }
     }
     .into_iter()
-    .filter(|file| !file.is_expired())
+    .filter(|file| !file.is_expired() && can_see_file(file, &user))
     .collect::<Vec<File>>();
     let is_empty = files.is_empty();
 
