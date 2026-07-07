@@ -7,7 +7,10 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::{Duration, Utc};
-use dropspot::{file::File as ApiFile, upload::{PreviewUploadRequest, CreateFileBody}};
+use dropspot::{
+    file::File as ApiFile,
+    upload::{CreateFileBody, PreviewUploadRequest},
+};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
 use tokio::io::AsyncWriteExt;
@@ -19,6 +22,7 @@ use crate::{
         get_organisation_settings, get_upload_by_file_id, preview_upload, start_upload,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
+    permissions::file::can_update_file,
     state::AppState,
     storage::{StorageType, get_storage},
     types::ApiError,
@@ -108,9 +112,15 @@ pub async fn handle_file_upload(
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
-        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
+
+    if let Some(ref user) = user
+        && file.created_by_id.is_some()
+        && !can_update_file(&file, user)
+    {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
 
     let mut reader_stream = body.into_data_stream();
 
