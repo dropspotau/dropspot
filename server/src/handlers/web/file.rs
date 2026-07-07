@@ -43,7 +43,7 @@ pub async fn handle_files(State(state): State<AppState>, user: Option<User>) -> 
         }
     }
     .into_iter()
-    .filter(|file| !file.is_expired() && can_see_file(file, &user))
+    .filter(|file| !file.is_expired() && can_see_file(file, Some(&user)))
     .collect::<Vec<File>>();
     let is_empty = files.is_empty();
 

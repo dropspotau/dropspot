@@ -52,7 +52,7 @@ pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Res
 
     let files = files
         .into_iter()
-        .filter(|file| can_see_file(file, &user))
+        .filter(|file| can_see_file(file, Some(&user)))
         .map(|file| ApiFile::from(file))
         .collect::<Vec<ApiFile>>();
 
@@ -69,12 +69,7 @@ pub async fn handle_get_file(
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    if !can_see_file(&file, &user) {
-        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
-    }
-
-    let can_view_file = user.is_admin || file.created_by_id == Some(user.id);
-    if !can_view_file {
+    if !can_see_file(&file, Some(&user)) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
@@ -94,7 +89,7 @@ pub async fn handle_update_file(
         return api_error.into_response();
     };
 
-    if !can_see_file(&file, &user) {
+    if !can_see_file(&file, Some(&user)) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
@@ -141,7 +136,7 @@ pub async fn handle_delete_file(
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    if !can_see_file(&file, &user) {
+    if !can_see_file(&file, Some(&user)) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 

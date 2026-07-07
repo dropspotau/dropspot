@@ -88,9 +88,7 @@ pub async fn handle_file_request_download(
             .into_response();
         }
 
-        if let Some(ref user) = user
-            && !can_see_file(&file, user)
-        {
+        if !can_see_file(&file, user.as_ref()) {
             return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND)
                 .into_response();
         }
@@ -157,9 +155,7 @@ pub async fn handle_file_download(
         .into_response();
     }
 
-    if let Some(ref user) = user
-        && !can_see_file(&file, user)
-    {
+    if !can_see_file(&file, user.as_ref()) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
