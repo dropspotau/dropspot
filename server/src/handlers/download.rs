@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::{
     db::{
         Download, User, create_download, get_download_by_id, get_file_by_id,
-        get_integration_by_slug, get_organisation_for_user, get_organisation_settings,
+        get_integration_by_slug,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
     permissions::file::can_see_file,
