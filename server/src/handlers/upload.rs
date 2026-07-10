@@ -22,6 +22,7 @@ use crate::{
         get_organisation_settings, get_upload_by_file_id, preview_upload, start_upload,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
+    permissions::file::can_see_file,
     state::AppState,
     storage::{StorageType, get_storage},
     types::ApiError,
@@ -118,10 +119,10 @@ pub async fn handle_file_upload(
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    // if !can_see_file(&file, user.as_ref()) {
-    //     // NOTE(alec): Probably not that relevant to ceck
-    //     return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
-    // }
+    if !can_see_file(&file, user.as_ref()) {
+        // NOTE(alec): Probably not that relevant to ceck
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
 
     let mut reader_stream = body.into_data_stream();
 
