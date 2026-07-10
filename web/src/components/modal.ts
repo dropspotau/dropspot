@@ -15,20 +15,17 @@ export class ModalElement extends LitElement {
       position: relative;
       flex-flow: column;
       gap: 2rem;
-      background-color: #ffffff;
+      background-color: light-dark(#ffffff, var(--dropspot-primary-dark));
       border: none;
       border-radius: 0.5rem;
-      box-shadow: var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-semi-minor);
+      box-shadow:
+        var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-semi-minor);
       max-height: var(--modal-max-height);
       max-width: var(--modal-max-width);
       padding: 2rem;
 
       &[open] {
         display: flex;
-      }
-
-      @media (prefers-color-scheme: dark) {
-          background-color: var(--dropspot-primary-dark);
       }
     }
 
