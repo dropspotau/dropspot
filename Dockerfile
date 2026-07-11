@@ -36,6 +36,7 @@ USER server
 
 # Install pnpm for the web build - https://pnpm.io/installation#in-a-docker-container
 ENV HOME="/home/server"
+ENV NODE_PATH="$HOME/node"
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
 
@@ -44,23 +45,19 @@ ENV PATH="$PNPM_HOME/bin:$PATH"
 
 # Install Node
 # Download and install nvm:
-ENV NODE_PATH="node-v26.5.0-linux-x64"
-RUN curl -o- https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz > "$NODE_PATH.tar.xz"
-RUN tar -xvf "$NODE_PATH.tar.xz"
+RUN mkdir -p $NODE_PATH/bin
+RUN curl -o- https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz > "$NODE_PATH/node.tar.xz"
+RUN tar -xJf "$NODE_PATH/node.tar.xz" -C "$NODE_PATH"
+RUN rm "$NODE_PATH/node.tar.xz"
+RUN mv "$NODE_PATH/node-v26.5.0-linux-x64" "$NODE_PATH/bin/node"
+# RUN cat $NODE_PATH/bin/node && exit 1
 ENV PATH="$NODE_PATH/bin:$PATH"
-# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
-# # in lieu of restarting the shell
-# RUN \. "$HOME/.nvm/nvm.sh"
-# # Download and install Node.js:
-# RUN nvm install 26
-# # Verify the Node.js version:
-# RUN node -v # Should print "v26.5.0".
-# # Install Corepack:
-# RUN npm install -g corepack
-# # Download and install pnpm:
-# RUN corepack enable pnpm
-# # Verify pnpm version:
-# RUN pnpm -v
+# RUN echo $PATH && exit 1
+RUN chown -R server:server /home/server/node
+RUN chown server:server /home/server/node/bin/node
+# RUN ls -las /home/server/node && exit 1
+RUN ls -las /home/server && exit 1
+RUN node -v
 
 # Install pnpm
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" PNPM_VERSION="11.9.0" bash -
