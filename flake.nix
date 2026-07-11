@@ -55,6 +55,7 @@
           typescript
           vtsls
           pnpm
+          nodejs_26
         ];
 
         editorDeps = with pkgs; [
@@ -64,7 +65,7 @@
           docker-compose-language-service
         ];
 
-        psql = (pkgs.postgresql_17.withPackages (ps: with ps; [ ]));
+        psql = (pkgs.postgresql_17.withPackages (ps: [ ]));
         deps =
           with pkgs;
           [
