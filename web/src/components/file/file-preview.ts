@@ -1,6 +1,7 @@
 import { html, css, LitElement, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { download } from "../../download";
+import { applyGlobalStyles } from "../../style";
 
 export type PreviewType = "image" | "video" | "audio" | "text" | "file";
 
@@ -35,7 +36,7 @@ export class FilePreviewElement extends LitElement {
       margin: 0;
 
       @media (prefers-color-scheme: dark) {
-        color: #FFFFFF;
+        color: #ffffff;
       }
     }
 
@@ -87,6 +88,14 @@ export class FilePreviewElement extends LitElement {
 
   @state()
   private isModalOpen: boolean = false;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+
+    if (this.shadowRoot) {
+      applyGlobalStyles(this.shadowRoot);
+    }
+  }
 
   public setBuffer(buffer: Uint8Array<ArrayBuffer>): void {
     this.blobUrl = URL.createObjectURL(new Blob([buffer]));
