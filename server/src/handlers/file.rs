@@ -7,7 +7,11 @@ use dropspot::file::{File as ApiFile, UpdateFilePayload};
 use reqwest::StatusCode;
 use uuid::Uuid;
 
-use crate::{db::get_files_by_uploader_id, types::ApiError};
+use crate::{
+    db::get_files_by_uploader_id,
+    permissions::file::{can_delete_file, can_see_file, can_update_file},
+    types::ApiError,
+};
 use crate::{db::update_file, state::AppState};
 use crate::{
     db::{
@@ -48,6 +52,7 @@ pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Res
 
     let files = files
         .into_iter()
+        .filter(|file| can_see_file(file, Some(&user)))
         .map(|file| ApiFile::from(file))
         .collect::<Vec<ApiFile>>();
 
@@ -57,16 +62,14 @@ pub async fn handle_list_files(State(state): State<AppState>, user: User) -> Res
 pub async fn handle_get_file(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    user: User,
+    user: Option<User>,
 ) -> Response {
     let pool = state.get_pool();
     let Ok(file) = get_file_by_id(&pool, &id).await else {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    // Admins and uploaders can view this file
-    let can_view_file = user.is_admin || file.created_by_id == Some(user.id);
-    if !can_view_file {
+    if !can_see_file(&file, user.as_ref()) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
@@ -86,10 +89,11 @@ pub async fn handle_update_file(
         return api_error.into_response();
     };
 
-    if let Some(ref user_id) = file.created_by_id
-        && user_id != &user.id
-    {
-        // Only uploaders can update their files
+    if !can_see_file(&file, Some(&user)) {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
+
+    if !can_update_file(&file, &user) {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     }
 
@@ -129,27 +133,28 @@ pub async fn handle_delete_file(
     let pool = state.get_pool();
 
     let Ok(file) = get_file_by_id(pool, &id).await else {
-        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
-    if let Some(ref user_id) = file.created_by_id
-        && user_id != &user.id
-    {
+    if !can_see_file(&file, Some(&user)) {
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
+
+    if !can_delete_file(&file, &user) {
         // Only uploaders can delete their files
-        let api_error = ApiError::new(
+        return ApiError::new(
             "Cannot delete another's file".to_owned(),
             StatusCode::UNAUTHORIZED,
-        );
-        return api_error.into_response();
+        )
+        .into_response();
     }
 
     if let Err(_e) = delete_files(pool, &[file.id]).await {
-        let api_error = ApiError::new(
+        return ApiError::new(
             "Failed to delete file".to_owned(),
             StatusCode::INTERNAL_SERVER_ERROR,
-        );
-        return api_error.into_response();
+        )
+        .into_response();
     }
 
     let organisation = get_organisation_for_user(pool, &user.id).await;

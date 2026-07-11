@@ -7,7 +7,10 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use chrono::{Duration, Utc};
-use dropspot::{file::File as ApiFile, upload::{PreviewUploadRequest, CreateFileBody}};
+use dropspot::{
+    file::File as ApiFile,
+    upload::{CreateFileBody, PreviewUploadRequest},
+};
 use futures_util::StreamExt;
 use reqwest::StatusCode;
 use tokio::io::AsyncWriteExt;
@@ -19,6 +22,7 @@ use crate::{
         get_organisation_settings, get_upload_by_file_id, preview_upload, start_upload,
     },
     handlers::utils::{extract_client_ip, get_organisation_from_request_user},
+    permissions::file::can_see_file,
     state::AppState,
     storage::{StorageType, get_storage},
     types::ApiError,
@@ -40,14 +44,17 @@ pub async fn handle_file_request_upload(
     let upload_ip = extract_client_ip(address, headers);
 
     if let Err(e) = organisation {
+        tracing::error!("Failed to retrieve organisation: {e}");
         return ApiError::new(
-            format!("Failed to retrieve organisation: {e}"),
+            "Failed to retrieve organisation:".to_owned(),
             StatusCode::UNAUTHORIZED,
         )
         .into_response();
     }
 
-    let Ok(settings) = get_organisation_settings(pool, &organisation.unwrap().id).await else {
+    let organisation = organisation.unwrap();
+
+    let Ok(settings) = get_organisation_settings(pool, &organisation.id).await else {
         return ApiError::new(
             "Failed to retrieve settings for organisation".to_owned(),
             StatusCode::NOT_FOUND,
@@ -85,6 +92,7 @@ pub async fn handle_file_request_upload(
         expires_at,
         max_downloads,
         upload_ip,
+        &organisation.id,
     )
     .await
     .map(ApiFile::from);
@@ -108,9 +116,13 @@ pub async fn handle_file_upload(
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
-        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
+
+    if !can_see_file(&file, user.as_ref()) {
+        // NOTE(alec): Probably not that relevant to ceck
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
+    }
 
     let mut reader_stream = body.into_data_stream();
 
@@ -133,6 +145,7 @@ pub async fn handle_file_upload(
     };
 
     let Ok(settings) = get_organisation_settings(pool, &organisation_id).await else {
+        tracing::error!("Failed to retrieve setting for organisation on file upload");
         return ApiError::new(
             "Failed to retrieve settings for organisation".to_owned(),
             StatusCode::NOT_FOUND,
@@ -143,20 +156,21 @@ pub async fn handle_file_upload(
     let storage = get_storage(&integration.data);
 
     let Ok(mut writer) = storage.get_upload_writer(&file).await else {
-        let api_error = ApiError::new("Failed to write file ".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        tracing::error!("Failed to write file");
+        return ApiError::new("Failed to write file ".to_owned(), StatusCode::NOT_FOUND)
+            .into_response();
     };
 
     let Ok(upload) = get_upload_by_file_id(pool, &file.id).await else {
-        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        tracing::error!("Upload file not found");
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
     let is_same_user = file.created_by_id == user.map(|u| u.id);
 
     if !is_same_user {
-        let api_error = ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND);
-        return api_error.into_response();
+        tracing::error!("Different user tried to upload this file");
+        return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
     };
 
     if start_upload(pool, &upload.id).await.is_err() {
