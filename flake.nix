@@ -60,6 +60,8 @@
         editorDeps = with pkgs; [
           neovim
           rustfmt
+          docker-language-server
+          docker-compose-language-service
         ];
 
         psql = (pkgs.postgresql_17.withPackages (ps: with ps; [ ]));
