@@ -21,7 +21,7 @@ services:
         DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@db:5432/dropspot"
         DROPSPOT_ENDPOINT: "http://localhost:8000"
         DROPSPOT_PORT: 8000
-        SHOULD_MIGRATE: migrate
+        SHOULD_MIGRATE: "no-migrate"
     environment:
       DROPSPOT_DATABASE_URL: "postgres://dropspot:dropspot@db:5432/dropspot"
       DROPSPOT_ENDPOINT: "http://localhost:8000"

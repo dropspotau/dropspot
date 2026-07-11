@@ -2,16 +2,16 @@
 
 set -euo pipefail
 
-if [[ $# -gt 0 && $1 == "migrate" ]]; then
-    if [[ $1 == "migrate" ]]; then
-        SHOULD_MIGRATE=true
-    elif [[ $1 == "no-migrate" ]]; then
-        SHOULD_MIGRATE=false
-    else 
-        echo "First argument must state \"migrate\" or \"no-migrate\""
-        exit 1
-    fi
-else
+if [[ $# -eq 0 ]]; then
+    echo "First argument must state \"migrate\" or \"no-migrate\""
+    exit 1
+fi
+
+if [[ $1 == "migrate" ]]; then
+    SHOULD_MIGRATE=true
+elif [[ $1 == "no-migrate" ]]; then
+    SHOULD_MIGRATE=false
+else 
     echo "First argument must state \"migrate\" or \"no-migrate\""
     exit 1
 fi
@@ -20,10 +20,12 @@ fi
 export DROPSPOT_ENDPOINT="https://${DROPSPOT_ENDPOINT}"
 export DATABASE_URL="$DROPSPOT_DATABASE_URL"
 
-cargo install sqlx-cli wasm-pack
+cargo install wasm-pack
 
-if [[ $SHOULD_MIGRATE == "true" ]]; then
+if [[ $SHOULD_MIGRATE == true ]]; then
     echo "Migrating database"
+    echo "Database URL: $DATABASE_URL"
+    cargo install sqlx-cli
     ./scripts/migrate-database.sh
 fi
 

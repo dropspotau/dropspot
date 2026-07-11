@@ -15,7 +15,7 @@ wasm-pack build --target web --scope dropspot
 
 cd "$base_dir/web" || exit 1
 rm -rf node_modules
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 
 echo "Built WASM package and installed to frontend!"
