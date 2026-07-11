@@ -27,20 +27,11 @@ COPY web/pnpm-workspace.yaml /app/web/pnpm-workspace.yaml
 COPY web/tsconfig.json /app/web/tsconfig.json
 COPY web/vite.config.ts /app/web/vite.config.ts
 
-RUN useradd server
-RUN chown -R server:server /app
-RUN mkdir -p /home/server
-RUN chown server:server /home/server
-
-USER server
-
 # Install pnpm for the web build - https://pnpm.io/installation#in-a-docker-container
 ENV PNPM_HOME="/app/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
-RUN chown -R server:server $PNPM_HOME
 RUN chmod +x $PNPM_HOME
-RUN chmod -R 777 $PNPM_HOME
 RUN SHELL=$(which bash) pnpm install
 
 ENV SQLX_OFFLINE=true
