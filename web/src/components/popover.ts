@@ -123,7 +123,6 @@ export class PopoverElement extends LitElement {
         class="${className}"
         alignment="${this.alignment}"
         popover="manual"
-        ${this.isDark ? "dark" : ""}
         ${ref(this.popoverRef)}
       >
         <slot></slot>
