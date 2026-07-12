@@ -48,6 +48,10 @@ export class TooltipElement extends LitElement {
     }
   }
 
+  /**
+   * Gets the tooltip's target element, and throws an error if the tooltip's root node doesn't support querySelector
+   * or if the target isn't an HTMLElement.
+   */
   private getTarget = (): HTMLElement => {
     const rootNode = this.getRootNode();
 
