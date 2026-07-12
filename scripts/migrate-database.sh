@@ -7,4 +7,5 @@ if [[ -z $DROPSPOT_DATABASE_URL ]]; then
     exit 1
 fi
 
+cargo sqlx prepare --workspace
 sqlx migrate run --database-url "$DROPSPOT_DATABASE_URL"
