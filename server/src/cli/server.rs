@@ -158,8 +158,9 @@ pub async fn handle_run_server() -> Result<(), ()> {
                     // created above.
                     tracing::debug!("started processing request")
                 })
-                .on_response(|_response: &Response, _latency: Duration, _span: &Span| {
-                    tracing::debug!("finished processing request")
+                .on_response(|response: &Response, _latency: Duration, _span: &Span| {
+                    let status_code = response.status();
+                    tracing::debug!("finished processing request - status {status_code}")
                 })
                 .on_failure(
                     |_error: ServerErrorsFailureClass, _latency: Duration, _span: &Span| {

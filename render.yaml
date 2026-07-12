@@ -33,6 +33,8 @@ projects:
                 value: 10000
               - key: DROPSPOT_WEB_SHOW_DISCLAIMER
                 value: true
+              - key: DROPSPOT_LOCAL_UPLOAD_PATH
+                value: /opt/data
             disk:
               name: files
               mountPath: /opt/data
