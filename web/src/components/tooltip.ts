@@ -1,4 +1,4 @@
-import { html, css, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
 
@@ -6,14 +6,6 @@ import type { PopoverElement } from "./popover";
 
 @customElement("dropspot-tooltip")
 export class TooltipElement extends LitElement {
-  static styles = css`
-    :host,
-    dropspot-popover {
-      background-color: var(--dropspot-dark);
-      color: #ffffff;
-    }
-  `;
-
   @property({ attribute: "target" })
   private targetSelector: string = "";
 
