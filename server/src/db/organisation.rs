@@ -94,9 +94,7 @@ pub async fn create_organisation(pool: &PgPool, name: &str) -> Result<Organisati
         &id.id,
         &StorageType::Local,
         true,
-        &IntegrationData::Local(LocalIntegrationData {
-            folder: "files".to_owned(),
-        }),
+        &IntegrationData::Local(LocalIntegrationData {}),
         None,
     )
     .await?;

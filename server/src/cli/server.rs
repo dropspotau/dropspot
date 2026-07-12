@@ -17,6 +17,7 @@ use tracing::{Span, info_span};
 #[cfg(not(feature = "web"))]
 use axum::http::StatusCode;
 
+use crate::config::get_server_config;
 use crate::db::connect;
 
 use crate::handlers::{
@@ -43,9 +44,9 @@ pub async fn handle_watch() -> Result<(), ()> {
     let Ok(pool) = connect().await else {
         return Err(());
     };
+    let server_config = get_server_config();
 
-    let state = AppState::new(Arc::new(pool));
-    watch_for_files(state).await;
+    watch_for_files(pool, server_config).await;
 
     Ok(())
 }

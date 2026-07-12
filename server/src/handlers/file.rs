@@ -131,6 +131,7 @@ pub async fn handle_delete_file(
     Path(id): Path<Uuid>,
 ) -> Response {
     let pool = state.get_pool();
+    let server_config = state.get_server_config();
 
     let Ok(file) = get_file_by_id(pool, &id).await else {
         return ApiError::new("File not found".to_owned(), StatusCode::NOT_FOUND).into_response();
@@ -178,7 +179,7 @@ pub async fn handle_delete_file(
         .into_response();
     };
 
-    let storage = get_storage(&integration.data);
+    let storage = get_storage(&integration.data, server_config);
 
     if storage.delete(&file).await.is_err() {
         eprintln!("Failed to delete file: {}", file.id);

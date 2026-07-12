@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use tokio::io::{AsyncRead, AsyncWrite};
 
+use crate::config::ServerConfiguration;
 use crate::db::File;
 
 use super::gcs::GcsStorage;
@@ -107,10 +108,13 @@ pub trait Storage: Sync + Send {
     async fn delete(&self, file: &File) -> Result<(), ()>;
 }
 
-pub fn get_storage(integration_data: &IntegrationData) -> Box<dyn Storage> {
+pub fn get_storage(
+    integration_data: &IntegrationData,
+    server_config: &ServerConfiguration,
+) -> Box<dyn Storage> {
     match integration_data {
-        IntegrationData::Local(LocalIntegrationData { folder }) => Box::new(LocalStorage {
-            folder: folder.to_owned(),
+        IntegrationData::Local(LocalIntegrationData {}) => Box::new(LocalStorage {
+            folder: server_config.local_upload_path.clone(),
         }),
         IntegrationData::Gcs(GcsIntegrationData { bucket_name }) => Box::new(GcsStorage {
             bucket_name: bucket_name.to_owned(),

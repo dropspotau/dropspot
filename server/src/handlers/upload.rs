@@ -113,6 +113,7 @@ pub async fn handle_file_upload(
     body: Body,
 ) -> Response {
     let pool = state.get_pool();
+    let server_config = state.get_server_config();
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(file) = get_file_by_id(pool, &file_id).await else {
@@ -153,7 +154,7 @@ pub async fn handle_file_upload(
         .into_response();
     };
 
-    let storage = get_storage(&integration.data);
+    let storage = get_storage(&integration.data, server_config);
 
     let Ok(mut writer) = storage.get_upload_writer(&file).await else {
         tracing::error!("Failed to write file");
