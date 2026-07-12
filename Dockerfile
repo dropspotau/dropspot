@@ -31,35 +31,24 @@ COPY web/vite.config.ts /app/web/vite.config.ts
 # Run the server as a custom user so we don't accidentally access any root files
 RUN useradd --create-home server
 RUN chown -R server:server /app
-RUN chown -R server:server /home/server
 USER server
-
-# Install pnpm for the web build - https://pnpm.io/installation#in-a-docker-container
-ENV HOME="/home/server"
-ENV NODE_PATH="$HOME/node"
-ENV PNPM_HOME="$HOME/.local/share/pnpm"
-ENV PATH="$PNPM_HOME/bin:$PATH"
 
 # Installing Node and pnpm with pre-compiled binaries because it was easier than messing around with installation
 # script environment variables
 
-# Install Node
-# Download and install nvm:
-RUN mkdir -p $NODE_PATH/bin
-RUN curl -o- https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz > "$NODE_PATH/node.tar.xz"
-RUN tar -xJf "$NODE_PATH/node.tar.xz" -C "$NODE_PATH"
-RUN rm "$NODE_PATH/node.tar.xz"
-RUN mv "$NODE_PATH/node-v26.5.0-linux-x64" "$NODE_PATH/bin/node"
-# RUN cat $NODE_PATH/bin/node && exit 1
-ENV PATH="$NODE_PATH/bin:$PATH"
-# RUN echo $PATH && exit 1
-RUN chown -R server:server /home/server/node
-RUN chown server:server /home/server/node/bin/node
-# RUN ls -las /home/server/node && exit 1
-RUN ls -las /home/server && exit 1
-RUN node -v
+ENV HOME="/home/server"
+ENV NODE_PATH="$HOME/node"
+ENV PNPM_HOME="$HOME/.local/share/pnpm"
+ENV PATH="$NODE_PATH/bin:$PNPM_HOME/bin:$PATH"
 
-# Install pnpm
+# Install Node
+RUN curl -o- https://nodejs.org/dist/v26.5.0/node-v26.5.0-linux-x64.tar.xz > "$HOME/node.tar.xz"
+RUN tar -xJf "$HOME/node.tar.xz" -C "$HOME"
+RUN rm "$HOME/node.tar.xz"
+RUN mv "$HOME/node-v26.5.0-linux-x64" "$HOME/node"
+RUN /home/server/node/bin/node -v
+
+# Install pnpm for the web build - https://pnpm.io/installation#in-a-docker-container
 RUN wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" PNPM_VERSION="11.9.0" bash -
 RUN chmod +x $PNPM_HOME
 
