@@ -2,7 +2,6 @@ import {
   upsertIntegration,
   type GcsIntegrationData,
   type IntegrationData,
-  type LocalIntegrationData,
   type StorageType,
 } from "@dropspot/dropspot-js";
 import { MdSwitch } from "@material/web/switch/switch";
@@ -17,7 +16,7 @@ import { ToastElement } from "../toast";
 
 const getInitialData = (slug: StorageType): IntegrationData => {
   if (slug === "local") {
-    return { folder: "" };
+    return {};
   }
 
   if (slug === "gcs") {
@@ -106,27 +105,8 @@ export class IntegrationFormElement extends LitElement {
     this.isActive = target.selected;
   };
 
-  private renderLocal = (): TemplateResult<1> => {
-    const data: LocalIntegrationData = { folder: "", ...this.data };
-
-    return html`
-      <div class="form-row">
-        <div class="form-field">
-          <span class="form-label">Folder</span>
-          <md-filled-text-field
-            type="text"
-            name="folder"
-            value="${data.folder}"
-            pattern="w+"
-            placeholder="Make sure this folder exists!"
-            class="settings-field-update-input"
-            @change="${this.handleChange("folder", (value) => value)}"
-          >
-          </md-filled-text-field>
-        </div>
-      </div>
-    `;
-  };
+  /** Unused currently, local integrations don't store any data. */
+  private renderLocal = (): TemplateResult<1> => html``;
 
   private renderGcs = (): TemplateResult<1> => {
     const data: GcsIntegrationData = { bucket_name: "", ...this.data };
@@ -188,6 +168,7 @@ export class IntegrationFormElement extends LitElement {
         </div>
         ${this.slug === "local" ? this.renderLocal() : ""}
         ${this.slug === "gcs" ? this.renderGcs() : ""}
+        <slot name="form-extra"></slot>
         <div class="form-row">
           <div class="form-field">
             <span class="form-label">Save</span>

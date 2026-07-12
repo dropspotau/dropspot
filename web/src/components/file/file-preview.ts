@@ -168,7 +168,7 @@ export class FilePreviewElement extends LitElement {
         <h3 slot="title" class="title">${this.name}</h3>
         ${this.blobUrl && previewHtml}
         <div slot="footer" class="buttons">
-          <md-filled-button @click="${this.handleDownload}">
+          <md-filled-button class="button-white" @click="${this.handleDownload}">
             <div class="button-items">
               <span>Download</span>
               <md-icon>download</md-icon>

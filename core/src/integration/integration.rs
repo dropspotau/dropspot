@@ -10,9 +10,7 @@ use crate::storage::StorageType;
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
-pub struct LocalIntegrationData {
-    pub folder: String,
-}
+pub struct LocalIntegrationData {}
 
 #[derive(Serialize, Deserialize, Clone, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -31,9 +29,7 @@ pub enum IntegrationData {
 impl IntegrationData {
     pub fn to_map(&self) -> Vec<(String, String)> {
         match self {
-            IntegrationData::Local(data) => {
-                vec![("folder".to_string(), data.folder.clone())]
-            }
+            IntegrationData::Local(_data) => vec![],
             IntegrationData::Gcs(data) => {
                 vec![("bucket_name".to_string(), data.bucket_name.clone())]
             }

@@ -138,7 +138,7 @@ values (
 	'local'::storage,
     (select id from default_organisation_id limit 1),
 	true,
-	'{"folder": "files"}'::jsonb
+	'{}'::jsonb
 );
 
 -- And settings

@@ -94,6 +94,7 @@ pub async fn handle_file_download(
     user: Option<User>,
 ) -> Response {
     let pool = state.get_pool();
+    let server_config = state.get_server_config();
     let organisation = get_organisation_from_request_user(pool, user.as_ref()).await;
 
     let Ok(download) = get_download_by_id(pool, &download_id).await else {
@@ -142,7 +143,7 @@ pub async fn handle_file_download(
         .into_response();
     };
 
-    let storage = get_storage(&integration.data);
+    let storage = get_storage(&integration.data, server_config);
 
     let Ok(reader) = storage.get_download_reader(&file).await else {
         let api_error = ApiError::new(

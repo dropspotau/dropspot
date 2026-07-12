@@ -118,7 +118,29 @@
                     {% for (field, value) in integration.data.to_map() %}
                         data-{{ field }}="{{ value }}"
                     {% endfor %}
-                ></integration-form>
+                >
+                    {% if let StorageType::Local = integration.slug %}
+                        <!-- Show the local upload path -->
+                        <div slot="form-extra" class="form-row">
+                            <div class="form-field">
+                                <span class="form-label">Folder</span>
+                                <md-filled-text-field
+                                  id="local-integration-upload-path"
+                                  type="text"
+                                  name="folder"
+                                  label="Folder"
+                                  value="{{ local_upload_path }}"
+                                  disabled
+                                  class="settings-field-update-input"
+                                >
+                                </md-filled-text-field>
+                                <dropspot-tooltip target="#local-integration-upload-path">
+                                    This can only be set via an environment variable.
+                                </dropspot-tooltip>
+                            </div>
+                        </div>
+                    {% endif %}
+                </integration-form>
             </div>
         </section>
     {% endfor %}

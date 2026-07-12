@@ -1,4 +1,4 @@
-import { html, css, LitElement } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { createRef, type Ref, ref } from "lit/directives/ref.js";
 
@@ -6,12 +6,6 @@ import type { PopoverElement } from "./popover";
 
 @customElement("dropspot-tooltip")
 export class TooltipElement extends LitElement {
-  static styles = css`
-    :host {
-      background-color: var(--dropspot-dark);
-    }
-  `;
-
   @property({ attribute: "target" })
   private targetSelector: string = "";
 
@@ -23,10 +17,9 @@ export class TooltipElement extends LitElement {
     const target = this.getTarget();
 
     if (!target) {
-      console.error(
+      throw new Error(
         `Target ${this.targetSelector} not found for tooltip or is not an HTMLElement`,
       );
-      return;
     }
 
     target.addEventListener("mouseenter", this.handleSelectorMouseEnter);
@@ -36,41 +29,48 @@ export class TooltipElement extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
 
-    const target = this.getTarget();
+    try {
+      const target = this.getTarget();
 
-    if (!target) {
-      // Target doesn't exist so don't bother removing its even listeners
-      return;
+      // If the mount failed these calls will do nothing
+      target.removeEventListener("mouseenter", this.handleSelectorMouseEnter);
+      target.removeEventListener("mouseleave", this.handleSelectorMouseLeave);
+    } catch (e) {
+      // Target doesn't exist so don't bother removing its event listeners
     }
-
-    target.removeEventListener("mouseenter", this.handleSelectorMouseEnter);
-    target.removeEventListener("mouseleave", this.handleSelectorMouseLeave);
   }
 
-  private getTarget = (): HTMLElement | null => {
+  /**
+   * Gets the tooltip's target element, and throws an error if the tooltip's root node doesn't support querySelector
+   * or if the target isn't an HTMLElement.
+   */
+  private getTarget = (): HTMLElement => {
     const rootNode = this.getRootNode();
 
-    if (!(rootNode instanceof Element) && !(rootNode instanceof ShadowRoot)) {
-      console.error(
-        "Tooltip target root must either be an Element or ShadowRoot",
+    if (
+      !(rootNode instanceof Document) &&
+      !(rootNode instanceof Element) &&
+      !(rootNode instanceof ShadowRoot)
+    ) {
+      throw new Error(
+        "Tooltip target root must either be the Document, an Element or a ShadowRoot",
       );
-      return null;
     }
 
     const target = rootNode.querySelector(this.targetSelector);
 
-    if (target instanceof HTMLElement) {
-      return target;
+    if (!(target instanceof HTMLElement)) {
+      throw new Error("Tooltip target was not an HTMLElement");
     }
 
-    return null;
+    return target;
   };
 
   private handleSelectorMouseEnter = (): void => {
     const { value: popover } = this.popoverRef;
     const target = this.getTarget();
 
-    if (popover && target) {
+    if (popover) {
       popover.toggle(target);
     }
   };
@@ -85,7 +85,11 @@ export class TooltipElement extends LitElement {
 
   render() {
     return html`
-      <dropspot-popover alignment="top" ${ref(this.popoverRef)}>
+      <dropspot-popover
+        alignment="top"
+        .isDark="${true}"
+        ${ref(this.popoverRef)}
+      >
         <slot></slot>
       </dropspot-popover>
     `;
