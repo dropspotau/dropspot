@@ -1,0 +1,33 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            with user_id as (\n                insert into dropspot.users (email, first_name, last_name, organisation_id, is_admin)\n                values ($1, $2, $3, $4, $5)\n                returning id\n            )\n            insert into dropspot.password (user_id, password)\n            values ((select id from user_id limit 1), $6)\n            returning user_id id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "password",
+            "name": "user_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Uuid",
+        "Bool",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "17f60d113cfe5e1839ca8e38214c189818c2acf582562c6eba75f3424c446b93"
+}

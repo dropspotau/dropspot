@@ -1,0 +1,166 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            select\n              file.id,\n              file.name,\n              file.size,\n              file.storage as \"storage: StorageType\",\n              file.created_at,\n              users.id \"created_by_id?\",\n              users.email \"created_by_name?\",\n              file.expires_at,\n              file.max_downloads,\n              count(download.id)::int \"download_count!\",\n              file.organisation_id,\n              settings.allow_external_downloads can_download_externally\n            from dropspot.file file\n            left join dropspot.download download\n            on download.file_id = file.id\n            left join dropspot.users users\n            on users.id = file.created_by_id\n            left join dropspot.settings settings\n            on settings.organisation_id = file.organisation_id\n            where users.id = $1\n            group by file.id, users.id, settings.allow_external_downloads\n            order by file.created_at asc\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "size",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "size"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "storage: StorageType",
+        "type_info": {
+          "Custom": {
+            "name": "storage",
+            "kind": {
+              "Enum": [
+                "local",
+                "s3",
+                "gcs"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "storage"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "created_at"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "created_by_id?",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_by_name?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "email"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "expires_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "expires_at"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "max_downloads",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "max_downloads"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "download_count!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 10,
+        "name": "organisation_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "file",
+            "name": "organisation_id"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "can_download_externally",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "allow_external_downloads"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      false,
+      false
+    ]
+  },
+  "hash": "11a7c6e73c0177ccbc2586279077aece97e3768607bfc9a28749de28c999b121"
+}

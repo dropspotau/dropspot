@@ -11,11 +11,11 @@
   };
 
   outputs =
-    inputs@{
-      self,
+    {
       nixpkgs,
       flake-utils,
       rust-overlay,
+      ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -55,14 +55,17 @@
           typescript
           vtsls
           pnpm
+          nodejs_26
         ];
 
         editorDeps = with pkgs; [
           neovim
           rustfmt
+          docker-language-server
+          docker-compose-language-service
         ];
 
-        psql = (pkgs.postgresql_17.withPackages (ps: with ps; [ ]));
+        psql = (pkgs.postgresql_17.withPackages (ps: [ ]));
         deps =
           with pkgs;
           [
