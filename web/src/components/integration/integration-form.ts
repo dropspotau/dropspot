@@ -168,6 +168,7 @@ export class IntegrationFormElement extends LitElement {
         </div>
         ${this.slug === "local" ? this.renderLocal() : ""}
         ${this.slug === "gcs" ? this.renderGcs() : ""}
+        <slot name="form-extra"></slot>
         <div class="form-row">
           <div class="form-field">
             <span class="form-label">Save</span>

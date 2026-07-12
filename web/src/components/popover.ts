@@ -1,5 +1,6 @@
 import { html, css, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import { createRef, ref, type Ref } from "lit/directives/ref.js";
 
 @customElement("dropspot-popover")
@@ -10,15 +11,12 @@ export class PopoverElement extends LitElement {
     }
 
     .popover {
-      background-color: #ffffff;
+      background-color: light-dark(#ffffff, var(--dropspot-primary-dark));
       color: var(--dropspot-primary);
       border-radius: 0.5rem;
       border: none;
-      box-shadow: var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-minor);
-
-      @media (prefers-color-scheme: dark) {
-          background-color: var(--dropspot-primary-dark);
-      }
+      box-shadow:
+        var(--dropspot-box-shadow-inset), var(--dropspot-box-shadow-minor);
     }
 
     .popover[popover] {
@@ -54,12 +52,21 @@ export class PopoverElement extends LitElement {
         opacity: 1;
       }
     }
+
+    .popover-dark {
+      /* Tooltip override */
+      background-color: var(--dropspot-dark);
+      color: #ffffff;
+    }
   `;
 
   private popoverRef: Ref<HTMLDivElement> = createRef();
 
   @property()
   private alignment: "left" | "top" | "center" | "bottom" | "right" = "right";
+
+  @property({ attribute: "dark", type: Boolean })
+  private isDark: boolean = false;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -109,11 +116,14 @@ export class PopoverElement extends LitElement {
   };
 
   render() {
+    const className = classMap({ popover: true, "popover-dark": this.isDark });
+
     return html`
       <div
-        class="popover"
+        class="${className}"
         alignment="${this.alignment}"
         popover="manual"
+        ${this.isDark ? "dark" : ""}
         ${ref(this.popoverRef)}
       >
         <slot></slot>

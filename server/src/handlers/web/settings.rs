@@ -14,6 +14,7 @@ use crate::{
         get_user_by_id, get_users, update_organisation_settings, update_user,
     },
     state::AppState,
+    storage::StorageType,
     types::ApiError,
 };
 
@@ -31,6 +32,7 @@ struct SettingsTemplate {
     current_user: User,
     is_only_admin: bool,
     integrations: Vec<Integration>,
+    local_upload_path: String,
 }
 
 #[derive(Template)]
@@ -44,6 +46,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
     }
 
     let pool = state.get_pool();
+    let server_config = state.get_server_config();
     let user = user.unwrap();
     let Ok(organisation) = get_organisation_for_user(pool, &user.id).await else {
         return ApiError::new(
@@ -69,6 +72,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
         .filter(|u| u.id != user.id && u.is_admin)
         .collect::<Vec<&User>>()
         .is_empty();
+    let local_upload_path = server_config.local_upload_path.clone();
 
     let template = SettingsTemplate {
         users,
@@ -80,6 +84,7 @@ pub async fn handle_settings(State(state): State<AppState>, user: Option<User>) 
         current_user: user,
         is_only_admin,
         integrations,
+        local_upload_path,
     };
     HtmlTemplate(template).into_response()
 }
