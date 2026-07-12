@@ -105,13 +105,8 @@ export class IntegrationFormElement extends LitElement {
     this.isActive = target.selected;
   };
 
-  private renderLocal = (): TemplateResult<1> => {
-    return html`
-      <div class="form-row">
-        <span>Nothing to configure</span>
-      </div>
-    `;
-  };
+  /** Unused currently, local integrations don't store any data. */
+  private renderLocal = (): TemplateResult<1> => html``;
 
   private renderGcs = (): TemplateResult<1> => {
     const data: GcsIntegrationData = { bucket_name: "", ...this.data };
