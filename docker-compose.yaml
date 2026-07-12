@@ -32,6 +32,8 @@ services:
       - dropspot
     depends_on:
       - db
+    profiles:
+      - api
 
 
 volumes:
