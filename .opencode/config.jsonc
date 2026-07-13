@@ -82,5 +82,6 @@
     },
     "doom_loop": "ask",
     "external_directory": "ask"
-  }
+  },
+  "default_agent": "plan",
 }
