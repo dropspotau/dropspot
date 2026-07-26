@@ -3,9 +3,9 @@
 pub struct ServerConfiguration {
     pub local_upload_path: String,
 
-    // Should the web portal show a disclaimer (don't bother with compilation feature flag for "web"
+    // Should the web portal show a disclaimer and contact (don't bother with compilation feature flag for "web"
     // yet)
-    pub should_show_disclaimer: bool,
+    pub should_show_contact: bool,
 }
 
 pub fn get_server_config() -> ServerConfiguration {
@@ -13,20 +13,20 @@ pub fn get_server_config() -> ServerConfiguration {
         .ok()
         .unwrap_or("files".to_owned());
 
-    let should_show_disclaimer = std::env::var("DROPSPOT_WEB_SHOW_DISCLAIMER")
-        .unwrap_or("false".to_owned())
+    let should_show_contact = std::env::var("DROPSPOT_WEB_SHOW_CONTACT")
+        .unwrap_or("true".to_owned())
         .parse::<bool>();
 
-    if should_show_disclaimer.is_err() {
+    if should_show_contact.is_err() {
         tracing::error!(
             "Could not parse DROPSPOT_WEB_SHOW_DISCLAIMER as a boolean. Defaulting to false."
         );
     };
 
-    let should_show_disclaimer = should_show_disclaimer.unwrap_or(false);
+    let should_show_contact = should_show_contact.unwrap_or(false);
 
     ServerConfiguration {
         local_upload_path,
-        should_show_disclaimer,
+        should_show_contact,
     }
 }

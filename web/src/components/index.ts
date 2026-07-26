@@ -10,6 +10,7 @@ export {
   FilePreviewElement,
 } from "./file";
 export { CopyButtonElement } from "./copy-button";
+export { IconElement } from "./icon";
 export { LoginControllerElement } from "./login-controller";
 export { OnboardingElement } from "./onboarding";
 export { PopoverElement } from "./popover";

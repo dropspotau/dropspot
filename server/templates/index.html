@@ -60,8 +60,12 @@
         {% if should_show_onboarding %}
             {% include "onboarding.html" %}
         {% endif %}
-        {% if should_show_disclaimer %}
-            <p class="disclaimer">By interacting with the site, you agree to all responsibility and ownership of your uploaded files.</p>
+        {% if should_show_contact %}
+            <div class="contact">
+                <p >By interacting with the site, you agree to all responsibility and ownership of your uploaded files.</p>
+                <p>For support, email <a href="mailto:alec@dropspot.au" class="text-white">alec@dropspot.au</a></p>
+                <dropspot-icon icon="github"></dropspot-icon>
+            </div>
         {% endif %}
     </main>
 </body>
