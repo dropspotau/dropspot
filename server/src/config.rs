@@ -13,9 +13,8 @@ pub fn get_server_config() -> ServerConfiguration {
         .ok()
         .unwrap_or("files".to_owned());
 
-    let should_show_contact = std::env::var("DROPSPOT_WEB_SHOW_CONTACT")
-        .unwrap_or("true".to_owned())
-        .parse::<bool>();
+    let should_show_contact =
+        std::env::var("DROPSPOT_WEB_SHOW_CONTACT").map(|v| v.parse::<bool>().unwrap_or(false));
 
     if should_show_contact.is_err() {
         tracing::error!(
