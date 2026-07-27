@@ -22,9 +22,25 @@ create table dropspot.users (
     unique (organisation_id, id)
 );
 
-create table dropspot.password (
+-- Login-specific details for a user
+create table dropspot.login (
+    id uuid primary key default uuid_generate_v4(),
     user_id uuid primary key references dropspot.users (id) on delete cascade,
-    password text not null,
+    last_signin timestamptz
+);
+
+-- A successful user signin
+create table dropspot.signin (
+    id uuid primary key default uuid_generate_v4(),
+    login_id uuid primary key references dropspot.login (id) on delete cascade,
+    created_at timestamptz not null default now()
+);
+
+-- A user password
+create table dropspot.password (
+    id uuid primary key default uuid_generate_v4(),
+    login_id uuid primary key references dropspot.login (id) on delete cascade,
+    password varchar(1024) not null,
     updated_at timestamptz
 );
 
