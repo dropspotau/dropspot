@@ -22,7 +22,7 @@ pub fn get_server_config() -> ServerConfiguration {
 
     if should_show_contact.is_err() {
         tracing::warn!(
-            "Could not parse DROPSPOT_WEB_SHOW_DISCLAIMER as a boolean. Defaulting to false."
+            "Could not parse DROPSPOT_WEB_SHOW_CONTACT as a boolean. Defaulting to false."
         );
     };
 

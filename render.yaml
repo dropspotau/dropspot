@@ -31,7 +31,7 @@ projects:
                 value: app.dropspot.au
               - key: DROPSPOT_PORT
                 value: 10000
-              - key: DROPSPOT_WEB_SHOW_DISCLAIMER
+              - key: DROPSPOT_WEB_SHOW_CONTACT
                 value: true
               - key: DROPSPOT_LOCAL_UPLOAD_PATH
                 value: /opt/data
