@@ -9,9 +9,13 @@ pub struct ServerConfiguration {
 }
 
 pub fn get_server_config() -> ServerConfiguration {
-    let local_upload_path = std::env::var("DROPSPOT_LOCAL_UPLOAD_PATH")
-        .ok()
-        .unwrap_or("files".to_owned());
+    let local_upload_path = match std::env::var("DROPSPOT_LOCAL_UPLOAD_PATH").ok() {
+        Some(path) => path,
+        None => {
+            tracing::warn!("DROPSPOT_LOCAL_UPLOAD_PATH variable missing. Defaulting to \"files\".");
+            "files".to_owned()
+        }
+    };
 
     let should_show_contact =
         std::env::var("DROPSPOT_WEB_SHOW_CONTACT").map(|v| v.parse::<bool>().unwrap_or(false));
