@@ -17,7 +17,7 @@ pub fn get_server_config() -> ServerConfiguration {
         std::env::var("DROPSPOT_WEB_SHOW_CONTACT").map(|v| v.parse::<bool>().unwrap_or(false));
 
     if should_show_contact.is_err() {
-        tracing::error!(
+        tracing::warn!(
             "Could not parse DROPSPOT_WEB_SHOW_DISCLAIMER as a boolean. Defaulting to false."
         );
     };
