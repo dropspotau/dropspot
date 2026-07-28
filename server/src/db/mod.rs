@@ -3,6 +3,7 @@ mod download;
 mod error;
 mod file;
 mod integration;
+mod login;
 mod onboarding;
 mod organisation;
 mod settings;
@@ -17,6 +18,7 @@ pub use file::{
     get_files_by_uploader_id, get_files_to_expire, update_file,
 };
 pub use integration::{Integration, get_integration_by_slug, get_integrations, upsert_integration};
+pub use login::record_signin;
 pub use onboarding::{get_onboarding_status, record_onboarding_completion};
 pub use organisation::{Organisation, get_default_organisation, get_organisation_for_user};
 pub use settings::{get_organisation_settings, update_organisation_settings};
