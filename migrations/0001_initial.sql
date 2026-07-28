@@ -25,8 +25,7 @@ create table dropspot.users (
 -- Login-specific details for a user
 create table dropspot.login (
     id uuid primary key default uuid_generate_v4(),
-    user_id uuid not null references dropspot.users (id) on delete cascade,
-    last_signin timestamptz
+    user_id uuid not null references dropspot.users (id) on delete cascade
 );
 
 -- A successful user signin
