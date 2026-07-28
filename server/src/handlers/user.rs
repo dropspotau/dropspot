@@ -17,7 +17,7 @@ use crate::{
     auth::password::{hash_password, verify_password},
     db::{
         User, create_user, get_default_organisation, get_organisation_for_user, get_user_by_email,
-        get_user_by_id, get_user_password, get_users,
+        get_user_by_id, get_user_password, get_users, record_signin,
     },
     state::AppState,
     types::ApiError,
@@ -136,6 +136,10 @@ pub async fn handle_create_user(
         .into_response();
     };
 
+    if let Err(e) = record_signin(pool, &user.id).await {
+        tracing::error!("Could not generate tokens for user {}", e);
+    }
+
     Json(LoginResult {
         user: ApiUser::from(user),
         tokens,
@@ -239,6 +243,10 @@ pub async fn handle_login(
         )
         .into_response();
     };
+
+    if let Err(e) = record_signin(pool, &user.id).await {
+        tracing::error!("Could not generate tokens for user {}", e);
+    }
 
     Json(LoginResult {
         user: ApiUser::from(user),

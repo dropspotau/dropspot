@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            with login_id as (\n                select id\n                from dropspot.login\n                where user_id = $1\n            )\n            insert into dropspot.signin (login_id, created_at)\n            values ((select id from login_id limit 1), now())\n            returning id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "signin",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7ad01979ba826f2f4a892b765daba442e348289ae892787eea46b033f6144b76"
+}

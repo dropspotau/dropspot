@@ -139,8 +139,10 @@ pub async fn get_user_password(pool: &PgPool, user_id: &Uuid) -> Result<String, 
         r#"
             select
               password
-            from dropspot.password
-            where user_id = $1
+            from dropspot.password password
+            left join dropspot.login login
+            on login.id = password.login_id
+            where login.user_id = $1
             limit 1
         "#,
         user_id
@@ -167,10 +169,14 @@ pub async fn create_user(
                 insert into dropspot.users (email, first_name, last_name, organisation_id, is_admin)
                 values ($1, $2, $3, $4, $5)
                 returning id
+            ), login_id as (
+                insert into dropspot.login (user_id)
+                values ((select id from user_id limit 1))
+                returning id
             )
-            insert into dropspot.password (user_id, password)
-            values ((select id from user_id limit 1), $6)
-            returning user_id id
+            insert into dropspot.password (login_id, password)
+            values ((select id from login_id limit 1), $6)
+            returning (select id from user_id) "id!"
         "#,
         email,
         first_name,

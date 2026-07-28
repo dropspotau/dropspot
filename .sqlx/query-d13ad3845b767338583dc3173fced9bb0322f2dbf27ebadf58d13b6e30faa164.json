@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            select\n              password\n            from dropspot.password password\n            left join dropspot.login login\n            on login.id = password.login_id\n            where login.user_id = $1\n            limit 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "password",
+        "type_info": "Varchar",
+        "origin": {
+          "Table": {
+            "table": "password",
+            "name": "password"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d13ad3845b767338583dc3173fced9bb0322f2dbf27ebadf58d13b6e30faa164"
+}
