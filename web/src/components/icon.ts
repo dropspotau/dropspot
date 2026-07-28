@@ -35,9 +35,7 @@ export class IconElement extends LitElement {
       icon = githubIcon;
     }
 
-    return html`
-        <img src="${icon}" class="icon"></img>
-    `;
+    return html`<img src="${icon}" class="icon" />`;
   }
 }
 

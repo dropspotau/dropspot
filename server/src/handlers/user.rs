@@ -137,7 +137,7 @@ pub async fn handle_create_user(
     };
 
     if let Err(e) = record_signin(pool, &user.id).await {
-        tracing::error!("Could not generate tokens for user {}", e);
+        tracing::error!("Could not record signin for user {}: {}", user.id, e);
     }
 
     Json(LoginResult {
@@ -245,7 +245,7 @@ pub async fn handle_login(
     };
 
     if let Err(e) = record_signin(pool, &user.id).await {
-        tracing::error!("Could not generate tokens for user {}", e);
+        tracing::error!("Could not record signin for user {}: {}", user.id, e);
     }
 
     Json(LoginResult {
