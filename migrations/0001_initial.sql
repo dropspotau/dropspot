@@ -25,21 +25,21 @@ create table dropspot.users (
 -- Login-specific details for a user
 create table dropspot.login (
     id uuid primary key default uuid_generate_v4(),
-    user_id uuid primary key references dropspot.users (id) on delete cascade,
+    user_id uuid not null references dropspot.users (id) on delete cascade,
     last_signin timestamptz
 );
 
 -- A successful user signin
 create table dropspot.signin (
     id uuid primary key default uuid_generate_v4(),
-    login_id uuid primary key references dropspot.login (id) on delete cascade,
+    login_id uuid not null references dropspot.login (id) on delete cascade,
     created_at timestamptz not null default now()
 );
 
 -- A user password
 create table dropspot.password (
     id uuid primary key default uuid_generate_v4(),
-    login_id uuid primary key references dropspot.login (id) on delete cascade,
+    login_id uuid not null references dropspot.login (id) on delete cascade,
     password varchar(1024) not null,
     updated_at timestamptz
 );
@@ -126,7 +126,9 @@ create table dropspot.onboarding (
 create index idx_user_email on dropspot.users (email);
 create index idx_user_updated_by_id on dropspot.users (updated_by_id);
 create index idx_user_organisation_id on dropspot.users (organisation_id);
-create index idx_password_user_id on dropspot.password (user_id);
+create index idx_login_user_id on dropspot.login (user_id);
+create index idx_signin_login_id on dropspot.signin (login_id);
+create index idx_password_login_id on dropspot.password (login_id);
 create index idx_file_created_by_id on dropspot.file (created_by_id);
 create index idx_file_updated_by_id on dropspot.file (updated_by_id);
 create index idx_upload_file_id on dropspot.upload (file_id);
